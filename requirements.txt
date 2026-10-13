@@ -1,0 +1,10 @@
+numpy>=2.0
+pandas>=2.2
+scipy>=1.13
+statsmodels>=0.14
+requests>=2.32
+pyarrow>=16
+beautifulsoup4>=4.12
+lxml>=5.2
+matplotlib>=3.9
+pypdf>=4.2

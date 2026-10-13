@@ -1,0 +1,348 @@
+{
+ "seed": 20261013,
+ "particles": 3000,
+ "admiralty": {
+  "reliability": {
+   "A": 0.95,
+   "B": 0.8,
+   "C": 0.6,
+   "D": 0.4,
+   "E": 0.2,
+   "F": 0.5
+  },
+  "credibility": {
+   "1": 0.95,
+   "2": 0.8,
+   "3": 0.6,
+   "4": 0.35,
+   "5": 0.15,
+   "6": 0.5
+  }
+ },
+ "derivative_discount": 0.3,
+ "damage_scale": 1.0,
+ "recovery_multiplier": 1.0,
+ "recovery_log_sd": 0.6,
+ "kappa_sd": 0.15,
+ "onset": {
+  "lag_mean_min": 45,
+  "lag_shape": 2.0,
+  "ramp_mean_min": 30,
+  "ramp_shape": 1.5
+ },
+ "damage_lexicon": {
+  "complete_stop": {
+   "beta": [
+    9,
+    1
+   ],
+   "recovery_median_days": 45,
+   "examples": [
+    "work completely stopped",
+    "operations completely suspended",
+    "работа полностью остановлена"
+   ]
+  },
+  "severe": {
+   "beta": [
+    7,
+    3
+   ],
+   "recovery_median_days": 30,
+   "examples": [
+    "seriously damaged",
+    "серьезно повреждён"
+   ]
+  },
+  "partial": {
+   "beta": [
+    2.5,
+    6
+   ],
+   "recovery_median_days": 7,
+   "examples": [
+    "part of the infrastructure failed",
+    "several modules disabled",
+    "часть инфраструктуры вышла из строя"
+   ]
+  },
+  "minor": {
+   "beta": [
+    1,
+    9
+   ],
+   "recovery_median_days": 2,
+   "examples": [
+    "minor damage",
+    "no impact on operations"
+   ]
+  },
+  "unknown": {
+   "beta": [
+    2,
+    2
+   ],
+   "recovery_median_days": 10,
+   "examples": [
+    "no damage statement"
+   ]
+  }
+ },
+ "targets": {
+  "cloud": {
+   "label": "Yandex Cloud (AS200350) capacity",
+   "concentration": 6,
+   "prior_share": {
+    "Sasovo": 0.31,
+    "Vladimir": 0.31,
+    "Kaluga": 0.31,
+    "Other": 0.07
+   }
+  },
+  "core": {
+   "label": "Yandex LLC (AS13238) compute capacity",
+   "concentration": 8,
+   "prior_share": {
+    "Sasovo": 0.25,
+    "Vladimir": 0.3,
+    "Kaluga": 0.2,
+    "MoscowRegion": 0.15,
+    "Other": 0.1
+   }
+  }
+ },
+ "events": [
+  {
+   "id": "SAS",
+   "site": "Sasovo",
+   "label": "Sasovo (Ryazan oblast) strike",
+   "t_min": "2026-10-07T19:00:00Z",
+   "t_mode": "2026-10-07T22:30:00Z",
+   "t_max": "2026-10-08T03:00:00Z",
+   "damage_class": "complete_stop",
+   "sources": [
+    {
+     "name": "Yandex official Telegram post 5900",
+     "rel": "B",
+     "cred": 1,
+     "independent": true
+    },
+    {
+     "name": "Reuters",
+     "rel": "A",
+     "cred": 2,
+     "independent": true
+    },
+    {
+     "name": "NASA FIRMS VIIRS thermal anomaly",
+     "rel": "A",
+     "cred": 2,
+     "independent": true
+    }
+   ]
+  },
+  {
+   "id": "KAL",
+   "site": "Kaluga",
+   "label": "Kaluga strike",
+   "t_min": "2026-10-09T02:00:00Z",
+   "t_mode": "2026-10-09T04:00:00Z",
+   "t_max": "2026-10-09T08:46:00Z",
+   "damage_class": "partial",
+   "sources": [
+    {
+     "name": "Yandex official Telegram post 5900",
+     "rel": "B",
+     "cred": 2,
+     "independent": true
+    },
+    {
+     "name": "Moscow Times",
+     "rel": "B",
+     "cred": 2,
+     "independent": false
+    }
+   ]
+  },
+  {
+   "id": "VLA",
+   "site": "Vladimir",
+   "label": "Vladimir strike",
+   "t_min": "2026-10-10T19:00:00Z",
+   "t_mode": "2026-10-11T01:00:00Z",
+   "t_max": "2026-10-11T04:02:00Z",
+   "damage_class": "complete_stop",
+   "sources": [
+    {
+     "name": "Vladimir governor Avdeev Telegram post 10997",
+     "rel": "B",
+     "cred": 2,
+     "independent": true
+    },
+    {
+     "name": "Yandex official Telegram post 5901",
+     "rel": "B",
+     "cred": 1,
+     "independent": true
+    },
+    {
+     "name": "Al Jazeera / Reuters",
+     "rel": "A",
+     "cred": 2,
+     "independent": false
+    }
+   ]
+  }
+ ],
+ "osint_constraints": [
+  {
+   "type": "report_delay",
+   "event": "SAS",
+   "on": "strike",
+   "t": "2026-10-07T22:31:24Z",
+   "mean_delay_min": 10,
+   "source": "Yandex Cloud status incident 2092 opened 22:31 UTC: power interruptions in ru-central1-b",
+   "url": "https://status.yandex.cloud/ru/incidents/2092",
+   "stage": 1
+  },
+  {
+   "type": "strike_before",
+   "event": "SAS",
+   "t": "2026-10-07T22:40:00Z",
+   "scale_min": 15,
+   "source": "NASA FIRMS NOAA-20 VIIRS thermal anomaly at the Sasovo site, 22:40 UTC",
+   "url": "https://firms.modaps.eosdis.nasa.gov/",
+   "stage": 1
+  },
+  {
+   "type": "onset_before",
+   "event": "SAS",
+   "t": "2026-10-08T05:26:16Z",
+   "scale_min": 10,
+   "source": "Yandex Cloud status 05:26 UTC: zone ru-central1-b unavailable, load switched to other zones",
+   "url": "https://status.yandex.cloud/ru/incidents/2092",
+   "stage": 1
+  },
+  {
+   "type": "onset_before",
+   "event": "KAL",
+   "t": "2026-10-09T08:46:48Z",
+   "scale_min": 10,
+   "source": "Yandex Telegram post 5900 at 08:46 UTC: Kaluga attacked this morning, part of infrastructure failed",
+   "url": "https://t.me/yandex/5900",
+   "stage": 1
+  },
+  {
+   "type": "increment",
+   "t0": "2026-10-09T01:00:00Z",
+   "t1": "2026-10-09T18:00:00Z",
+   "value": 0.0,
+   "sd": 0.06,
+   "target": "cloud",
+   "source": "No Yandex Cloud zone incident opened for the Kaluga strike (status page incident list, 9 Oct)",
+   "url": "https://status.yandex.cloud/ru/incidents",
+   "stage": 1
+  },
+  {
+   "type": "report_delay",
+   "event": "VLA",
+   "on": "strike",
+   "t": "2026-10-11T01:00:00Z",
+   "mean_delay_min": 15,
+   "source": "Yandex Cloud status incident 2136 start time 01:00 UTC: unavailability of Yandex Cloud zones",
+   "url": "https://status.yandex.cloud/ru/incidents/2136",
+   "stage": 1
+  },
+  {
+   "type": "onset_before",
+   "event": "VLA",
+   "t": "2026-10-11T03:08:12Z",
+   "scale_min": 10,
+   "source": "Yandex Cloud status 03:08 UTC: Vladimir data center operation fully stopped after UAV attack",
+   "url": "https://status.yandex.cloud/ru/incidents/2136",
+   "stage": 1
+  },
+  {
+   "type": "strike_before",
+   "event": "VLA",
+   "t": "2026-10-11T04:02:13Z",
+   "scale_min": 20,
+   "source": "Vladimir governor Avdeev Telegram post 10997 at 04:02 UTC: night drone attack, fire",
+   "url": "https://t.me/avdeev_o_vazhnom/10997",
+   "stage": 1
+  },
+  {
+   "type": "report_delay",
+   "event": "SAS",
+   "on": "strike",
+   "t": "2026-10-07T22:30:00Z",
+   "mean_delay_min": 5,
+   "stage": 1,
+   "source": "Cloudflare Radar (Bluesky, 09:14 UTC 8 Oct): Yandex Cloud traffic dropped starting around 22:30 UTC",
+   "url": "https://bsky.app/profile/radar.cloudflare.com"
+  },
+  {
+   "type": "onset_before",
+   "event": "SAS",
+   "t": "2026-10-08T01:22:43Z",
+   "scale_min": 10,
+   "stage": 1,
+   "source": "NetBlocks (Bluesky, 01:22 UTC 8 Oct): confirmed significant disruption to Yandex network",
+   "url": "https://bsky.app/profile/netblocks.org"
+  },
+  {
+   "type": "report_delay",
+   "event": "VLA",
+   "on": "strike",
+   "t": "2026-10-11T00:47:05Z",
+   "mean_delay_min": 20,
+   "stage": 1,
+   "source": "Detector404 complaint alert (Telegram, 00:47 UTC 11 Oct): spike of complaints about Yandex",
+   "url": "https://t.me/s/ru_downdetector_su"
+  },
+  {
+   "type": "onset_before",
+   "event": "VLA",
+   "t": "2026-10-11T05:30:41Z",
+   "scale_min": 10,
+   "stage": 1,
+   "source": "NetBlocks (Bluesky, 05:30 UTC 11 Oct): second collapse in Yandex networks after Vladimir strike",
+   "url": "https://bsky.app/profile/netblocks.org"
+  },
+  {
+   "type": "level",
+   "t": "2026-10-11T03:00:00Z",
+   "value": 0.63,
+   "sd": 0.08,
+   "target": "core",
+   "stage": 1,
+   "source": "NetBlocks chart (11 Oct): YANDEX LLC AS13238 connectivity at 63 percent of normal",
+   "url": "https://bsky.app/profile/netblocks.org"
+  },
+  {
+   "type": "level",
+   "t": "2026-10-11T03:00:00Z",
+   "value": 0.3,
+   "sd": 0.08,
+   "target": "cloud",
+   "stage": 2,
+   "source": "NetBlocks chart (11 Oct): Yandex Cloud AS200350 connectivity at 30 percent of normal",
+   "url": "https://bsky.app/profile/netblocks.org"
+  },
+  {
+   "type": "level",
+   "t": "2026-10-09T12:00:00Z",
+   "value": 0.67,
+   "sd": 0.08,
+   "target": "cloud",
+   "stage": 2,
+   "source": "NetBlocks chart (Oct 6 to 11): Yandex Cloud plateau of about 66 to 69 percent between strikes",
+   "url": "https://bsky.app/profile/netblocks.org"
+  }
+ ],
+ "telemetry": {
+  "fit_from": "2026-10-05",
+  "sigma_inflation": 3.0,
+  "sigma_floor": 0.015
+ }
+}
