@@ -49,7 +49,7 @@ def probe(dom):
 
 
 def main():
-    storm = json.loads((ROOT / "config" / "viginum_storm1516_domains.json").read_text())
+    storm = json.loads((ROOT / "config" / "study.json").read_text())["actors"]["viginum_storm1516_domains"]["domains"]
     doms = {d: "Storm-1516 / CopyCop (VIGINUM)" for d in storm}
     doms.update(EXTRA)
     with ThreadPoolExecutor(16) as ex:

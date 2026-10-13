@@ -9,7 +9,7 @@ This is an independent open-source intelligence assessment. It asks whether the 
 | Report | [`REPORT.pdf`](REPORT.pdf): title page plus a four-page assessment with key judgments, method, results and limitations |
 | Dashboard | [`docs/index.html`](docs/index.html): interactive and static, ready for GitHub Pages from `/docs` |
 | Pipeline | [`pipeline/`](pipeline): collection, expected outage function, inference, verification, export |
-| Model priors and constraints | [`config/outage_model.json`](config/outage_model.json) |
+| Configuration | [`config/study.json`](config/study.json): outage-model priors and OSINT constraints, and the VIGINUM Storm-1516 domain list |
 
 ## Method in brief
 

@@ -81,11 +81,11 @@ def fig_key(D):
 
     fig, ax = plt.subplots(2, 1, figsize=(6.7, 3.85), sharex=True, gridspec_kw={"height_ratios": [1, 1.2], "hspace": 0.62})
     a = ax[0]
-    a.fill_between(s1.index, s1.q05 * 100, s1.q95 * 100, color=BLUE, alpha=0.13, lw=0, step="post", label="Expected outage, 90% band (open sources only)")
+    a.fill_between(s1.index, s1.q05 * 100, s1.q95 * 100, color=BLUE, alpha=0.13, lw=0, step="post", label="Expected outage, 90% band")
     a.plot(s1.index, s1["mean"] * 100, color=BLUE, lw=1.5, drawstyle="steps-post", label="Expected outage, mean (Stage 1)")
     a.plot(x[sel], io_[sel], color=ORANGE, lw=1.2, label="Measured outage (IODA active probing)")
     a.set_ylim(0, 100); a.set_ylabel("Yandex Cloud offline (%)")
-    a.set_title("A   Outage: open-source expectation versus measurement", color=INK)
+    a.set_title("A   Expected versus measured Yandex Cloud outage", color=INK)
     a.legend(loc="upper center", bbox_to_anchor=(0.5, -0.08), frameon=False, fontsize=6.6, ncol=3, handlelength=1.6)
     b = ax[1]
     b.axhline(100, color="#c3c2b7", lw=0.8)
@@ -104,7 +104,7 @@ def fig_key(D):
             axx.axvline(on[k], color=c, lw=0.9, alpha=0.8)
         axx.grid(axis="y", color=GRID, lw=0.6)
     for k, lab in (("SAS", "Sasovo"), ("KAL", "Kaluga"), ("VLA", "Vladimir")):
-        ax[0].text(on[k] + pd.Timedelta(minutes=40), 92, lab, fontsize=6.6, color=INK2)
+        ax[0].text(on[k] + pd.Timedelta(minutes=40), 92, f"{lab} {on[k]:%d Oct %H:%M} UTC", fontsize=6.3, color=INK2)
     b.xaxis.set_major_locator(mdates.DayLocator()); b.xaxis.set_major_formatter(mdates.DateFormatter("%d Oct"))
     return svg(fig)
 
@@ -202,18 +202,19 @@ def build():
         h = re.sub(r",? (Inc|LLC|Ltd|Limited|GmbH|SE|SAS)\.?$", "", h).replace("Domain names registrar ", "")
         return h
 
-    arows = ""
-    for ims, arr in by_ims.items():
-        hold = collections.Counter(holder(d["holder"]) for d in arr if d.get("holder")).most_common(3)
-        htxt = ", ".join(f"{h} ({c})" if len(arr) > 1 else h for h, c in hold) or "n/a"
-        yx = sum(1 for d in arr if d["yandex_hosting"] or d["yandex_mail"] or d["yandex_dns"])
-        name, src = (ims.replace(" (VIGINUM)", ""), "VIGINUM") if "VIGINUM" in ims else (ims, "EEAS")
-        arows += (f"<tr><td>{name}</td><td>{src}</td><td class='n'>{len(arr)}</td><td class='n'>{sum(d['resolves'] for d in arr)}</td>"
-                  f"<td class='n'>{sum(1 for d in arr if d.get('http') == 200)}</td><td>{htxt}</td><td class='n'>{yx or 'none'}</td></tr>")
     nA = len(A); nAres = sum(d["resolves"] for d in A)
+    st_ = by_ims.get("Storm-1516 / CopyCop (VIGINUM)", [])
+    st_hold = collections.Counter(holder(d["holder"]) for d in st_ if d.get("holder")).most_common(2)
+    site_host = {d["domain"]: holder(d["holder"]) for d in A if d["ims"] != "Storm-1516 / CopyCop (VIGINUM)"}
+    n_media = sum(1 for d in D["infra"] if d["role"] != "positive_control")
+    infra_txt = (f"Of the {len(st_)} Storm-1516 domains listed by VIGINUM, {sum(d['resolves'] for d in st_)} resolved and "
+                 f"{sum(1 for d in st_ if d.get('http') == 200)} answered on 13 to 14 October; the answering sites sit mainly behind "
+                 f"{st_hold[0][0]} ({st_hold[0][1]}) and {st_hold[1][0]} ({st_hold[1][1]}), and most of the rest are dormant or parked, so their output cannot be measured hourly. "
+                 f"The websites of African Initiative (afrinz.ru) and R-FBI (fondfbr.ru) are hosted by {site_host.get('afrinz.ru', 'n/a')}, "
+                 f"and those of RRN (rrn.com.tr) and the Pravda network behind {site_host.get('rrn.com.tr', 'n/a')}. "
+                 f"None of these {nA} domains, and none of the {n_media} state and IO media domains mapped for this study, is hosted on a Yandex network or uses Yandex name servers. "
+                 f"Seven media outlets use Yandex 360 mail ({', '.join(ymail)}); their channels show no strike-specific change (Section 2.2).")
     media_y = sum(1 for d in D["infra"] if d["role"] != "positive_control" and (d["yandex_hosting"] or d["yandex_dns"]))
-    arows += (f"<tr><td>State and IO media outlets</td><td>this study</td><td class='n'>{sum(1 for d in D['infra'] if d['role'] != 'positive_control')}</td>"
-              f"<td class='n'>n/a</td><td class='n'>n/a</td><td>DDoS-Guard, Rostelecom, Rossiya Segodnya and others</td><td class='n'>{f"{media_y} hosting" if media_y else "mail only (" + str(len(ymail)) + ")"}</td></tr>")
     ver = D["ver"]; nver = sum(x["n"] for x in ver)
     exact = [x["source"] for x in ver if x.get("exact_share") == 1]
     inexact = [x for x in ver if x.get("exact_share") not in (None, 1)]
@@ -264,13 +265,10 @@ html {{ font-variant-ligatures: none; font-kerning: normal; }}
 body {{ font-family: Charter, "Iowan Old Style", Georgia, "Times New Roman", serif; color: #111; font-size: 9.2pt; line-height: 1.38; margin: 0; }}
 .title {{ position: relative; width: 210mm; height: 297mm; overflow: hidden; color: #fff; page-break-after: always; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }}
 .title svg.waves {{ position: absolute; inset: 0; width: 100%; height: 100%; }}
-.title .in {{ position: relative; padding: 32mm 24mm 28mm; height: 100%; display: flex; flex-direction: column; }}
-.title .kick {{ font-size: 9.5pt; text-transform: uppercase; opacity: .85; font-weight: 500; }}
-.title h1 {{ font-family: Charter, Georgia, serif; font-size: 30pt; line-height: 1.14; margin: 9mm 0 6mm; font-weight: 700; max-width: 160mm; }}
-.title .sub {{ font-family: Charter, Georgia, serif; font-size: 13pt; max-width: 150mm; opacity: .93; line-height: 1.4; font-style: italic; }}
-.title .meta {{ margin-top: auto; font-size: 9.5pt; line-height: 1.6; }}
-.title .meta b {{ font-size: 13pt; display: block; font-weight: 600; }}
-.title .tag {{ display: inline-block; border: 1px solid rgba(255,255,255,.55); border-radius: 20px; padding: 2px 10px; font-size: 8pt; margin-right: 6px; }}
+.title .in {{ position: relative; padding: 46mm 18mm 26mm; height: 100%; display: flex; flex-direction: column; }}
+.title h1 {{ font-family: Charter, Georgia, serif; font-size: 28pt; line-height: 1.16; margin: 0 0 8mm; font-weight: 700; hyphens: none; }}
+.title .sub {{ font-family: Charter, Georgia, serif; font-size: 13pt; text-align: justify; hyphens: none; opacity: .93; line-height: 1.4; font-style: italic; }}
+.title .meta {{ margin-top: auto; font-size: 11pt; line-height: 1.6; opacity: .9; }}
 h2 {{ font-size: 12pt; margin: 5mm 0 2mm; font-weight: 700; }}
 h2.first {{ margin-top: 0; }}
 h3 {{ font-size: 9.8pt; margin: 3.2mm 0 1mm; font-weight: 700; font-style: italic; }}
@@ -278,10 +276,13 @@ p {{ margin: 0 0 2mm; text-align: justify; hyphens: auto; }}
 .abstract {{ margin: 0 0 4mm; }}
 .abstract p {{ font-size: 9.1pt; }}
 .abstract .lab {{ font-weight: 700; text-align: left; margin-bottom: 1mm; }}
-.bl {{ border-top: 1.4pt solid #111; border-bottom: .6pt solid #111; padding: 2.6mm 0 2.4mm; margin: 0 0 4mm; display: grid; grid-template-columns: 27mm 1fr; column-gap: 4mm; align-items: baseline; }}
-.bl .lab {{ font-family: "Helvetica Neue", Arial, sans-serif; font-size: 7.6pt; font-weight: 700; text-transform: uppercase; color: #143e86; }}
-.bl .txt {{ font-size: 11pt; font-weight: 700; line-height: 1.35; }}
-.bl .sub {{ grid-column: 2; font-size: 8.8pt; color: #333; margin-top: 1.2mm; text-align: left; }}
+.bl {{ background: #f1f4f9; border-left: 1.6mm solid #143e86; padding: 3.4mm 4.5mm 3.6mm; margin: 0 0 4.5mm; break-inside: avoid; }}
+.bl .lab {{ font-family: "Helvetica Neue", Arial, sans-serif; font-size: 7.4pt; font-weight: 700; text-transform: uppercase; color: #143e86; margin: 0 0 1.2mm; }}
+.bl .txt {{ hyphens: none; font-size: 11.5pt; font-weight: 700; line-height: 1.3; margin: 0 0 3mm; text-align: left; }}
+.bl .grid {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; border-top: .5pt solid #c9d3e3; padding-top: 2.6mm; }}
+.bl .grid div {{ font-size: 8.6pt; line-height: 1.35; }}
+.bl .grid b {{ display: block; font-family: "Helvetica Neue", Arial, sans-serif; font-size: 7pt; text-transform: uppercase; margin-bottom: .8mm; }}
+.bl .c1 b {{ color: #143e86; }} .bl .c2 b {{ color: #b3261e; }} .bl .c3 b {{ color: #1d7a3a; }}
 .kj {{ margin: 0 0 2.6mm; break-inside: avoid; }}
 .kj p {{ margin: 0; }}
 .kjh {{ display: flex; gap: 2.4mm; text-align: left; }}
@@ -305,27 +306,30 @@ li {{ margin-bottom: .9mm; text-align: justify; }}
 .hl {{ color: #b3261e; font-weight: 700; }}
 .page {{ page-break-after: always; }}
 .page:last-child {{ page-break-after: auto; }}
-.refs p {{ font-size: 7.4pt; line-height: 1.3; padding-left: 5mm; text-indent: -5mm; margin: 0 0 .8mm; text-align: left; }}
+.refs p {{ font-size: 7.3pt; line-height: 1.3; padding-left: 5mm; text-indent: -5mm; margin: 0 0 .9mm; text-align: left; hyphens: manual; break-inside: avoid; }}
+.refs a {{ color: #143e86; text-decoration: none; }}
 .refs {{ columns: 2; column-gap: 7mm; }}
 </style></head><body>
 
 <section class="title">{waves}<div class="in">
-  <div class="kick">Open-source intelligence assessment</div>
   <h1>{TITLE.replace("Data-Center", '<span style="white-space:nowrap">Data-Center</span>')}</h1>
-  <div class="sub">A time-resolved attribution of the October 2026 drone strikes on Yandex data centers to Russian influence-operation output on Telegram, Reddit, the web and the Pravda network</div>
+  <div class="sub">A time-resolved attribution of the October 2026 drone strikes on Yandex data centers to Russian influence-operation output on Telegram, Reddit, the Pravda network, Russian state media websites and the websites of influence operations named by the EEAS</div>
   <div class="meta">
-    <span class="tag">Independent analysis</span><span class="tag">Open sources only</span><br><br>
-    <b>Stijn Van Severen</b>Independent Analyst<br>
-    14 October 2026 · Data through 13 October 2026, 12:00 UTC
+    October 2026
   </div>
 </div></section>
 
 <section class="page">
 <div class="abstract"><p class="lab">Abstract</p>
-<p>Between 7 and 11 October 2026, drones struck Yandex data centers in Sasovo, Kaluga and Vladimir. This assessment tests whether the resulting outages reduced Russian information-operation (IO) output. An expected-outage function estimated from graded open sources alone reconstructs the measured outage onsets to within {sas_err:.0f} and {vla_err:.0f} minutes. The output of {n_tot} series, covering the Pravda network, {n_tg} Telegram channels, web outlets including those of influence operations named by the EEAS, and {n_rd} Reddit communities, is compared with out-of-sample seasonal counterfactuals using placebo windows, a Bayesian hierarchical model and 10-minute change-point timing. Only the Pravda network shows a reduction that is time-locked to an outage: its output fell to {pr['dip_ratio'] * 100:.0f}% of expected for {pr['dip_hours']:.0f} hours, starting {pr['offset_min']:.0f} minutes after the Vladimir outage. No other platform group shows a credible drop, and none of {nA} domains attributed to Russian influence operations by VIGINUM and the EEAS is hosted on Yandex. The strikes disrupted Yandex substantially but did not measurably silence Russian information operations.</p></div>
+<p>Between 7 and 11 October 2026, drones struck Yandex data centers in Sasovo, Kaluga and Vladimir. This assessment tests whether the resulting outages reduced Russian information-operation (IO) output. An expected-outage function estimated from graded published reports alone reconstructs the measured outage onsets to within {sas_err:.0f} and {vla_err:.0f} minutes. The output of {n_tot} series, covering the Pravda network, {n_tg} Telegram channels, web outlets including those of influence operations named by the EEAS, and {n_rd} Reddit communities, is compared with out-of-sample seasonal counterfactuals using placebo windows, a Bayesian hierarchical model and 10-minute change-point timing. Only the Pravda network shows a reduction that is time-locked to an outage: its output fell to {pr['dip_ratio'] * 100:.0f}% of expected for {pr['dip_hours']:.0f} hours, starting {pr['offset_min']:.0f} minutes after the Vladimir outage. No other platform group shows a credible drop, and none of {nA} domains attributed to Russian influence operations by VIGINUM and the EEAS is hosted on Yandex. The strikes disrupted Yandex substantially but did not measurably silence Russian information operations.</p></div>
 
-<div class="bl"><div class="lab">Bottom line</div><div class="txt">A major Yandex Cloud outage, but no broad reduction in Russian information operations.</div>
-<div class="sub">The single exception is {an_(pr['dip_hours'])} {pr['dip_hours']:.0f}-hour stall of the automated Pravda network immediately after the Vladimir strike.</div></div>
+<div class="bl"><p class="lab">Bottom line</p>
+<p class="txt">The strikes caused a major Yandex Cloud outage but no broad reduction in Russian information operations.</p>
+<div class="grid">
+<div class="c1"><b>Outage</b>Yandex Cloud lost {off_sas * 100:.0f}% of its reachable capacity after Sasovo and {off_now * 100:.0f}% after Vladimir, with no recovery by 13 October.</div>
+<div class="c2"><b>Effect found</b>The automated Pravda network stalled for {pr['dip_hours']:.0f} hours, starting {pr['offset_min']:.0f} minutes after the Vladimir outage.</div>
+<div class="c3"><b>No effect</b>Telegram, Reddit, state media and EEAS-named outlets continued at expected levels; none of their websites runs on Yandex.</div>
+</div></div>
 
 <h2>Key Judgments</h2>
 {KJ}
@@ -337,7 +341,7 @@ li {{ margin-bottom: .9mm; text-align: justify; }}
 <p><i>Outcomes and inference.</i> Each series receives an out-of-sample seasonal counterfactual (hour of day, day of week and trend, fitted on the baseline only). Inference combines placebo-in-time windows of 6 and 24 hours with a same-weekday check; a Bayesian hierarchical model that pools {nmem} member series into platform groups, with a Yandex-dependency term and the common news-shock variance; change-point dating of dips against the outage onset, calibrated with 400 placebo origins; dose-response on the expected outage function with HAC errors; war-minus-non-war theme contrasts; Benjamini-Hochberg false-discovery control; a 20% equivalence bound; and analysis of competing hypotheses. A drop is credible only if the posterior probability of a drop larger than 10% exceeds 90%, the group placebo p is below 0.05 and the same-weekday check agrees. A dip is time-locked only if it is significant and starts at or after the onset.</p>
 <p><i>Actors.</i> The actor set follows the EEAS 4th FIMI threat report and the VIGINUM report on Storm-1516: the Pravda network (Portal Kombat), African Initiative, RRN and R-FBI outlets and channels, and 338 Storm-1516 domains, whose hosting was resolved through public DNS.</p>
 
-<figure><p class="flab">Figure 1</p><p class="ftit">Open-Source Outage Expectation, Measured Outage and Pravda Network Output, 7 to 12 October 2026</p>
+<figure><p class="flab">Figure 1</p><p class="ftit">Expected and Measured Yandex Cloud Outage and Pravda Network Output, 7 to 12 October 2026</p>
 {fig_key(D)}
 <p class="note"><i>Note.</i> (A) The expected outage function estimated from published sources only (statements, status pages, satellite fire detections, complaint alerts) tracks the independently measured outage, with onset errors of {sas_err:.0f} min (Sasovo) and {vla_err:.0f} min (Vladimir) and {v['S1']['predictive_coverage90'] * 100:.0f}% coverage of the 90% predictive band. (B) Pravda network output collapses within the hour after the Vladimir outage and recovers with a partial catch-up; its Telegram input does not dip. No comparable dip follows Sasovo, where a decline started 7 h before the strike. Shading marks the most likely dip interval; vertical lines mark outage onsets (UTC).</p></figure>
 
@@ -358,11 +362,7 @@ li {{ margin-bottom: .9mm; text-align: justify; }}
 <p class="note"><i>Note.</i> Posterior median (value at right) and 90% credible interval, including the common news-shock variance estimated before the strikes. Red: credible drop. Green: drops larger than 20% ruled out. Grey: inconclusive. The shaded band marks drops beyond the 20% smallest effect of interest.</p></figure>
 
 <h3>2.3 Infrastructure of Attributed Influence Operations</h3>
-<div class="tbl"><p class="flab">Table 1</p><p class="ftit">Hosting of Domains Attributed to Russian Influence Operations, Public DNS, 13 to 14 October 2026</p>
-<table><thead><tr><th>Operation</th><th>Attributed by</th><th style="text-align:right">Domains</th><th style="text-align:right">Resolving</th><th style="text-align:right">Answering</th><th>Main hosting networks</th><th style="text-align:right">On Yandex</th></tr></thead>
-<tbody>{arows}</tbody></table>
-<p class="note"><i>Note.</i> Domains from VIGINUM's Storm-1516 report (appendix 6.2) and the EEAS 4th FIMI threat report. Hosting networks from RIPE Stat for the A records returned by 1.1.1.1, 8.8.8.8 and 9.9.9.9; "answering" means an HTTP 200 response. "On Yandex" counts domains hosted in a Yandex network or using Yandex name servers or mail. The seven outlets on Yandex 360 mail are {", ".join(ymail)}.</p></div>
-<p>Most Storm-1516 domains are dormant or parked, so their output cannot be measured hourly; those that answer sit mainly behind Cloudflare and Amazon. The measurable outlets of these operations are covered in Section 2.2.</p>
+<p>{infra_txt}</p>
 
 <h2>3. Data Verification</h2>
 <p>{ver_txt} Arctic Shift aggregate buckets are labelled two hours early and were corrected and checked against the raw comment stream; Reddit group totals are reported only when every member community is observed. Pravda sitemap and WordPress timestamps were checked against article publication times.</p>
@@ -376,21 +376,22 @@ li {{ margin-bottom: .9mm; text-align: justify; }}
 
 <h2>References</h2>
 <div class="refs">
-<p>Benjamini, Y., &amp; Hochberg, Y. (1995). Controlling the false discovery rate. <i>Journal of the Royal Statistical Society B, 57</i>(1), 289-300.</p>
-<p>Brodersen, K. H., Gallusser, F., Koehler, J., Remy, N., &amp; Scott, S. L. (2015). Inferring causal impact using Bayesian structural time-series models. <i>Annals of Applied Statistics, 9</i>(1), 247-274.</p>
-<p>Del Moral, P., Doucet, A., &amp; Jasra, A. (2006). Sequential Monte Carlo samplers. <i>Journal of the Royal Statistical Society B, 68</i>(3), 411-436.</p>
-<p>DerSimonian, R., &amp; Laird, N. (1986). Meta-analysis in clinical trials. <i>Controlled Clinical Trials, 7</i>(3), 177-188.</p>
-<p>European External Action Service. (2026). <i>4th EEAS report on foreign information manipulation and interference threats.</i> EEAS.</p>
-<p>Gelman, A., &amp; Rubin, D. B. (1992). Inference from iterative simulation using multiple sequences. <i>Statistical Science, 7</i>(4), 457-472.</p>
-<p>Heuer, R. J. (1999). <i>Psychology of intelligence analysis.</i> Center for the Study of Intelligence.</p>
-<p>Lakens, D. (2017). Equivalence tests. <i>Social Psychological and Personality Science, 8</i>(4), 355-362.</p>
-<p>Newey, W. K., &amp; West, K. D. (1987). A simple, positive semi-definite, heteroskedasticity and autocorrelation consistent covariance matrix. <i>Econometrica, 55</i>(3), 703-708.</p>
-<p>Office of the Director of National Intelligence. (2015). <i>Intelligence Community Directive 203: Analytic standards.</i></p>
-<p>VIGINUM. (2025). <i>Storm-1516: Technical and tactical analysis of a Russian information manipulation set.</i> SGDSN.</p>
-<p><i>Data sources</i> (all graded and linked in the dashboard): Yandex Cloud status incidents and API; Yandex and Vladimir governor Telegram posts; IODA; RIPE Stat; NASA FIRMS; Cloudflare Radar and NetBlocks; Detector404 and Sboy.rf; Wikimedia pageviews; Pravda, ukraina.ru, zona.media and theins.ru sitemaps; WordPress REST APIs; Telegram previews; Arctic Shift. Code and dashboard: OSINT_YandexOutage repository.</p>
+<p>Benjamini, Y., &amp; Hochberg, Y. (1995). Controlling the false discovery rate: A practical and powerful approach to multiple testing. <i>Journal of the Royal Statistical Society: Series B, 57</i>(1), 289-300. <a href="https://doi.org/10.1111/j.2517-6161.1995.tb02031.x">https://doi.org/10.1111/j.2517-6161.1995.tb02031.x</a></p>
+<p>Brodersen, K. H., Gallusser, F., Koehler, J., Remy, N., &amp; Scott, S. L. (2015). Inferring causal impact using Bayesian structural time-series models. <i>Annals of Applied Statistics, 9</i>(1), 247-274. <a href="https://doi.org/10.1214/14-AOAS788">https://doi.org/10.1214/14-AOAS788</a></p>
+<p>Del Moral, P., Doucet, A., &amp; Jasra, A. (2006). Sequential Monte Carlo samplers. <i>Journal of the Royal Statistical Society: Series B, 68</i>(3), 411-436. <a href="https://doi.org/10.1111/j.1467-9868.2006.00553.x">https://doi.org/10.1111/j.1467-9868.2006.00553.x</a></p>
+<p>DerSimonian, R., &amp; Laird, N. (1986). Meta-analysis in clinical trials. <i>Controlled Clinical Trials, 7</i>(3), 177-188. <a href="https://doi.org/10.1016/0197-2456(86)90046-2">https://doi.org/10.1016/0197-2456(86)90046-2</a></p>
+<p>European External Action Service. (2026). <i>4th EEAS report on foreign information manipulation and interference threats.</i> <a href="https://www.eeas.europa.eu/sites/default/files/2026/documents/EEAS%204th%20Threat%20Report_web%20version_1.pdf">eeas.europa.eu</a></p>
+<p>Gelman, A., &amp; Rubin, D. B. (1992). Inference from iterative simulation using multiple sequences. <i>Statistical Science, 7</i>(4), 457-472. <a href="https://doi.org/10.1214/ss/1177011136">https://doi.org/10.1214/ss/1177011136</a></p>
+<p>Heuer, R. J. (1999). <i>Psychology of intelligence analysis.</i> Center for the Study of Intelligence. <a href="https://www.cia.gov/resources/csi/books-monographs/psychology-of-intelligence-analysis-2/">cia.gov</a></p>
+<p>Lakens, D. (2017). Equivalence tests: A practical primer for t tests, correlations, and meta-analyses. <i>Social Psychological and Personality Science, 8</i>(4), 355-362. <a href="https://doi.org/10.1177/1948550617697177">https://doi.org/10.1177/1948550617697177</a></p>
+<p>Newey, W. K., &amp; West, K. D. (1987). A simple, positive semi-definite, heteroskedasticity and autocorrelation consistent covariance matrix. <i>Econometrica, 55</i>(3), 703-708. <a href="https://doi.org/10.2307/1913610">https://doi.org/10.2307/1913610</a></p>
+<p>Office of the Director of National Intelligence. (2015). <i>Intelligence Community Directive 203: Analytic standards.</i> <a href="https://www.dni.gov/files/documents/ICD/ICD-203.pdf">dni.gov</a></p>
+<p>VIGINUM. (2025). <i>Storm-1516: Technical and tactical analysis of a Russian information manipulation set.</i> SGDSN. <a href="https://www.sgdsn.gouv.fr/files/files/Publications/20250507_TLP-CLEAR_NP_SGDSN_VIGINUM_Technical%20report_Storm-1516.pdf">sgdsn.gouv.fr</a></p>
+<p><i>Data sources</i> (graded and linked individually in the dashboard): Yandex Cloud status (<a href="https://status.yandex.cloud">status.yandex.cloud</a>); IODA (<a href="https://ioda.inetintel.cc.gatech.edu">ioda.inetintel.cc.gatech.edu</a>); RIPE Stat (<a href="https://stat.ripe.net">stat.ripe.net</a>); NASA FIRMS (<a href="https://firms.modaps.eosdis.nasa.gov">firms.modaps.eosdis.nasa.gov</a>); Wikimedia pageviews (<a href="https://wikimedia.org/api/rest_v1/">wikimedia.org/api</a>); Arctic Shift (<a href="https://arctic-shift.photon-reddit.com">arctic-shift.photon-reddit.com</a>); Telegram public previews (t.me/s); sitemaps and WordPress APIs of the outlets named in the text. Code and dashboard: <a href="https://github.com/stvsever/OSINT_YandexOutage">github.com/stvsever/OSINT_YandexOutage</a>.</p>
 </div>
 </section>
 </body></html>"""
+    html = re.sub(r'(<a href="[^"]+">)([^<]+)(</a>)', lambda m: m.group(1) + re.sub(r"([/.])", r"\1<wbr>", m.group(2)) + m.group(3), html)
     assert chr(0x2014) not in html, "em dash in report"
     (OUT / "report.html").write_text(html)
     pdf = OUT / "REPORT.pdf"
@@ -399,8 +400,8 @@ li {{ margin-bottom: .9mm; text-align: justify; }}
     from pypdf import PdfReader, PdfWriter
     r = PdfReader(str(pdf))
     w = PdfWriter(clone_from=r)
-    w.add_metadata({"/Title": TITLE, "/Author": "Stijn Van Severen",
-                    "/Subject": "Open-source intelligence assessment of the October 2026 Yandex data-center strikes"})
+    w.add_metadata({"/Title": TITLE,
+                    "/Subject": "Assessment of the October 2026 Yandex data-center strikes and Russian information operations"})
     with open(pdf, "wb") as f:
         w.write(f)
     shutil.copy(pdf, ROOT / "REPORT.pdf")

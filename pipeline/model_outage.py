@@ -30,7 +30,7 @@ from scipy import special, stats
 
 from common import PROC, RAW, ROOT, STUDY_END, STUDY_START, save_json
 
-CONFIG = ROOT / "config" / "outage_model.json"
+CONFIG = ROOT / "config" / "study.json"  # single study configuration
 STEP_MIN = 10
 T0 = pd.Timestamp(STUDY_START)
 GRID = pd.date_range(STUDY_START, STUDY_END, freq=f"{STEP_MIN}min", inclusive="left")
@@ -368,7 +368,7 @@ def predictive_hourly(th, lay, pri, sigma, rng):
 
 
 def main():
-    cfg = json.loads(CONFIG.read_text())
+    cfg = json.loads(CONFIG.read_text())["outage_model"]
     rng = np.random.default_rng(cfg.get("seed", 20261013))
     n = cfg["particles"]
     results = {"config": cfg, "grid_step_min": STEP_MIN, "stages": {}, "event_credibility": {}}
