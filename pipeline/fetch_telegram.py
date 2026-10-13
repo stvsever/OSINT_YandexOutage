@@ -43,6 +43,9 @@ CHANNELS = [
     ("mk_ru", "pro_kremlin_tabloid", "ru"), ("readovka_ru", "pro_kremlin_milblog", "ru"),
     ("rbc_news", "control_ru_business", "ru"), ("kommersant", "control_ru_business", "ru"),
     ("interfaxonline", "control_ru_business", "ru"),
+    # IMS and outlets named in the EEAS 4th Report on FIMI Threats (March 2026)
+    ("africaninitiative", "io_eeas_ims", "ru"), ("AfricanInitiativeEN", "io_eeas_ims", "en"),
+    ("fondfbr", "io_eeas_ims", "ru"), ("rrnmedia", "io_eeas_ims", "multi"), ("gazetaru", "pro_kremlin_state", "ru"),
     ("yandex", "control_ru_nonpolitical", "ru"), ("kinopoisk", "control_ru_nonpolitical", "ru"),
     ("sportsru", "control_ru_nonpolitical", "ru"), ("bazabazon", "control_ru_tabloid", "ru"),
 ]

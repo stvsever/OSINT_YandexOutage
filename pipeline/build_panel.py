@@ -140,6 +140,7 @@ TG_GROUP_LABEL = {
     "control_ru_independent": "Russian independent media (control)", "control_ukrainian": "Ukrainian channels (control)",
     "control_ru_nonpolitical": "Russian non-political (control)", "control_ru_tabloid": "Russian tabloid (control)",
     "control_ru_business": "Russian business media (control)",
+    "io_eeas_ims": "EEAS-named IMS channels (African Initiative, R-FBI, RRN)",
 }
 # IO channels whose parent outlet uses Yandex 360 mail (MX records at Yandex, resolved 13 Oct 2026)
 YANDEX_MAIL_CHANNELS = {"readovkanews", "readovka_ru", "rybar", "rybar_in_english", "rybar_mena", "strategic_culture"}
@@ -164,7 +165,7 @@ def telegram():
     tg = pd.concat(rows, ignore_index=True)
     tg["hour"] = tg.t_utc.dt.floor("h")
     tg.to_parquet(PROC / "telegram_posts.parquet")
-    io_roles = {"pro_kremlin_state", "pro_kremlin_milblog", "pro_kremlin_tabloid", "io_foreign_audience"}
+    io_roles = {"pro_kremlin_state", "pro_kremlin_milblog", "pro_kremlin_tabloid", "io_foreign_audience", "io_eeas_ims"}
     for (handle, role), g in tg.groupby(["handle", "role"]):
         if len(g) < 150:
             continue
@@ -173,6 +174,16 @@ def telegram():
             label=f"Telegram @{handle}", source="Telegram public web preview (t.me/s)",
             source_url=f"https://t.me/s/{handle}", method="Posts per hour from the public channel preview",
             transform="count")
+    # per-channel theme split (used by the theme-conditional Bayesian model; hidden from pickers)
+    for (handle, role), g in tg.groupby(["handle", "role"]):
+        if len(g) < 300:
+            continue
+        for theme, sub in (("war", g[g.war]), ("other", g[~g.war])):
+            add(f"tg.chw.{handle}.{theme}", sub.groupby("hour").size().reindex(HOURS, fill_value=0).astype(float),
+                layer="io" if role in io_roles else "control", group=TG_GROUP_LABEL[role], role=role, theme=theme,
+                label=f"Telegram @{handle} ({theme} posts)", source="Telegram public web preview (t.me/s)",
+                source_url=f"https://t.me/s/{handle}", method="Posts per hour; theme by keyword lexicon",
+                transform="count", hidden=True)
     for role, g in tg.groupby("role"):
         for theme, sub in (("all", g), ("war", g[g.war]), ("other", g[~g.war])):
             if len(sub) < 200:
@@ -218,7 +229,7 @@ def reddit():
         return
     r = pd.read_parquet(p)
     r = r.groupby(["subreddit", "group", "kind", "theme", "hour"], as_index=False)["count"].sum()
-    glabel = {"war": "Reddit: Ukraine war communities", "politics": "Reddit: political communities named in claims",
+    glabel = {"war": "Reddit: Ukraine war communities", "politics": "Reddit: political communities",
               "control": "Reddit: non-political controls"}
     totals = r.groupby("subreddit")["count"].sum()
     r = r[r.subreddit.isin(totals[totals >= 2000].index)]
@@ -304,11 +315,14 @@ def web():
     w = pd.read_parquet(p)
     w["hour"] = w.t_utc.dt.floor("h")
     lab = {"ukraina.ru": "ukraina.ru articles (RIA Novosti outlet for Ukrainian audiences)",
+           "afrinz.ru": "African Initiative articles (afrinz.ru)", "rrn.com.tr": "RRN / Media Brands articles (rrn.com.tr)",
+           "fondfbr.ru": "R-FBI articles (fondfbr.ru)",
            "zona.media": "Mediazona articles (independent control)", "theins.ru": "The Insider articles (independent control)"}
+    grp = {"io_web": "Web publishing (state IO)", "io_eeas_web": "Web publishing (EEAS-named IMS outlets)",
+           "control_web": "Web publishing (independent control)"}
     for (site, role), g in w.groupby(["site", "role"]):
         add(f"web.{site}", g.groupby("hour").size().reindex(HOURS, fill_value=0).astype(float),
-            layer="io" if role == "io_web" else "control",
-            group="Web publishing (state IO)" if role == "io_web" else "Web publishing (independent control)",
+            layer="io" if role.startswith("io") else "control", group=grp[role],
             role=role, label=lab.get(site, site), source=f"{site} public sitemaps", source_url=f"https://{site}/",
             method="Article publication timestamps from sitemaps, verified against article pages", transform="count")
 

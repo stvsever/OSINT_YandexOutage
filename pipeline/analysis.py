@@ -293,7 +293,7 @@ def main():
               f"  MDE={w24['mde80'] if w24 else float('nan'):.2f}")
 
     # Benjamini-Hochberg across IO outcome series
-    io_ids = [s for s in results if meta[s]["layer"] == "io"]
+    io_ids = [s for s in results if meta[s]["layer"] == "io" and not meta[s].get("hidden")]
     for key, getter in (("q_vla24", lambda r: (r["windows"].get("VLA_24h") or {}).get("p_drop")),
                         ("q_sas24", lambda r: (r["windows"].get("SAS_24h") or {}).get("p_drop")),
                         ("q_dose_s1", lambda r: (r["dose"].get("S1") or {}).get("p_placebo_drop"))):

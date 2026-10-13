@@ -65,12 +65,16 @@
     },
     theme: "all", norm: "index",
     unc: { maxMDE: 0.6, minCompl: 0.8, minRel: "C", hideInconclusive: false, bandMax: 1.0 },
-    ann: { strike: true, statement: true, telemetry: true, claim: false, confounder: true, firms: false, alerts: false },
+    ann: { strike: true, statement: true, telemetry: true, confounder: true, firms: false, alerts: false },
     layersOn: { eof: true, infrastructure: true, services: true, io: true, control: true },
     inspect: null, tEvent: "VLA", tStream: "pravda.total",
     attr: { metric: "VLA_24h", layer: "io" }, esSeries: "pravda.total", esSmooth: 3, emapWin: "VLA_6h",
-    agFocus: null, search: "",
+    agFocus: null, agLayout: store.get("agLayout", "lr"), search: "",
   };
+  // Bayesian results per theme; the overall answer always uses the "all" theme
+  const BYA = BY.themes.all;
+  const BT = () => BY.themes[S.theme] || BYA;
+  const THEME_L = { all: "all posts", war: "Ukraine-war posts", other: "non-war posts", diff: "war minus non-war" };
   const slotMaps = {};
   function colorFor(panel, id) {
     const m = (slotMaps[panel] ||= new Map()); const live = new Set(S.sel[panel] || []);
@@ -84,10 +88,10 @@
   const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const shift = (t) => new Date(+t + (S.tz === "MSK" ? 3 * HOUR : 0));
   function fmtT(t, withTz = true) { const d = shift(t); return `${pad(d.getUTCDate())} ${MON[d.getUTCMonth()]} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}${withTz ? " " + S.tz : ""}`; }
-  const pct = (x, d = 0) => (x == null || !isFinite(x) ? "n/a" : (x > 0 ? "+" : "") + (x * 100).toFixed(d) + "%");
+  const pct = (x, d = 0) => { if (x == null || !isFinite(x)) return "n/a"; const t = (x * 100).toFixed(d); return +t === 0 ? (0).toFixed(d) + "%" : (x > 0 ? "+" : "") + t + "%"; };
   const pctu = (x, d = 0) => (x == null || !isFinite(x) ? "n/a" : (x * 100).toFixed(d) + "%");
   const num = (x, d = 0) => (x == null || !isFinite(x) ? "n/a" : d3.format(`,.${d}f`)(x));
-  const pv = (p) => (p == null ? "n/a" : p < 0.001 ? "<0.001" : p.toFixed(3));
+  const pv = (p) => (p == null ? "n/a" : p < 0.001 ? "<0.001" : p < 0.01 ? String(+p.toPrecision(2)) : p.toFixed(3));
   function el(tag, attrs = {}, ...kids) {
     const n = document.createElement(tag);
     for (const [k, v] of Object.entries(attrs)) {
@@ -236,7 +240,7 @@
   // ------------------------------------------------------------------ panels: collapse and resize
   const bodyEl = document.getElementById("body");
   const LP = document.getElementById("leftp"), RP = document.getElementById("rightp");
-  const PW = store.get("pw", { l: 300, r: 340, lc: innerWidth < 760, rc: innerWidth < 1100 });
+  const PW = store.get("pw2", { l: 300, r: 340, lc: innerWidth < 760, rc: true });
   const narrow = () => innerWidth < 1100;
   document.getElementById("mainwrap").addEventListener("pointerdown", () => {
     // on small screens the panels are overlays: tapping the content closes them
@@ -254,7 +258,7 @@
     document.querySelector("#tr svg path").setAttribute("d", PW.rc ? "M10 3 5 8l5 5" : "M6 3l5 5-5 5");
     document.getElementById("tl").title = PW.lc ? "Expand controls" : "Collapse controls";
     document.getElementById("tr").title = PW.rc ? "Expand inspector" : "Collapse inspector";
-    store.set("pw", PW);
+    store.set("pw2", PW);
   }
   function togglePanel(side, force) { if (side === "l") PW.lc = force ?? !PW.lc; else PW.rc = force ?? !PW.rc; applyPanels(); rerender(); }
   document.getElementById("tl").addEventListener("click", () => togglePanel("l"));
@@ -332,15 +336,16 @@
     root.append(t, el("p", { class: "note", text: "Start is relative to the measured outage onset. Attribution requires p < 0.05 and a start at or after the onset." }));
   }
   function inspGroup(root, name, o) {
-    const w = BY.windows[o.win]; const g = w?.groups[name]; if (!g) return;
-    root.append(el("h3", { text: name }), el("div", { class: "note" }, `${o.win.replace("_", " ").replace("SAS", "Sasovo").replace("VLA", "Vladimir").replace("KAL", "Kaluga").replace("SEP27", "27 Sep placebo")}, ${g.k} member series `, info("bayes")));
-    root.append(kv([["Posterior median", pct(g.median, 1)], ["90% credible", `${pct(g.ci90[0])} to ${pct(g.ci90[1])}`], ["P(drop > 10%)", pctu(g.p_drop10)], ["Group placebo p", pv(g.placebo_p_drop)], ["Common shock sd", (g.common_shock_sd * 100).toFixed(1) + "%"], ["R-hat", g.rhat.toFixed(3)], ["Credible drop", g.credible_drop ? "yes" : "no"]]));
+    const th = o.theme || "all"; const w = (BY.themes[th] || BYA).windows[o.win]; const g = w?.groups[name]; if (!g) return;
+    root.append(el("h3", { text: name }), el("div", { class: "note" }, `${winLabel(o.win)}, ${THEME_L[th]}, ${g.k} member series `, info("bayes")));
+    root.append(kv([[th === "diff" ? "War minus non-war" : "Posterior median", pct(g.median, 1)], ["90% credible", `${pct(g.ci90[0])} to ${pct(g.ci90[1])}`], ["P(drop > 10%)", pctu(g.p_drop10)], ["Group placebo p", pv(g.placebo_p_drop)], ["Same-weekday check p", pv(g.naive_p_drop)], ["Common shock sd", g.common_shock_sd != null ? (g.common_shock_sd * 100).toFixed(1) + "%" : "n/a"], ["R-hat", g.rhat != null ? g.rhat.toFixed(3) : "n/a"], ["Credible drop", g.credible_drop ? "yes" : "no"]]));
     const mem = Object.entries(w.members).filter(([, m]) => m.group === name).sort((a, b) => a[1].y - b[1].y);
     const t = el("table", { class: "tbl" }); t.append(el("tr", {}, el("th", { text: "Member" }), el("th", { text: "Change" })));
     for (const [sid, m] of mem) t.append(el("tr", { class: "click", onclick: () => inspect({ type: "series", id: sid }) }, el("td", { text: (SER[sid]?.label || sid) + (m.yandex_mail ? " (Yandex mail)" : "") }), el("td", { class: "num", text: pct(m.y) })));
     root.append(el("div", { class: "lbl", text: "Members (raw window change)" }), t);
   }
   function inspNode(root, id, o) { const n = o.node; root.append(el("h3", { text: n.label }), el("div", { class: "note", text: n.colLabel })); if (n.html) root.append(n.html()); }
+  const winLabel = (k) => k.replace("_", " ").replace("SAS", "Sasovo").replace("VLA", "Vladimir").replace("KAL", "Kaluga").replace("SEP27", "27 Sep placebo");
 
   // ------------------------------------------------------------------ left panel
   const ctl = (label, node) => el("div", { class: "ctl" }, label.nodeType ? el("label", {}, label) : el("label", { text: label }), node);
@@ -348,21 +353,37 @@
   function chk(label, val, on) { const i = el("input", { type: "checkbox" }); i.checked = !!val; i.addEventListener("change", () => on(i.checked)); return el("label", { class: "check" }, i, label); }
   let dT; const debounced = () => { clearTimeout(dT); dT = setTimeout(() => { render(); updateFiltCount(); }, 140); };
   function slider(label, mn, mx, st, val, on, fmt, live) { const out = el("span", { class: "val", text: fmt(val) }); const i = el("input", { type: "range", min: mn, max: mx, step: st, value: val }); i.addEventListener("input", () => { out.textContent = fmt(+i.value); on(+i.value); if (live) debounced(); }); return el("div", { class: "ctl" }, el("label", { text: label }), el("div", { class: "row" }, i, out)); }
+  // every control declares the views it affects; outside them it is dimmed and offers a jump
+  const VNAME = { overview: "Overview", graph: "Graph", timeline: "Timeline", timing: "Timing lab", effects: "Effects", eventstudy: "Event study", evidence: "Evidence", method: "Method" };
+  const SC = { win: ["timeline"], res: ["timeline"], clock: ["overview", "timeline", "timing", "eventstudy"], eof: ["timeline", "effects"], theme: ["overview", "timeline", "effects", "eventstudy"],
+    norm: ["timeline"], panels: ["timeline"], series: ["timeline"], unc: ["timeline", "effects", "eventstudy"], band: ["timeline"], grade: ["timeline", "graph", "evidence"], ann: ["timeline"] };
+  let toastT; const toastEl = el("div", { class: "toast", role: "status" }); document.body.append(toastEl);
+  function toast(msg, scope) {
+    const off = scope && !scope.includes(S.view);
+    toastEl.replaceChildren(el("span", { text: msg }), off ? el("button", { onclick: () => go(scope[0]) }, `Show in ${VNAME[scope[0]]}`) : "");
+    toastEl.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove("on"), off ? 4200 : 2200);
+  }
+  function scoped(key, node) {
+    const v = SC[key]; if (!v || v.includes(S.view)) return node;
+    const w = el("div", { class: "na" }, node, el("button", { class: "na-go", type: "button", title: "This control does not change the current view", onclick: () => go(v[0]) }, "Used in " + v.map((x) => VNAME[x]).join(", ")));
+    return w;
+  }
   function buildLeft() {
     const L = document.getElementById("left"); L.replaceChildren();
     const sec = (title, open, key, ...kids) => { const d = el("details", { class: "sec" }); d.open = store.get("sec." + title, open); d.addEventListener("toggle", () => store.set("sec." + title, d.open)); const sm = el("summary", {}, title); if (key) sm.append(" ", info(key)); sm.append(el("span", { class: "chev" })); d.append(sm, el("div", { class: "in" }, ...kids)); return d; };
     const gb = (items, cur, on) => { const g = el("div", { class: "grid-btns" }); for (const [k, l] of items) g.append(el("button", { class: k === cur ? "on" : "", onclick: () => on(k), title: l }, l)); return g; };
+    const upd = (msg, scope, rebuild = true) => { if (rebuild) buildLeft(); render(); renderInspector(); toast(msg, SC[scope]); };
     L.append(sec("Time window", true, null,
-      gb([["full", "Full study"], ["week", "Strike week"], ["sep", "27 Sep"], ["sas", "Sasovo ±24h"], ["kal", "Kaluga ±24h"], ["vla", "Vladimir ±24h"]], S.preset, setPreset),
-      ctl("Resolution", seg(["10m", "1h", "6h"], S.res, (v) => { S.res = v; buildLeft(); render(); }, { "10m": "10 min", "1h": "1 hour", "6h": "6 hours" })),
-      ctl("Clock", seg(["UTC", "MSK"], S.tz, (v) => { S.tz = v; buildLeft(); render(); renderInspector(); })),
+      scoped("win", gb([["full", "Full study"], ["week", "Strike week"], ["sep", "27 Sep"], ["sas", "Sasovo ±24h"], ["kal", "Kaluga ±24h"], ["vla", "Vladimir ±24h"]], S.preset, setPreset)),
+      scoped("res", ctl("Resolution", seg(["10m", "1h", "6h"], S.res, (v) => { S.res = v; upd(`Resolution ${v === "10m" ? "10 minutes" : v === "1h" ? "1 hour" : "6 hours"}`, "res"); }, { "10m": "10 min", "1h": "1 hour", "6h": "6 hours" }))),
+      scoped("clock", ctl("Clock", seg(["UTC", "MSK"], S.tz, (v) => { S.tz = v; upd(`Times shown in ${v}`, "clock"); }))),
       el("div", { class: "hint", text: "10 minute resolution applies to the outage function, IODA and timing streams. Shift-click a chart to zoom to ±12 h." })));
     const eb = [
-      ctl("Target", seg(["cloud", "core"], S.eof.target, (v) => { S.eof.target = v; if (v === "core" && S.eof.stage === "S2") S.eof.stage = "S1"; S.eof.custom = null; buildLeft(); render(); }, { cloud: "Yandex Cloud", core: "Yandex LLC" })),
-      ctl(el("span", {}, "Stage ", info("stages")), seg(S.eof.target === "cloud" ? ["S0", "S1", "S2", "custom"] : ["S0", "S1", "custom"], S.eof.stage, (v) => { S.eof.stage = v; if (v === "custom" && !S.eof.custom) runCustom(); buildLeft(); render(); }, { S0: "Prior", S1: "OSINT", S2: "Fused", custom: "What-if" })),
-      chk("Uncertainty bands (50 and 90%)", S.eof.bands, (v) => { S.eof.bands = v; render(); }),
-      chk("Posterior sample paths", S.eof.traj, (v) => { S.eof.traj = v; render(); }),
-      chk("Overlay measured outage (IODA)", S.eof.ioda, (v) => { S.eof.ioda = v; render(); }),
+      ctl("Target", seg(["cloud", "core"], S.eof.target, (v) => { S.eof.target = v; if (v === "core" && S.eof.stage === "S2") S.eof.stage = "S1"; S.eof.custom = null; upd(`Outage target: ${v === "cloud" ? "Yandex Cloud" : "Yandex LLC"}`, "eof"); }, { cloud: "Yandex Cloud", core: "Yandex LLC" })),
+      ctl(el("span", {}, "Stage ", info("stages")), seg(S.eof.target === "cloud" ? ["S0", "S1", "S2", "custom"] : ["S0", "S1", "custom"], S.eof.stage, (v) => { S.eof.stage = v; if (v === "custom" && !S.eof.custom) runCustom(); upd(`Outage stage: ${{ S0: "S0 attack prior", S1: "S1 OSINT-conditioned", S2: "S2 telemetry-fused", custom: "what-if" }[v]}`, "eof"); }, { S0: "Prior", S1: "OSINT", S2: "Fused", custom: "What-if" })),
+      chk("Uncertainty bands (50 and 90%)", S.eof.bands, (v) => { S.eof.bands = v; upd(v ? "Bands shown" : "Bands hidden", "eof", false); }),
+      chk("Posterior sample paths", S.eof.traj, (v) => { S.eof.traj = v; upd(v ? "Sample paths shown" : "Sample paths hidden", "eof", false); }),
+      chk("Overlay measured outage (IODA)", S.eof.ioda, (v) => { S.eof.ioda = v; upd(v ? "IODA overlay shown" : "IODA overlay hidden", "eof", false); }),
     ];
     if (S.eof.stage === "custom") {
       const o = S.eof.opts;
@@ -371,32 +392,34 @@
         slider("Site share concentration", 1, 60, 1, o.concentration, (v) => { o.concentration = v; }, (v) => v.toFixed(0)), slider("Derivative source discount", 0, 1, 0.05, o.derivative, (v) => { o.derivative = v; }, (v) => v.toFixed(2)),
         chk("Weight strikes by Admiralty credibility", o.credibility, (v) => { o.credibility = v; }),
         ctl("Strikes included", gb([["SAS", "Sasovo"], ["KAL", "Kaluga"], ["VLA", "Vladimir"]].map(([k, l]) => [k, (o.events[k] ? "✓ " : "") + l]), null, (k) => { o.events[k] = !o.events[k]; buildLeft(); })),
-        el("button", { class: "btn primary", onclick: () => { runCustom(); buildLeft(); render(); } }, "Recompute"));
+        el("button", { class: "btn primary", onclick: () => { runCustom(); upd(`What-if recomputed (${S.eof.opts.n} draws)`, "eof"); } }, "Recompute"));
       if (S.eof.custom) eb.push(el("div", { class: "hint", text: `${S.eof.opts.n} draws, effective sample size ${S.eof.custom.ess.toFixed(0)}.` }));
     }
     eb.push(el("button", { class: "btn sm", onclick: () => inspect({ type: "eof" }) }, "Validation and downtime"));
-    L.append(sec("Expected outage function", true, "eof", ...eb));
-    L.append(sec("Display", true, null,
-      ctl(el("span", {}, "Theme ", info("theme")), seg(["all", "war", "other", "diff"], S.theme, (v) => { S.theme = v; if (v === "diff") S.norm = "anom"; buildLeft(); render(); }, { all: "All", war: "War", other: "Non-war", diff: "War vs other" })),
-      ctl(el("span", {}, "Normalisation ", info("counterfactual")), seg(["index", "anom", "z", "raw"], S.norm, (v) => { S.norm = v; buildLeft(); render(); }, { index: "Obs/exp", anom: "% dev.", z: "z-score", raw: "Raw" })),
-      ...Object.entries({ eof: "Expected outage", infrastructure: "Infrastructure", services: "Dependent services", io: "IO output", control: "Controls" }).map(([k, l]) => chk(l + " panel", S.layersOn[k], (v) => { S.layersOn[k] = v; render(); }))));
-    L.append(sec("Series", false, null, seriesPicker()));
+    L.append(sec("Expected outage function", true, "eof", scoped("eof", el("div", {}, ...eb))));
+    const thMsg = { all: "Theme: all posts", war: "Theme: Ukraine-war posts only (Telegram and Reddit; Pravda and web have no theme split)", other: "Theme: non-war posts only (Telegram and Reddit)", diff: "Theme: war minus non-war contrast" };
+    L.append(sec("Theme and display", true, null,
+      scoped("theme", ctl(el("span", {}, "Theme ", info("theme")), seg(["all", "war", "other", "diff"], S.theme, (v) => { S.theme = v; if (v === "diff") S.norm = "anom"; upd(thMsg[v], "theme"); }, { all: "All", war: "War", other: "Non-war", diff: "War vs other" }))),
+      scoped("norm", ctl(el("span", {}, "Normalisation ", info("counterfactual")), seg(["index", "anom", "z", "raw"], S.norm, (v) => { S.norm = v; upd(`Normalisation: ${{ index: "observed / expected", anom: "% deviation", z: "z-score", raw: "raw counts" }[v]}`, "norm"); }, { index: "Obs/exp", anom: "% dev.", z: "z-score", raw: "Raw" }))),
+      scoped("panels", el("div", {}, ...Object.entries({ eof: "Expected outage", infrastructure: "Infrastructure", services: "Dependent services", io: "IO output", control: "Controls" }).map(([k, l]) => chk(l + " panel", S.layersOn[k], (v) => { S.layersOn[k] = v; upd(`${l} panel ${v ? "shown" : "hidden"}`, "panels", false); }))))));
+    L.append(sec("Series", false, null, scoped("series", seriesPicker())));
     L.append(sec("Uncertainty filter", true, "mde",
-      slider("Hide series that cannot detect a drop of", 0.05, 1, 0.05, S.unc.maxMDE, (v) => { S.unc.maxMDE = v; }, (v) => Math.round(v * 100) + "%", true),
-      slider("Minimum completeness", 0, 1, 0.05, S.unc.minCompl, (v) => { S.unc.minCompl = v; }, (v) => Math.round(v * 100) + "%", true),
-      slider("Grey out outage where 90% band exceeds", 0.05, 1, 0.05, S.unc.bandMax, (v) => { S.unc.bandMax = v; }, (v) => Math.round(v * 100) + " pts", true),
-      ctl(el("span", {}, "Minimum source grade ", info("admiralty")), seg(["A", "B", "C", "D", "F"], S.unc.minRel, (v) => { S.unc.minRel = v; buildLeft(); render(); })),
-      chk("Hide inconclusive estimates", S.unc.hideInconclusive, (v) => { S.unc.hideInconclusive = v; render(); buildLeft(); }),
+      scoped("unc", el("div", {},
+        slider("Hide series that cannot detect a drop of", 0.05, 1, 0.05, S.unc.maxMDE, (v) => { S.unc.maxMDE = v; }, (v) => Math.round(v * 100) + "%", true),
+        slider("Minimum completeness", 0, 1, 0.05, S.unc.minCompl, (v) => { S.unc.minCompl = v; }, (v) => Math.round(v * 100) + "%", true),
+        chk("Hide inconclusive estimates", S.unc.hideInconclusive, (v) => { S.unc.hideInconclusive = v; upd(v ? "Inconclusive estimates hidden" : "Inconclusive estimates shown", "unc"); }))),
+      scoped("band", slider("Grey out outage where 90% band exceeds", 0.05, 1, 0.05, S.unc.bandMax, (v) => { S.unc.bandMax = v; }, (v) => Math.round(v * 100) + " pts", true)),
+      scoped("grade", ctl(el("span", {}, "Minimum source grade ", info("admiralty")), seg(REL, S.unc.minRel, (v) => { S.unc.minRel = v; const n = EV.sources.filter((x) => REL.indexOf(x.rel) <= REL.indexOf(v)).length; upd(`Sources graded A to ${v}: ${n} of ${EV.sources.length} shown`, "grade"); }, Object.fromEntries(REL.map((r) => [r, r]))))),
       el("div", { class: "hint", id: "filtcount" })));
-    L.append(sec("Annotations", false, null, ...[["strike", "Strikes"], ["statement", "Official statements"], ["telemetry", "Telemetry reports"], ["claim", "Viral claims"], ["confounder", "Confounders and placebo"], ["firms", "NASA FIRMS fire detections"], ["alerts", "Complaint alerts naming Yandex"]].map(([k, l]) => chk(l, S.ann[k], (v) => { S.ann[k] = v; render(); }))));
+    L.append(sec("Annotations", false, null, scoped("ann", el("div", {}, ...[["strike", "Strikes"], ["statement", "Official statements"], ["telemetry", "Telemetry reports"], ["confounder", "Confounders and placebo"], ["firms", "NASA FIRMS fire detections"], ["alerts", "Complaint alerts naming Yandex"]].map(([k, l]) => chk(l, S.ann[k], (v) => { S.ann[k] = v; upd(`${l} ${v ? "shown" : "hidden"}`, "ann", false); }))))));
     updateFiltCount();
   }
-  function updateFiltCount() { const n = Object.keys(SER).filter((id) => SER[id].stats); const f = n.filter((id) => !seriesPasses(id)).length; const e = document.getElementById("filtcount"); if (e) e.textContent = `${f} of ${n.length} analysed series filtered out.`; }
+  function updateFiltCount() { const n = Object.keys(SER).filter((id) => SER[id].stats && !SER[id].hidden); const f = n.filter((id) => !seriesPasses(id)).length; const e = document.getElementById("filtcount"); if (e) e.textContent = `${f} of ${n.length} analysed series filtered out.`; }
   function seriesPicker() {
     const wrap = el("div", { class: "ctl" }); const q = el("input", { class: "search", placeholder: "Search series", value: S.search }); const list = el("div", { class: "serieslist" });
     const fill = () => {
       list.replaceChildren();
-      const groups = d3.group(Object.entries(SER).filter(([id, s]) => ["infrastructure", "services", "io", "control"].includes(s.layer) && (!S.search || (s.label + id).toLowerCase().includes(S.search.toLowerCase()))), ([, s]) => s.group);
+      const groups = d3.group(Object.entries(SER).filter(([id, s]) => !s.hidden && s.v && ["infrastructure", "services", "io", "control"].includes(s.layer) && (!S.search || (s.label + id).toLowerCase().includes(S.search.toLowerCase()))), ([, s]) => s.group);
       for (const [g, items] of [...groups].sort()) {
         list.append(el("div", { class: "grp", text: g }));
         for (const [id, s] of items) {
@@ -411,12 +434,12 @@
     wrap.append(q, list, el("div", { class: "hint", text: "Up to 8 series per panel; a series keeps its colour while selected." }));
     return wrap;
   }
-  function setPreset(k) { S.preset = k; const around = (t, h = 24) => [new Date(+t - h * HOUR), new Date(+t + h * HOUR)]; S.win = { full: [new Date(H0), new Date(STUDY_END)], week: [new Date("2026-10-05T00:00:00Z"), new Date(STUDY_END)], sas: around(ONSETS.SAS), vla: around(ONSETS.VLA), kal: around(ONSETS.KAL), sep: around(ONSETS.SEP27, 36) }[k]; buildLeft(); render(); }
+  function setPreset(k) { S.preset = k; const around = (t, h = 24) => [new Date(+t - h * HOUR), new Date(+t + h * HOUR)]; S.win = { full: [new Date(H0), new Date(STUDY_END)], week: [new Date("2026-10-05T00:00:00Z"), new Date(STUDY_END)], sas: around(ONSETS.SAS), vla: around(ONSETS.VLA), kal: around(ONSETS.KAL), sep: around(ONSETS.SEP27, 36) }[k]; buildLeft(); render(); toast(`Window: ${fmtT(S.win[0])} to ${fmtT(S.win[1])}`, SC.win); }
   function setWindow(w, p) { S.win = w; S.preset = p; buildLeft(); render(); }
 
   // ------------------------------------------------------------------ views
   const VIEWS = [["overview", "Overview"], ["graph", "Attribution graph"], ["timeline", "Timeline"], ["timing", "Timing lab"], ["effects", "Effects"], ["eventstudy", "Event study"], ["evidence", "Evidence"], ["method", "Method"]];
-  function go(v) { S.view = v; store.set("view", v); buildTabs(); render(); document.getElementById("mainwrap").scrollTop = 0; }
+  function go(v) { S.view = v; store.set("view", v); try { history.replaceState(null, "", "#" + v); } catch (e) { /* file:// */ } buildTabs(); buildLeft(); render(); document.getElementById("mainwrap").scrollTop = 0; }
   function buildTabs() { const T = document.getElementById("tabs"); T.replaceChildren(); for (const [k, l] of VIEWS) T.append(el("button", { class: S.view === k ? "on" : "", onclick: () => go(k) }, l)); }
   function render() { charts.length = 0; hideTip(); const M = document.getElementById("main"); M.replaceChildren(); ({ overview: vOverview, graph: vGraph, timeline: vTimeline, timing: vTiming, effects: vEffects, eventstudy: vEventStudy, evidence: vEvidence, method: vMethod }[S.view] || vOverview)(M); }
   let rT; function rerender() { clearTimeout(rT); rT = setTimeout(render, 60); }
@@ -425,32 +448,39 @@
   function wavesSVG() { const s = document.createElementNS("http://www.w3.org/2000/svg", "svg"); s.setAttribute("class", "waves"); s.setAttribute("viewBox", "0 0 1200 200"); s.setAttribute("preserveAspectRatio", "none"); s.innerHTML = '<path d="M0 140 C 200 90, 400 190, 600 130 S 1000 70, 1200 120 L1200 200 L0 200Z" fill="rgba(255,255,255,0.10)"/><path d="M0 165 C 250 120, 450 210, 700 160 S 1050 110, 1200 150 L1200 200 L0 200Z" fill="rgba(255,255,255,0.08)"/><path d="M0 110 C 300 60, 500 160, 800 100 S 1100 40, 1200 80" stroke="rgba(255,255,255,0.25)" fill="none" stroke-width="1.5"/>'; return s; }
 
   // ---- overview
+  const hIdx = (t) => Math.max(0, Math.min(NH - 1, Math.round((+t - H0) / HOUR)));
+  const offShare = (t0, t1) => d3.mean(E.ioda_obs.slice(hIdx(t0), hIdx(t1)).filter((x) => x != null));
+  function themeSeg() { const s = seg(["all", "war", "other", "diff"], S.theme, (v) => { S.theme = v; if (v === "diff") S.norm = "anom"; buildLeft(); render(); toast(`Theme: ${THEME_L[v]}`); }, { all: "All posts", war: "War", other: "Non-war", diff: "War minus non-war" }); s.classList.add("inline"); return s; }
   function vOverview(M) {
-    const pr = TM.results["pravda.total"].events.VLA; const bw = BY.windows;
-    const hero = el("div", { class: "hero" }); hero.append(wavesSVG());
-    hero.append(el("div", { class: "k", text: "Answer" }), el("h2", { text: "No broad reduction in Russian information operations. One automated pipeline, the Pravda network, stalled for 11 hours after the Vladimir strike." }),
-      el("p", { text: `The strikes knocked out 78% of Yandex Cloud's reachable capacity, and open sources alone reconstruct the outage to within minutes. Across ${Object.keys(bw.VLA_24h.members).length} individual channels, languages, communities and websites on Telegram, Reddit and the web, only the Pravda network shows a drop that is time-locked to an outage.` }));
-    const vd = el("div", { class: "verd" });
-    const chipv = (c, t, on) => vd.append(el("span", { class: "vchip", onclick: on }, el("i", { style: `background:${c}` }), t));
-    chipv(css("--critical"), `Effect seen: Pravda network ${pct(pr.dip_ratio - 1)} for ${pr.dip_hours.toFixed(0)} h`, () => { S.tStream = "pravda.total"; S.tEvent = "VLA"; go("timing"); });
-    chipv(css("--good"), "No effect: Telegram, Reddit, web outlets", () => go("effects"));
-    chipv("#ffffff", "The viral 'bot collapse' chart measured Yandex's crawler", () => inspect({ type: "event", id: "EV-CLAIM-CHART" }));
-    hero.append(vd); M.append(hero);
+    const pr = TM.results["pravda.total"].events.VLA; const v24 = BYA.windows.VLA_24h;
+    const nMem = Object.keys(v24.members).length, AI = EV.actor_infra || [], nAI = AI.length, nAIy = AI.filter((d) => d.yandex_hosting || d.yandex_dns).length;
+    const sasOff = offShare(+ONSETS.SAS + 3 * HOUR, +ONSETS.VLA - HOUR), vlaOff = d3.mean(E.ioda_obs.filter((x) => x != null).slice(-12));
+    const hero = el("div", { class: "hero bluf" }); hero.append(wavesSVG());
+    const main = el("div", { class: "bluf-main" },
+      el("div", { class: "k", text: "Bottom line" }),
+      el("h2", { text: "The strikes caused a major Yandex Cloud outage but no broad reduction in Russian information operations." }),
+      el("p", { text: `One automated pipeline, the Pravda network, stalled: its output fell to ${Math.round(pr.dip_ratio * 100)}% of expected for ${pr.dip_hours.toFixed(0)} hours, starting ${pr.offset_min.toFixed(0)} minutes after the Vladimir outage. Across ${nMem} channels, language editions, communities and websites on Telegram, Reddit and the web, including outlets of influence operations named by the EEAS, no other credible drop is found.` }));
+    const side = el("div", { class: "bluf-side" });
+    const row = (c, k, v, on) => side.append(el("button", { class: "bl-row", type: "button", onclick: on }, el("i", { style: `background:${c}` }), el("span", { class: "bl-k", text: k }), el("span", { class: "bl-v", text: v })));
+    row(css("--div-neg"), "Effect observed", `Pravda network ${pct(pr.dip_ratio - 1)} for ${pr.dip_hours.toFixed(0)} h`, () => { S.tStream = "pravda.total"; S.tEvent = "VLA"; go("timing"); });
+    row("#7fd4a0", "No credible drop", "Telegram, Reddit, web, EEAS-named outlets", () => go("effects"));
+    row("#7fd4a0", "No Yandex hosting", `${nAI} attributed IO domains, ${nAIy} on Yandex`, () => go("evidence"));
+    row("#9ec5ff", "Outage measured", `Yandex Cloud ${pctu(vlaOff)} unreachable`, () => go("timeline"));
+    hero.append(main, side); M.append(hero);
     const kp = el("div", { class: "kpis" });
     const kpi = (l, key, v, d, on) => kp.append(el("div", { class: "kpi", onclick: on }, el("div", { class: "k-l" }, l, key ? " " : "", key ? info(key) : null), el("div", { class: "k-v", text: v }), el("div", { class: "k-d", text: d })));
-    const ioNow = E.ioda_obs.filter((x) => x != null).slice(-12);
-    kpi("Yandex Cloud offline now", "ioda", pctu(d3.mean(ioNow)), "Measured by IODA; no recovery since 11 Oct", () => go("timeline"));
+    kpi("Yandex Cloud offline now", "ioda", pctu(vlaOff), "Measured by IODA; no recovery since 11 Oct", () => go("timeline"));
     kpi("Open-source timing error", "stages", `${Math.abs(E.validation.S1.onset_error_min_vs_S2.SAS).toFixed(0)} and ${Math.abs(E.validation.S1.onset_error_min_vs_S2.VLA).toFixed(0)} min`, "Onset from published sources only vs measured (Sasovo, Vladimir)", () => inspect({ type: "eof" }));
     kpi("Pravda network after Vladimir", "pravda", pct(pr.dip_ratio - 1), `${pr.dip_hours.toFixed(1)} h dip starting ${pr.offset_min.toFixed(0)} min after the outage (p ${pv(pr.p_scan)})`, () => { S.tStream = "pravda.total"; S.tEvent = "VLA"; go("timing"); });
-    const io = bw.VLA_24h.io_minus_control;
+    const io = v24.io_minus_control;
     kpi("IO output relative to controls", "bayes", pct(io.median), `24 h after Vladimir (Bayesian, 90% ${pct(io.ci90[0])} to ${pct(io.ci90[1])}); ${io.median > 0 ? "up with strike news, not down" : "no drop"}`, () => go("effects"));
     M.append(kp);
     const sp = el("div", { class: "split" }); M.append(sp);
     const c1 = el("div", { class: "card", style: "margin:0" }); sp.append(c1);
-    c1.append(el("div", { class: "card-h" }, el("div", {}, el("h3", {}, "Where is an effect seen? ", info("bayes")), el("div", { class: "cap", text: "Bayesian posterior change per platform group in the hours after each strike. A red outline marks a credible drop. Click a cell to see its members." }))));
+    c1.append(el("div", { class: "card-h" }, el("div", {}, el("h3", {}, "Where is an effect seen? ", info("bayes")), el("div", { class: "cap", text: `Bayesian posterior change per platform group after each strike, ${THEME_L[S.theme]}. A red outline marks a credible drop. Click a cell for its members.` }))), el("div", { style: "margin-bottom:8px" }, themeSeg()));
     effectMap(c1);
     const c2 = el("div", { class: "card", style: "margin:0" }); sp.append(c2);
-    c2.append(el("div", { class: "card-h" }, el("div", {}, el("h3", {}, "The one time-locked disruption ", info("timing")), el("div", { class: "cap", text: "Pravda network output relative to its seasonal expectation (top) against the measured Yandex Cloud outage (bottom), 10 to 12 Oct UTC." }))));
+    c2.append(el("div", { class: "card-h" }, el("div", {}, el("h3", {}, "The one time-locked disruption ", info("timing")), el("div", { class: "cap", text: `Pravda network output relative to its seasonal expectation (top) against the measured Yandex Cloud outage (bottom), 10 to 12 Oct ${S.tz}.` }))));
     const b1 = el("div", { class: "chart" }), b2 = el("div", { class: "chart" }); c2.append(b1, b2);
     requestAnimationFrame(() => {
       const w = [new Date("2026-10-10T12:00:00Z"), new Date("2026-10-12T00:00:00Z")]; const t = TM.series["pravda.total"]; const t0 = Date.parse(TM.t0);
@@ -461,123 +491,81 @@
       timeChart(b2, { win: w, title: "Yandex Cloud offline (IODA)", series: [{ label: "Offline share", color: css("--s2"), xs: io2.xs, ys: io2.ys, width: 1.8 }], yDomain: [0, 100], height: 130, yFmt: (v) => v + "%", tipFmt: (v) => v.toFixed(0) + "%", events: false, legend: false, marks: [{ t: ONSETS.VLA, text: "" }] });
     });
     M.append(el("div", { style: "height:16px" }));
-    const jc = card(M, "Key judgments", "Estimative probability per ICD 203.", "icd");
+    const jc = card(M, "Key judgments", "Likelihood uses the ICD 203 estimative scale; confidence reflects the quality and coverage of the evidence.", "icd");
     const J = [
-      ["Almost certain", 0.97, "The strikes on Sasovo (night of 7 to 8 Oct) and Vladimir (11 Oct) knocked out about 38% and 53% of Yandex Cloud's reachable capacity; reachability fell to 22% of normal with no recovery by 13 Oct 12:00 UTC. Kaluga left no measurable cloud signature.", "Status pages, IODA, NetBlocks, Cloudflare and NASA FIRMS agree within minutes."],
-      ["Likely", 0.7, `The Pravda network's publishing pipeline depended on infrastructure lost at Vladimir: output fell to ${Math.round(pr.dip_ratio * 100)}% of expected for ${pr.dip_hours.toFixed(0)} h, starting ${pr.offset_min.toFixed(0)} min after the outage, while its upstream Telegram sources did not dip.`, "Tight timing and placebo p 0.002; no Sasovo replication; hosting hidden behind Cloudflare."],
-      ["Very unlikely", 0.1, "The strikes caused a broad reduction of Russian influence-operation output ('the bots went silent'). State, military-blogger, tabloid and foreign-audience Telegram channels, Yandex-mail-dependent outlets, the RIA web outlet ukraina.ru and Reddit communities show no credible drop.", "Coverage of X, VK and closed bot infrastructure is missing."],
-      ["Almost certain", 0.97, "The viral 'Russian bot traffic collapsed' chart counted automated web requests from Yandex's own network, dominated by its search crawler, which stops when its data centers go dark.", "Metric definition and timing match the outage exactly."],
+      ["The strikes caused a major, sustained loss of Yandex Cloud capacity.", "Almost certain", "95 to 99%", 0.97, "High",
+        `Reachable Yandex Cloud address space fell by ${pctu(sasOff)} after the Sasovo strike (night of 7 to 8 Oct) and by ${pctu(vlaOff)} after Vladimir (11 Oct), with no recovery by 13 Oct 12:00 UTC. The Kaluga strike left no measurable cloud signature.`,
+        "Status pages, IODA, NetBlocks, Cloudflare Radar and NASA FIRMS agree to within minutes.", null],
+      ["The outage temporarily stalled one automated IO pipeline, the Pravda network.", "Likely", "55 to 80%", 0.7, "Moderate",
+        `Output fell to ${Math.round(pr.dip_ratio * 100)}% of expected for ${pr.dip_hours.toFixed(0)} h, starting ${pr.offset_min.toFixed(0)} min after the Vladimir outage (placebo p ${pv(pr.p_scan)}), across its language editions, while the Telegram channels it republishes did not dip.`,
+        "Change-point timing on a 10 minute grid; Bayesian group estimate; language-level replication.", "No equivalent dip after Sasovo; hosting behind Cloudflare hides the dependent component."],
+      ["Russian IO output on the observed platforms continued at expected levels.", "Very likely", "80 to 95%", 0.87, "Moderate",
+        `No other platform group shows a credible drop: Telegram state media, military bloggers, tabloids and foreign-audience channels, outlets on Yandex 360 mail, the RIA outlet ukraina.ru, the EEAS-named African Initiative and RRN, and Reddit communities. Relative to controls, IO groups moved ${pct(io.median)} (90% ${pct(io.ci90[0])} to ${pct(io.ci90[1])}) in the 24 h after Vladimir.`,
+        `${nMem} series pooled in a hierarchical model with placebo and same-weekday checks.`, "X, VK and closed bot infrastructure are not observable with public data."],
+      ["The web infrastructure of attributed influence operations does not run on Yandex.", "Very likely", "80 to 95%", 0.87, "Moderate",
+        `None of ${nAI} domains attributed to Storm-1516, African Initiative, RRN, R-FBI or the Pravda network by VIGINUM and the EEAS, nor ${(EV.infra || []).length} state and IO media domains, is hosted on a Yandex network or uses Yandex DNS. Seven outlets use Yandex 360 mail; their channels show no strike-specific change.`,
+        "Live DNS through public resolvers with network attribution from RIPE.", "Measured after the strikes; earlier migrations would need passive DNS history."],
     ];
-    const jg = el("div", { class: "judg" }); for (const [p, v, t, c] of J) jg.append(el("div", { class: "prob" }, p, el("div", { class: "bar" }, el("i", { style: `width:${v * 100}%` }))), el("div", {}, el("p", { text: t }), el("div", { class: "conf", text: c })));
+    const jg = el("div", { class: "jgrid" });
+    J.forEach(([h, lik, rng, v, conf, body, basis, gap], i) => jg.append(el("div", { class: "jcard" },
+      el("div", { class: "jhead" }, el("span", { class: "jn", text: String(i + 1) }), el("h4", { text: h })),
+      el("div", { class: "jmeta" }, el("span", { class: "jlik" }, el("b", { text: lik }), ` ${rng}`, el("span", { class: "bar" }, el("i", { style: `width:${v * 100}%` }))), el("span", { class: "jconf", text: `${conf} confidence` })),
+      el("p", { text: body }), el("div", { class: "jfoot" }, el("span", {}, el("b", { text: "Basis. " }), basis), gap ? el("span", {}, el("b", { text: "Gap. " }), gap) : null))));
     jc.append(jg);
     const cc = card(M, "Causal chain under test", "Strength of evidence per link. Red marks the only link where an IO effect is established.");
-    const links = [["Strike", "Drones hit Sasovo, Kaluga, Vladimir", 5, "event", "EV-SAS-STRIKE"], ["Power and fire", "Status page 22:31, FIRMS 22:40 UTC", 5, "event", "EV-SAS-FIRMS"], ["Capacity loss", "Yandex Cloud -34% then -78%", 5, "series", "ioda.asn.200350.ping-slash24"], ["Dependent services", "Pay, Go, KinoPoisk; ru.wikipedia -7%", 4, "series", "wiki.ru.wikipedia.user"], ["Automated IO", `Pravda ${pct(pr.dip_ratio - 1)} for ${pr.dip_hours.toFixed(0)} h`, 3, "timing", "pravda.total"], ["Social-media IO", "No credible drop", 1, "series", "tg.prokremlin.war"]];
+    const links = [["Strike", "Drones hit Sasovo, Kaluga, Vladimir", 5, "event", "EV-SAS-STRIKE"], ["Power and fire", "Status page 22:31, FIRMS 22:40 UTC", 5, "event", "EV-SAS-FIRMS"], ["Capacity loss", `Yandex Cloud ${pct(-sasOff)} then ${pct(-vlaOff)}`, 5, "series", "ioda.asn.200350.ping-slash24"], ["Dependent services", `Pay, Go, KinoPoisk; ru.wikipedia ${pct(SER["wiki.ru.wikipedia.user"]?.stats?.windows?.VLA_24h?.effect)}`, 4, "series", "wiki.ru.wikipedia.user"], ["Automated IO", `Pravda ${pct(pr.dip_ratio - 1)} for ${pr.dip_hours.toFixed(0)} h`, 3, "timing", "pravda.total"], ["Social-media and web IO", "No credible drop", 1, "series", "tg.prokremlin.war"]];
     const fl = el("div", { class: "flow" });
     for (const [t, d, s, ty, id] of links) { const st = el("span", { class: "strength" }); for (let i = 1; i <= 5; i++) st.append(el("i", { class: i <= s ? "on" : "" })); fl.append(el("div", { class: "node" + (t === "Automated IO" ? " hit" : ""), onclick: () => inspect({ type: ty, id }) }, el("div", { class: "t", text: t }), el("div", { class: "d", text: d }), el("div", { class: "s" }, st, ["", "none", "weak", "moderate", "strong", "conclusive"][s]))); }
     cc.append(fl);
   }
   function effectMap(box) {
-    const cols = [["SAS_6h", "Sasovo 6 h"], ["SAS_24h", "Sasovo 24 h"], ["VLA_6h", "Vladimir 6 h"], ["VLA_24h", "Vladimir 24 h"], ["SEP27_24h", "Placebo"]];
+    const th = BT(); const cols = [["SAS_6h", "Sasovo 6 h"], ["SAS_24h", "Sasovo 24 h"], ["VLA_6h", "Vladimir 6 h"], ["VLA_24h", "Vladimir 24 h"], ["SEP27_24h", "Placebo"]];
     const col = d3.scaleLinear().domain([-0.4, 0, 0.4]).range([css("--div-neg"), css("--div-mid"), css("--div-pos")]).clamp(true);
     const t = el("table", { class: "emap" });
     t.append(el("tr", {}, el("th", { class: "rowh", text: "Platform group" }), ...cols.map(([, l]) => el("th", { text: l }))));
-    const order = BY.groups.slice().sort((a, b) => (a.startsWith("Control") - b.startsWith("Control")) || a.localeCompare(b));
+    const order = th.groups.slice().sort((a, b) => (a.startsWith("Control") - b.startsWith("Control")) || a.localeCompare(b));
     let sep = false;
     for (const g of order) {
       if (g.startsWith("Control") && !sep) { sep = true; t.append(el("tr", { class: "sep" }, el("td", { class: "lab", text: "Controls" }))); }
-      const k = BY.windows.VLA_24h.groups[g]?.k;
+      const k = th.windows.VLA_24h.groups[g]?.k;
       const tr = el("tr", {}, el("td", { class: "lab" }, g.replace("Control: ", ""), el("span", { class: "sub", text: k ? `n=${k}` : "" })));
       for (const [w] of cols) {
-        const r = BY.windows[w]?.groups[g];
-        if (!r) { tr.append(el("td", { class: "cell" })); continue; }
+        const r = th.windows[w]?.groups[g];
+        if (!r) { tr.append(el("td", { class: "cell empty", text: "n/a" })); continue; }
         const c = col(r.median); const lum = d3.hsl(c).l;
-        const td = el("td", { class: "cell" + (r.credible_drop ? " cred" : ""), style: `background:${c};color:${lum < 0.55 ? "#fff" : "#0b0b0b"}`, text: pct(r.median) + (r.credible_drop ? " ▼" : ""), onclick: (ev) => { ev.stopPropagation(); inspect({ type: "group", id: g, win: w }); } });
-        td.addEventListener("mousemove", (ev) => showTip(ev, `${g}, ${w.replace("_", " ")}`, [{ label: "Posterior median", value: pct(r.median, 1) }, { label: "90% credible", value: `${pct(r.ci90[0])} to ${pct(r.ci90[1])}` }, { label: "P(drop > 10%)", value: pctu(r.p_drop10) }, { label: "Group placebo p", value: pv(r.placebo_p_drop) }]));
+        const td = el("td", { class: "cell" + (r.credible_drop ? " cred" : ""), style: `background:${c};color:${lum < 0.55 ? "#fff" : "#0b0b0b"}`, text: pct(r.median) + (r.credible_drop ? " ▼" : ""), onclick: (ev) => { ev.stopPropagation(); inspect({ type: "group", id: g, win: w, theme: S.theme }); } });
+        td.addEventListener("mousemove", (ev) => showTip(ev, `${g}, ${winLabel(w)}`, [{ label: S.theme === "diff" ? "War minus non-war" : "Posterior median", value: pct(r.median, 1) }, { label: "90% credible", value: `${pct(r.ci90[0])} to ${pct(r.ci90[1])}` }, { label: "P(drop > 10%)", value: pctu(r.p_drop10) }, { label: "Group placebo p", value: pv(r.placebo_p_drop) }]));
         td.addEventListener("mouseleave", hideTip); tr.append(td);
       }
       t.append(tr);
     }
-    box.append(t, el("div", { class: "scale" }, "-40%", el("span", { class: "bar", style: `background:linear-gradient(90deg, ${css("--div-neg")}, ${css("--div-mid")}, ${css("--div-pos")})` }), "+40%", el("span", { style: "margin-left:12px" }, "▼ red outline: credible drop")));
+    box.append(el("div", { class: "tblwrap" }, t), el("div", { class: "scale" }, "-40%", el("span", { class: "bar", style: `background:linear-gradient(90deg, ${css("--div-neg")}, ${css("--div-mid")}, ${css("--div-pos")})` }), "+40%", el("span", { style: "margin-left:12px" }, "▼ red outline: credible drop")));
+    if (S.theme !== "all") box.append(el("div", { class: "hint", text: S.theme === "diff" ? "Difference between war-theme and non-war posts per Telegram group; negative means war content fell more." : "Only Telegram groups have a theme split; Pravda, web and Reddit totals appear under All posts." }));
   }
 
   // ---- attribution graph
-  function buildGraph() {
-    const nodes = [], edges = [];
-    const N = (id, col, label, kind, extra = {}) => nodes.push({ id, col, label, kind, ...extra });
-    const cols = ["Sources", "Observations", "Outage", "Exposure channel", "Platform", "Finding"];
-    for (const s of EV.sources) if (EV.events.some((e) => e.sources.includes(s.id))) N(s.id, 0, s.name.replace("Yandex Cloud status page, ", "Status page ").replace("Yandex official Telegram, ", "Yandex TG "), "source", { rel: s.rel, ref: { type: "source", id: s.id } });
-    for (const e of EV.events.slice().sort((a, b) => Date.parse(a.t) - Date.parse(b.t))) { N(e.id, 1, `${e.t.slice(8, 10)}/${e.t.slice(5, 7)} ${e.t.slice(11, 16)} ${e.title}`, e.kind, { ref: { type: "event", id: e.id } }); for (const s of e.sources) edges.push([s, e.id, 1]); }
-    for (const [k, l] of Object.entries({ SAS: "Sasovo outage", KAL: "Kaluga strike", VLA: "Vladimir outage", SEP: "27 Sep dip, no strike" })) N("site." + k, 2, l, "site", { ref: k === "SEP" ? { type: "event", id: "EV-SEP27" } : { type: "eof" } });
-    for (const e of EV.events) { const k = { Sasovo: "SAS", Kaluga: "KAL", Vladimir: "VLA" }[e.site]; if (k) edges.push([e.id, "site." + k, 1]); if (e.id === "EV-SEP27") edges.push([e.id, "site.SEP", 1]); }
-    for (const [id, l, sub] of [["exp.cloud", "Yandex Cloud capacity", "-78% measured"], ["exp.consumer", "Yandex consumer services", "Pay, Go, Search"], ["exp.mail", "Yandex 360 mail", "7 IO outlets"], ["exp.none", "No Yandex dependency", "per DNS"]]) N(id, 3, l, "exposure", { sub });
-    edges.push(["site.SAS", "exp.cloud", 3], ["site.VLA", "exp.cloud", 3], ["site.KAL", "exp.cloud", 0.3], ["site.SAS", "exp.consumer", 2], ["site.VLA", "exp.consumer", 3], ["site.VLA", "exp.mail", 1], ["site.SAS", "exp.mail", 1], ["site.SEP", "exp.cloud", 1]);
-    const g24 = BY.windows.VLA_24h.groups;
-    const plat = [["pl.pravda", "Pravda network", "Pravda network (automated web)", ["exp.cloud"]], ["pl.state", "Telegram: state media", "Telegram: state media", ["exp.none"]], ["pl.milb", "Telegram: military bloggers", "Telegram: military bloggers", ["exp.none", "exp.mail"]], ["pl.tab", "Telegram: tabloids", "Telegram: pro-Kremlin tabloids", ["exp.none"]], ["pl.fio", "Telegram: foreign-audience IO", "Telegram: foreign-audience IO", ["exp.none", "exp.mail"]], ["pl.web", "Web: ukraina.ru (RIA)", "Web: state IO outlet", ["exp.none"]], ["pl.rw", "Reddit: war communities", "Reddit: Ukraine war communities", ["exp.none"]], ["pl.rp", "Reddit: political", "Reddit: political communities", ["exp.none"]], ["pl.wiki", "ru.wikipedia users", null, ["exp.consumer"]]];
-    for (const [id, l, gname, ex] of plat) {
-      const effect = id === "pl.pravda" ? TM.results["pravda.total"].events.VLA.dip_ratio - 1 : id === "pl.wiki" ? SER["wiki.ru.wikipedia.user"]?.stats?.windows?.VLA_24h?.effect : g24[gname]?.median;
-      N(id, 4, l, "platform", { effect, ref: gname ? { type: "group", id: gname, win: id === "pl.pravda" ? "VLA_6h" : "VLA_24h" } : { type: "series", id: "wiki.ru.wikipedia.user" } });
-      for (const e of ex) edges.push([e, id, e === "exp.none" ? 0.5 : 1.5]);
-    }
-    N("f.drop", 5, "Time-locked drop", "finding", { color: "--critical" }); N("f.small", 5, "Small service-level drop", "finding", { color: "--s4" }); N("f.none", 5, "No credible drop", "finding", { color: "--good" });
-    for (const [id] of plat) edges.push([id, id === "pl.pravda" ? "f.drop" : id === "pl.wiki" ? "f.small" : "f.none", id === "pl.pravda" ? 3 : 1]);
-    return { nodes, edges, cols };
-  }
+  let gapi = null;
   function vGraph(M) {
-    header(M, "Attribution graph: from sources to findings", "Every finding traces back to graded sources: dated observations, the outage estimate for each site, the channel through which Yandex could matter, and the measured platform outcome. Click a node to highlight its upstream evidence and downstream consequences; the inspector explains it.", "admiralty");
-    const G = buildGraph();
-    const tools = el("div", { class: "ag-tools" }); const crumbs = el("div", { class: "ag-crumbs" });
-    const c = card(M); c.append(tools, crumbs); const box = el("div", { class: "chart", style: "overflow-x:auto" }); c.append(box);
-    c.append(el("div", { class: "legend" }, ...[["--seq-5", "Source grade A"], ["--seq-4", "Grade B"], ["--seq-3", "Grade C"], ["--critical", "Strike, outage or effect"], ["--s3", "Telemetry"], ["--s4", "Confounder"], ["--s7", "Claim"], ["--good", "No effect"]].map(([v, l]) => el("span", {}, el("span", { class: "swatch", style: `background:${css(v)};height:8px;width:8px;border-radius:2px` }), l))));
-    requestAnimationFrame(() => {
-      const W = Math.max(760, box.clientWidth || 1100), nodeW = Math.min(196, (W - 5 * 26 - 8) / 6), nodeH = 22;
-      const colX = (i) => 4 + i * ((W - 8 - nodeW) / 5);
-      const byCol = d3.group(G.nodes, (n) => n.col); const maxN = d3.max([...byCol.values()].map((a) => a.length));
-      const H = 36 + maxN * (nodeH + 5);
-      for (const [ci, arr] of byCol) { const gap = (H - 36) / arr.length; arr.forEach((n, i) => { n.x = colX(ci); n.y = 30 + i * gap + (gap - nodeH) / 2; }); }
-      const idx = Object.fromEntries(G.nodes.map((n) => [n.id, n]));
-      const svg = d3.select(box).append("svg").attr("viewBox", `0 0 ${W} ${H}`).attr("height", H).style("min-width", W + "px");
-      G.cols.forEach((l, i) => svg.append("text").attr("class", "ag-col").attr("x", colX(i)).attr("y", 14).text(l));
-      const eg = svg.append("g"), ng = svg.append("g");
-      const edgeSel = eg.selectAll("path").data(G.edges.filter(([a, b]) => idx[a] && idx[b])).join("path").attr("class", "ag-edge")
-        .attr("d", ([a, b]) => { const A = idx[a], B = idx[b]; const x1 = A.x + nodeW, y1 = A.y + nodeH / 2, x2 = B.x, y2 = B.y + nodeH / 2; const mx = (x1 + x2) / 2; return `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`; })
-        .attr("stroke", ([a, b]) => (b === "pl.pravda" || a === "pl.pravda" || (a === "exp.cloud" && b === "pl.pravda") ? css("--critical") : css("--axis"))).attr("stroke-width", ([, , w]) => 0.6 + w * 0.6).attr("opacity", 0.7);
-      const relC = { A: "--seq-5", B: "--seq-4", C: "--seq-3", D: "--seq-2", E: "--seq-1", F: "--ink-3" };
-      const kindC = { strike: "--critical", statement: "--ink-2", telemetry: "--s3", confounder: "--s4", claim: "--s7", site: "--critical", exposure: "--s1" };
-      const maxc = Math.max(8, Math.floor((nodeW - 14) / 6.1));
-      const nodeSel = ng.selectAll("g").data(G.nodes).join("g").attr("class", "ag-node").attr("transform", (n) => `translate(${n.x},${n.y})`)
-        .on("click", (ev, n) => { ev.stopPropagation(); focusNode(n.id); })
-        .on("mousemove", (ev, n) => showTip(ev, G.cols[n.col], [{ label: n.label, value: n.effect != null ? pct(n.effect) : n.rel ? "grade " + n.rel : n.sub || "" }])).on("mouseleave", hideTip);
-      nodeSel.append("rect").attr("width", nodeW).attr("height", nodeH).attr("rx", 6).attr("fill", css("--surface-2")).attr("stroke", css("--border"));
-      nodeSel.append("rect").attr("width", 4).attr("height", nodeH).attr("rx", 2).attr("fill", (n) => css(n.kind === "source" ? relC[n.rel] : n.kind === "finding" ? n.color : n.kind === "platform" ? (n.id === "pl.pravda" ? "--critical" : n.id === "pl.wiki" ? "--s4" : "--good") : kindC[n.kind] || "--ink-3"));
-      const hasEff = (n) => n.effect != null;
-      nodeSel.append("text").attr("x", 10).attr("y", 15).text((n) => { const mc = hasEff(n) ? maxc - 6 : maxc; return n.label.length > mc ? n.label.slice(0, mc - 1) + "…" : n.label; });
-      nodeSel.filter(hasEff).append("text").attr("x", nodeW - 6).attr("y", 15).attr("text-anchor", "end").attr("font-weight", 650).text((n) => pct(n.effect));
-      const up = (id, acc = new Set()) => { for (const [a, b] of G.edges) if (b === id && !acc.has(a)) { acc.add(a); up(a, acc); } return acc; };
-      const down = (id, acc = new Set()) => { for (const [a, b] of G.edges) if (a === id && !acc.has(b)) { acc.add(b); down(b, acc); } return acc; };
-      function focusNode(id) {
-        S.agFocus = id;
-        if (!id || !idx[id]) { nodeSel.attr("opacity", 1); edgeSel.attr("opacity", 0.7); crumbs.replaceChildren(el("span", { class: "muted", text: "Select a node, or use a shortcut above, to trace an evidence path." })); return; }
-        const keep = new Set([id, ...up(id), ...down(id)]);
-        nodeSel.attr("opacity", (n) => (keep.has(n.id) ? 1 : 0.12)); edgeSel.attr("opacity", ([a, b]) => (keep.has(a) && keep.has(b) ? 0.95 : 0.05));
-        const path = [...keep].map((k) => idx[k]).filter(Boolean);
-        crumbs.replaceChildren(...G.cols.map((cl, i) => { const ns = path.filter((p) => p.col === i); return ns.length ? el("span", {}, el("b", { text: cl + " " }), ...ns.slice(0, 2).map((p) => el("span", { class: "c", onclick: () => focusNode(p.id), text: p.label.slice(0, 26) })), ns.length > 2 ? ` +${ns.length - 2}` : "", i < 5 ? "  ›" : "") : null; }).filter(Boolean));
-        const n = idx[id];
-        if (n.ref) inspect(n.ref); else inspect({ type: "node", id: n.id, node: { ...n, colLabel: G.cols[n.col], html: () => el("p", { class: "note", text: GRAPHTXT[n.id] || n.label }) } });
-      }
-      tools.append(el("button", { class: "btn sm", onclick: () => focusNode("pl.pravda") }, "Trace the Pravda effect"), el("button", { class: "btn sm", onclick: () => focusNode("site.VLA") }, "Trace the Vladimir outage"), el("button", { class: "btn sm", onclick: () => focusNode("exp.mail") }, "Trace Yandex 360 dependency"), el("button", { class: "btn sm", onclick: () => focusNode("pl.fio") }, "Trace foreign-audience IO"), el("button", { class: "btn sm ghost", onclick: () => focusNode(null) }, "Reset"));
-      svg.on("click", () => focusNode(null));
-      focusNode(S.agFocus);
-    });
+    header(M, "Attribution graph: from sources to findings", "Each finding traces back to graded sources through dated observations, the outage estimate for each site, the channel through which Yandex could matter, and the measured outcome per actor or platform. Nodes are clustered by type within each layer. Click a node to trace its upstream evidence and downstream consequences.", "admiralty");
+    const c = card(M); const tools = el("div", { class: "ag-tools" }); const crumbs = el("div", { class: "ag-crumbs" });
+    const lay = seg(["lr", "td", "radial"], S.agLayout, (v) => { S.agLayout = v; store.set("agLayout", v); try { history.replaceState(null, "", "#graph:" + v); } catch (e) { /* file:// */ } render(); }, { lr: "Left to right", td: "Top down", radial: "Radial" }); lay.classList.add("inline");
+    const f = (id) => () => gapi && gapi.focus(id);
+    tools.append(el("span", { class: "lbl", text: "Layout" }), lay, el("span", { class: "ag-sep" }), el("span", { class: "lbl", text: "Trace" }),
+      el("button", { class: "btn sm", onclick: f("act.pravda") }, "Pravda effect"), el("button", { class: "btn sm", onclick: f("site.VLA") }, "Vladimir outage"), el("button", { class: "btn sm", onclick: f("exp.mail") }, "Yandex 360 mail"),
+      el("button", { class: "btn sm", onclick: f("act.storm") }, "Storm-1516"), el("button", { class: "btn sm", onclick: f("act.afri") }, "African Initiative"), el("button", { class: "btn sm ghost", onclick: f(null) }, "Reset"));
+    const box = el("div", { class: "chart ag-box" });
+    c.append(tools, crumbs, box);
+    c.append(el("div", { class: "legend" }, ...[["--seq-5", "Source grade A"], ["--seq-4", "Grade B"], ["--seq-3", "Grade C"], ["--critical", "Strike, outage or effect"], ["--s3", "Telemetry"], ["--s4", "Confounder or service effect"], ["--s1", "Exposure channel"], ["--good", "No effect or no dependency"]].map(([v, l]) => el("span", {}, el("span", { class: "swatch", style: `background:${css(v)};height:8px;width:8px;border-radius:2px` }), l)), el("span", { class: "muted", text: `Sources graded A to ${S.unc.minRel} (uncertainty filter)` })));
+    const ok = (sid) => { const s = EV.sources.find((x) => x.id === sid); return s && REL.indexOf(s.rel) <= REL.indexOf(S.unc.minRel); };
+    const EVf = { ...EV, sources: EV.sources.filter((s) => ok(s.id)), events: EV.events.filter((e) => e.sources.some(ok)).map((e) => ({ ...e, sources: e.sources.filter(ok) })) };
+    const onFocus = (n, path, fx, text, silent) => {
+      if (!n) { crumbs.replaceChildren(el("span", { class: "muted", text: "Select a node, or a Trace shortcut, to follow an evidence path." })); return; }
+      crumbs.replaceChildren(...path.map((ns, i) => (ns.length ? el("span", {}, el("b", { text: window.AttributionGraph.LAYERS[i] + " " }), ...ns.slice(0, 2).map((p) => el("span", { class: "c", onclick: () => fx(p.id), text: p.label.length > 28 ? p.label.slice(0, 27) + "…" : p.label })), ns.length > 2 ? ` +${ns.length - 2}` : "", i < 5 ? "  ›" : "") : null)).filter(Boolean));
+      if (silent) return;
+      if (n.ref && !text) inspect(n.ref); else inspect({ type: "node", id: n.id, node: { label: n.label, colLabel: `${window.AttributionGraph.LAYERS[n.layer]} · ${n.cluster}`, html: () => el("div", {}, el("p", { class: "note", text: text || n.label }), n.ref ? el("button", { class: "btn sm", onclick: () => inspect(n.ref) }, "Open the data") : "") } });
+    };
+    requestAnimationFrame(() => { gapi = window.AttributionGraph.render(box, { EV: EVf, BY: BYA, TM, SER, css, pct, showTip, hideTip, layout: S.agLayout, state: { get focus() { return S.agFocus; }, set focus(v) { S.agFocus = v; } }, onFocus }); });
   }
-  const GRAPHTXT = {
-    "exp.cloud": "Loss of Yandex Cloud compute and network capacity, measured by IODA active probing: 34% after Sasovo, 78% after Vladimir, none after Kaluga. Any IO pipeline running on Yandex Cloud would be exposed.",
-    "exp.consumer": "Yandex consumer services (Search, Pay, Go, Alice, KinoPoisk) were disrupted, shown by complaint alerts, Yandex statements and a 7% drop in Russian Wikipedia visits.",
-    "exp.mail": "DNS MX records show seven IO and state outlets using Yandex 360 mail: rt.com, vz.ru, readovka.news, rybar.ru, strategic-culture.su, topcor.ru and eadaily.com. Their Telegram output is tested as a separate stratum; it shows no extra effect.",
-    "exp.none": "No IO website resolves to a Yandex network. Pravda sites sit behind Cloudflare; state media use their own or other Russian hosting.",
-    "f.drop": "Only the Pravda network shows a significant dip that starts after the outage onset (p 0.002), with partial backlog catch-up.",
-    "f.small": "Consumer-level effects such as fewer Russian Wikipedia visits are consistent with Yandex Search and app disruption.",
-    "f.none": "All other platform groups show no credible drop; most rule out drops larger than 20%.",
-  };
 
   // ---- timeline
   function vTimeline(M) {
@@ -655,30 +643,34 @@
   // ---- effects
   function vEffects(M) {
     header(M, "Effects: cross-platform estimates", "Platform-group Bayesian estimates first, then every individual series with its placebo-calibrated interval. The red band marks drops larger than the 20% smallest effect of interest.", "bayes");
-    const bc = card(M, "Bayesian hierarchical estimates by platform group", "Posterior median and 90% credible interval of the change, including common news shocks. Credible drop: P(drop > 10%) > 90% and group placebo p < 0.05.");
-    const ws = el("div", { class: "seg inline", style: "margin-bottom:10px;flex-wrap:wrap" }); for (const [k, l] of [["SAS_6h", "Sasovo 6 h"], ["SAS_24h", "Sasovo 24 h"], ["VLA_6h", "Vladimir 6 h"], ["VLA_24h", "Vladimir 24 h"], ["KAL_24h", "Kaluga 24 h"], ["SEP27_24h", "Placebo"]]) ws.append(el("button", { class: S.emapWin === k ? "on" : "", onclick: () => { S.emapWin = k; render(); } }, l));
-    bc.append(ws); const bb = el("div", { class: "chart" }); bc.append(bb);
-    const w = BY.windows[S.emapWin];
-    const grows = BY.groups.slice().sort((a, b) => (a.startsWith("Control") - b.startsWith("Control")) || a.localeCompare(b)).map((g) => ({ id: g, label: g, eff: w.groups[g]?.median, lo: w.groups[g]?.ci90[0], hi: w.groups[g]?.ci90[1], p: w.groups[g]?.p_drop10, verdict: w.groups[g]?.credible_drop ? "Drop detected" : (w.groups[g]?.ci90[0] ?? -1) > -0.2 ? "Large drop ruled out" : "Inconclusive", group: true })).filter((r) => r.eff != null);
+    const th = BT();
+    const bc = card(M, "Bayesian hierarchical estimates by platform group", `${THEME_L[S.theme][0].toUpperCase() + THEME_L[S.theme].slice(1)}. Posterior median and 90% credible interval, including common news shocks. Credible drop: P(drop > 10%) > 90%, group placebo p < 0.05 and same-weekday check p < 0.10.`);
+    const ws = el("div", { class: "seg inline", style: "flex-wrap:wrap" }); for (const [k, l] of [["SAS_6h", "Sasovo 6 h"], ["SAS_24h", "Sasovo 24 h"], ["VLA_6h", "Vladimir 6 h"], ["VLA_24h", "Vladimir 24 h"], ["KAL_24h", "Kaluga 24 h"], ["SEP27_24h", "Placebo"]]) ws.append(el("button", { class: S.emapWin === k ? "on" : "", onclick: () => { S.emapWin = k; render(); } }, l));
+    bc.append(el("div", { style: "display:flex;gap:10px 16px;flex-wrap:wrap;align-items:center;margin-bottom:10px" }, el("span", { class: "lbl", text: "Window" }), ws, el("span", { class: "lbl", text: "Theme" }), themeSeg()));
+    const bb = el("div", { class: "chart" }); bc.append(bb);
+    const w = th.windows[S.emapWin];
+    const grows = th.groups.slice().sort((a, b) => (a.startsWith("Control") - b.startsWith("Control")) || a.localeCompare(b)).map((g) => { const r = w?.groups[g]; return r && { id: g, label: g, eff: r.median, lo: r.ci90[0], hi: r.ci90[1], p: r.p_drop10, verdict: r.credible_drop ? "Drop detected" : r.ci90[0] > -0.2 ? "Large drop ruled out" : "Inconclusive", group: true }; }).filter(Boolean);
     requestAnimationFrame(() => forest(bb, grows, "P(drop >10%)"));
-    const io = w.io_minus_control, beta = w.beta_yandex_mail;
-    bc.append(el("p", { class: "note", style: "margin:10px 0 0" }, `IO groups minus controls: ${pct(io.median)} (90% ${pct(io.ci90[0])} to ${pct(io.ci90[1])}). `, beta ? `Extra effect for outlets on Yandex 360 mail: ${pct(beta.median)} (90% ${pct(beta.ci90[0])} to ${pct(beta.ci90[1])}, ${beta.n_treated} channels).` : ""));
-    const ctlc = card(M, "Individual series");
+    const io = w?.io_minus_control, beta = w?.beta_yandex_mail;
+    bc.append(el("p", { class: "note", style: "margin:10px 0 0" }, io ? `IO groups minus controls: ${pct(io.median)} (90% ${pct(io.ci90[0])} to ${pct(io.ci90[1])}). ` : "", beta ? `Extra effect for outlets on Yandex 360 mail: ${pct(beta.median)} (90% ${pct(beta.ci90[0])} to ${pct(beta.ci90[1])}, ${beta.n_treated} channels).` : "", S.theme !== "all" ? " Only Telegram groups have a theme split." : ""));
+    const ctlc = card(M, "Individual series", S.theme === "all" ? "All posts. Choose War or Non-war in Theme to see theme-split series." : S.theme === "diff" ? "Theme contrasts are listed in the table below." : `${THEME_L[S.theme][0].toUpperCase() + THEME_L[S.theme].slice(1)}: Telegram channel groups and Reddit communities split by topic.`);
     const metSel = el("select", { class: "sel" });
     for (const [k, l] of [["SAS_6h", "Sasovo, 6 h"], ["SAS_24h", "Sasovo, 24 h"], ["KAL_24h", "Kaluga, 24 h"], ["VLA_6h", "Vladimir, 6 h"], ["VLA_24h", "Vladimir, 24 h"], ["SEP27_24h", "27 Sep placebo, 24 h"], ["dose:S1", "Dose-response on EOF Stage 1"], ["dose:S2", "Dose-response on EOF Stage 2"], ["dose:IODA", "Dose-response on measured outage"], ["dose:custom", "Dose-response on what-if EOF"]]) { const o = el("option", { value: k, text: l }); if (k === S.attr.metric) o.selected = true; metSel.append(o); }
     metSel.addEventListener("change", () => { S.attr.metric = metSel.value; if (metSel.value === "dose:custom" && !S.eof.custom) runCustom(); render(); });
     const lay = el("div", { class: "seg inline" }); for (const [k, l] of [["io", "IO output"], ["control", "Controls"], ["services", "Services"], ["all", "All"]]) lay.append(el("button", { class: S.attr.layer === k ? "on" : "", onclick: () => { S.attr.layer = k; render(); } }, l));
     ctlc.append(el("div", { style: "display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:10px" }, el("span", { class: "lbl", text: "Estimate" }), metSel, el("span", { class: "lbl", text: "Layer" }), lay, info("placebo"), info("fdr"), info("sesoi")));
-    const rows = attrRows(); const fb = el("div", { class: "chart" }); ctlc.append(fb); requestAnimationFrame(() => forest(fb, rows, "p (drop)"));
+    const rows = attrRows(); const fb = el("div", { class: "chart" }); ctlc.append(fb);
+    if (rows.length) requestAnimationFrame(() => forest(fb, rows, "p (drop)")); else fb.append(el("div", { class: "hint", text: "No series match the current theme, layer and uncertainty filter." }));
     const tc = card(M, "Theme contrasts: Ukraine-war content minus other content", "A dependency specific to war propaganda would appear as a negative contrast.", "theme");
     const t2 = el("table", { class: "tbl" }); t2.append(el("tr", {}, ...["Series", "Sasovo 24 h", "Vladimir 24 h", "p (drop)"].map((h) => el("th", { text: h }))));
-    for (const [k, d] of Object.entries(EV.analysis.contrasts)) { const a = d.windows.SAS_24h, b = d.windows.VLA_24h; t2.append(el("tr", { class: "click", onclick: () => inspect({ type: "series", id: d.war }) }, el("td", { text: (SER[d.war]?.label || k).replace(" (war posts)", "") }), el("td", { class: "num", text: a ? pct(a.effect) : "n/a" }), el("td", { class: "num", text: b ? pct(b.effect) : "n/a" }), el("td", { class: "num", text: b ? pv(b.p_drop) : "n/a" }))); }
-    tc.append(t2);
+    for (const [k, d] of Object.entries(EV.analysis.contrasts)) { const a = d.windows.SAS_24h, b = d.windows.VLA_24h; t2.append(el("tr", { class: "click", onclick: () => inspect({ type: "series", id: d.war }) }, el("td", { text: (SER[d.war]?.label || k).replace(" (war posts)", "").replace(" (war-theme posts)", "") }), el("td", { class: "num", text: a ? pct(a.effect) : "n/a" }), el("td", { class: "num", text: b ? pct(b.effect) : "n/a" }), el("td", { class: "num", text: b ? pv(b.p_drop) : "n/a" }))); }
+    tc.append(el("div", { class: "tblwrap" }, t2));
   }
   function attrRows() {
     const met = S.attr.metric; const rows = [];
+    const themeOk = (id) => { if (S.theme === "war" || S.theme === "other") return id.endsWith("." + S.theme); return !/\.(war|other)$/.test(id); };
     for (const [id, s] of Object.entries(SER)) {
-      if (!s.stats || (S.attr.layer !== "all" && s.layer !== S.attr.layer) || !seriesPasses(id)) continue;
+      if (!s.stats || s.hidden || !themeOk(id) || (S.attr.layer !== "all" && s.layer !== S.attr.layer) || !seriesPasses(id)) continue;
       let eff, lo, hi, p;
       if (met.startsWith("dose:")) { const k = met.slice(5); if (k === "custom") { const d = customDose(id); if (!d) continue; ({ eff, lo, hi, p } = d); } else { const d = s.stats.dose?.[k]; if (!d) continue; eff = d.effect_at_max; [lo, hi] = d.ci90; p = d.p_placebo_drop; } }
       else { const w = s.stats.windows?.[met]; if (!w) continue; eff = w.effect; [lo, hi] = w.ci90; p = w.p_drop; }
@@ -712,7 +704,7 @@
     const ic = { "Drop detected": "▼", "Increase detected": "▲", "Large drop ruled out": "✓", Inconclusive: "?" };
     rows.forEach((r, i) => {
       const yy = m.t + i * rh + rh / 2;
-      const g = svg.append("g").style("cursor", "pointer").on("click", () => inspect(r.group ? { type: "group", id: r.id, win: S.emapWin } : { type: "series", id: r.id }))
+      const g = svg.append("g").style("cursor", "pointer").on("click", () => inspect(r.group ? { type: "group", id: r.id, win: S.emapWin, theme: S.theme } : { type: "series", id: r.id }))
         .on("mousemove", (ev) => showTip(ev, r.label, [{ label: "Estimate", value: pct(r.eff, 1) }, { label: "90% interval", value: `${pct(r.lo, 1)} to ${pct(r.hi, 1)}` }, { label: pLabel, value: r.group ? pctu(r.p) : pv(r.p) }, { label: "Verdict", value: r.verdict }])).on("mouseleave", hideTip);
       g.append("rect").attr("x", 0).attr("width", W).attr("y", yy - rh / 2).attr("height", rh).attr("fill", i % 2 ? "transparent" : css("--surface-2")).attr("opacity", 0.55);
       const maxc = Math.floor(m.l / 6.4);
@@ -746,51 +738,76 @@
   }
   function vEventStudy(M) {
     header(M, "Event study: superposed epochs around each strike", "Out-of-sample deviation from the seasonal expectation, 48 h before to 72 h after each outage onset, against the envelope of the same trajectory started at random baseline times.", "placebo");
-    const ctlc = card(M); const sel = el("select", { class: "sel", style: "max-width:520px" });
-    const ids = Object.keys(SER).filter((id) => SER[id].stats?.event_study && seriesPasses(id)).sort((a, b) => SER[a].group.localeCompare(SER[b].group));
-    for (const id of ids) { const o = el("option", { value: id, text: `${SER[id].group}: ${SER[id].label}` }); if (id === S.esSeries) o.selected = true; sel.append(o); }
+    const th = S.theme === "war" || S.theme === "other" ? S.theme : null;
+    const has = (id) => SER[id]?.stats?.event_study && !SER[id].hidden;
+    const tv = (id) => { if (!th) return id; const c = themed(id); return has(c) ? c : null; };
+    const ids = Object.keys(SER).filter((id) => has(id) && seriesPasses(id) && (th ? id.endsWith("." + th) : !/\.(war|other)$/.test(id))).sort((a, b) => SER[a].group.localeCompare(SER[b].group) || SER[a].label.localeCompare(SER[b].label));
+    let cur = tv(S.esSeries); if (!cur || !ids.includes(cur)) cur = ids.includes(S.esSeries) ? S.esSeries : ids[0];
+    const ctlc = card(M, null); const sel = el("select", { class: "sel", style: "max-width:520px" });
+    for (const id of ids) { const o = el("option", { value: id, text: `${SER[id].group}: ${SER[id].label}` }); if (id === cur) o.selected = true; sel.append(o); }
     sel.addEventListener("change", () => { S.esSeries = sel.value; render(); });
-    ctlc.append(el("div", { style: "display:flex;gap:12px;align-items:center;flex-wrap:wrap" }, el("span", { class: "lbl", text: "Series" }), sel, el("span", { class: "lbl", text: "Smoothing" }), (() => { const s = seg([1, 3, 6], S.esSmooth, (v) => { S.esSmooth = v; render(); }, { 1: "None", 3: "3 h", 6: "6 h" }); s.classList.add("inline"); return s; })()));
-    const c = card(M, SER[S.esSeries]?.label); const b = el("div", { class: "chart" }); c.append(b); requestAnimationFrame(() => eventStudyChart(b, S.esSeries, 300));
+    ctlc.append(el("div", { style: "display:flex;gap:12px;align-items:center;flex-wrap:wrap" }, el("span", { class: "lbl", text: "Series" }), sel, el("span", { class: "lbl", text: "Smoothing" }), (() => { const s = seg([1, 3, 6], S.esSmooth, (v) => { S.esSmooth = v; render(); }, { 1: "None", 3: "3 h", 6: "6 h" }); s.classList.add("inline"); return s; })(), el("span", { class: "lbl", text: "Theme" }), themeSeg()));
+    if (th) ctlc.append(el("div", { class: "hint", style: "margin-top:8px", text: `${ids.length} series have a ${THEME_L[th]} split (Telegram channel groups and Reddit communities).` }));
+    if (!cur) return;
+    const c = card(M, SER[cur]?.label); const b = el("div", { class: "chart" }); c.append(b); requestAnimationFrame(() => eventStudyChart(b, cur, 300));
     const grid = el("div", { class: "grid3" }); M.append(grid);
-    for (const id of ["pravda.total", "tg.prokremlin.war", "tg.grp.io_foreign_audience.all", "tg.yxdep.mail", "web.ukraina.ru", "rd.grp.politics.comments"]) {
-      if (!SER[id]?.stats) continue;
+    for (const id0 of ["pravda.total", "tg.prokremlin.all", "tg.grp.io_foreign_audience.all", "tg.grp.io_eeas_ims.all", "web.afrinz.ru", "web.ukraina.ru", "tg.yxdep.mail", "rd.grp.politics.comments", "tg.controls.all"]) {
+      const id = tv(id0); if (!id || !SER[id]?.stats?.event_study) continue;
       const cc = el("div", { class: "card", style: "cursor:pointer;margin:0", onclick: () => { S.esSeries = id; render(); } }, el("h3", { text: SER[id].label })); const bb = el("div", { class: "chart" }); cc.append(bb); grid.append(cc); requestAnimationFrame(() => eventStudyChart(bb, id, 170, true));
     }
   }
 
   // ---- evidence
   function vEvidence(M) {
-    header(M, "Evidence: competing hypotheses, sources and data quality", "Every source was opened for this study and graded. The ACH matrix scores each evidence item against four hypotheses.", "ach");
-    const pr = TM.results["pravda.total"].events; const W = (id, k = "VLA_24h") => SER[id]?.stats?.windows?.[k]; const g24 = BY.windows.VLA_24h.groups;
+    header(M, "Evidence: competing hypotheses, sources and data quality", "Every source was opened for this study and graded. The ACH matrix scores each evidence item against four hypotheses; rows and sources below the minimum grade in the uncertainty filter are hidden.", "ach");
+    const pr = TM.results["pravda.total"].events; const W = (id, k = "VLA_24h") => SER[id]?.stats?.windows?.[k]; const v24 = BYA.windows.VLA_24h, g24 = v24.groups;
+    const AI = EV.actor_infra || [];
     const H = ["H1 Broad IO collapse", "H2 Narrow pipeline dependency", "H3 No IO effect", "H4 Artefact or confounder"];
     const evid = [
-      ["IODA: Yandex Cloud 78% unreachable; onsets match status pages within minutes", "A1", ["C", "C", "C", "C"]],
+      [`IODA: Yandex Cloud ${pctu(d3.mean(E.ioda_obs.filter((x) => x != null).slice(-12)))} unreachable; onsets match status pages within minutes`, "A1", ["C", "C", "C", "C"]],
       [`Pravda dip ${pct(pr.VLA.dip_ratio - 1)} for ${pr.VLA.dip_hours.toFixed(0)} h, starting ${pr.VLA.offset_min.toFixed(0)} min after the Vladimir onset, p ${pv(pr.VLA.p_scan)}`, "A1", ["C", "C", "I", "I"]],
       ["No Pravda dip time-locked to Sasovo (decline began 7 h before the strike)", "A1", ["I", "N", "C", "N"]],
       ["Upstream pro-Kremlin Telegram input shows no dip at Vladimir", "A1", ["I", "C", "C", "N"]],
       [`Telegram state media ${pct(g24["Telegram: state media"]?.median)}, military bloggers ${pct(g24["Telegram: military bloggers"]?.median)}, foreign-audience IO ${pct(g24["Telegram: foreign-audience IO"]?.median)} (Bayesian, 24 h)`, "A1", ["I", "C", "C", "N"]],
-      [`Outlets on Yandex 360 mail: no extra effect (${pct(BY.windows.VLA_24h.beta_yandex_mail?.median)})`, "A2", ["I", "C", "C", "N"]],
+      [`Outlets on Yandex 360 mail: no extra effect (${pct(v24.beta_yandex_mail?.median)})`, "A2", ["I", "C", "C", "N"]],
+      [`EEAS-named outlets: African Initiative and RRN websites ${pct(g24["Web: EEAS-named IMS outlets"]?.median)}, African Initiative Telegram ${pct(g24["Telegram: EEAS-named IMS"]?.median)}`, "A1", ["I", "C", "C", "N"]],
       [`Web IO outlet ukraina.ru ${pct(W("web.ukraina.ru")?.effect)}; Reddit political communities ${pct(g24["Reddit: political communities"]?.median)}`, "A2", ["I", "C", "C", "N"]],
       ["War-theme minus non-war contrasts show no war-specific drop", "A2", ["I", "C", "C", "N"]],
-      ["Viral 'bot traffic' chart is crawler-dominated Cloudflare data for AS13238", "B2", ["N", "N", "C", "C"]],
+      [`None of ${AI.length} domains attributed to Storm-1516, African Initiative, RRN, R-FBI or Pravda is hosted on Yandex or uses Yandex DNS`, "A2", ["I", "N", "C", "N"]],
       [`ru.wikipedia user traffic ${pct(W("wiki.ru.wikipedia.user")?.effect)}; Yandex complaint alerts surge`, "A2", ["N", "C", "C", "N"]],
       ["27 Sep unexplained Yandex Cloud dip: no Pravda dip", "A1", ["N", "N", "C", "C"]],
-    ];
+    ].filter((e) => REL.indexOf(e[1][0]) <= REL.indexOf(S.unc.minRel));
     const relW = { A1: 1, A2: 0.9, B1: 0.85, B2: 0.75 }; const score = H.map((_, h) => d3.sum(evid, (e) => (e[2][h] === "I" ? relW[e[1]] || 0.5 : 0)));
     const c = card(M, "Analysis of competing hypotheses", "C consistent, I inconsistent, N not diagnostic. Lower weighted inconsistency is better.", "ach");
     const t = el("table", { class: "tbl ach" }); t.append(el("tr", {}, el("th", { text: "Evidence" }), el("th", { text: "Grade" }), ...H.map((h) => el("th", { text: h }))));
     for (const e of evid) t.append(el("tr", {}, el("td", { text: e[0] }), el("td", {}, el("span", { class: "adm", text: e[1] })), ...e[2].map((v) => el("td", { class: v.toLowerCase(), text: v }))));
     t.append(el("tr", {}, el("td", { style: "font-weight:650", text: "Weighted inconsistency" }), el("td"), ...score.map((s) => el("td", { class: "num", style: `font-weight:750;${s === d3.min(score) ? `color:${css("--good")}` : ""}`, text: s.toFixed(2) }))));
-    c.append(t);
-    const sc = card(M, "Source registry", "Click a row to inspect; links open the original.", "admiralty");
+    c.append(el("div", { class: "tblx" }, t));
+    const ac = card(M, "Infrastructure of attributed influence operations (public DNS, 13 to 14 Oct 2026)", `Domains named by VIGINUM (Storm-1516, appendix 6.2) and by the EEAS 4th FIMI threat report. Hosting network of each resolving domain, its mail exchanger and name servers, and whether the site answered over HTTP.`, "yxdep");
+    const at = el("table", { class: "tbl" }); at.append(el("tr", {}, ...["Operation", "Attributed by", "Domains", "Resolving", "Answering", "Main hosting networks", "On Yandex"].map((h) => el("th", { text: h }))));
+    const by = d3.group(AI, (d) => d.ims); const short = (h) => (h || "").replace(/^\S+\s+(-\s+)?/, "").replace(/"/g, "").replace(/,? (Inc|LLC|Ltd|Limited|B\.V\.|GmbH|SE|SAS|S\.p\.A)\.?$/, "").replace("Domain names registrar ", "").slice(0, 30);
+    for (const [ims, arr] of [...by].sort((a, b) => b[1].length - a[1].length)) {
+      const hold = d3.rollups(arr.filter((d) => d.holder), (v) => v.length, (d) => short(d.holder)).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([h, n]) => (arr.length > 1 ? `${h} (${n})` : h)).join(", ");
+      const yx = arr.filter((d) => d.yandex_hosting || d.yandex_mail || d.yandex_dns).length;
+      at.append(el("tr", {}, el("td", { text: ims.replace(" (VIGINUM)", "") }), el("td", { class: "muted", text: ims.includes("VIGINUM") ? "VIGINUM" : "EEAS" }), el("td", { class: "num", text: arr.length }), el("td", { class: "num", text: arr.filter((d) => d.resolves).length }), el("td", { class: "num", text: arr.filter((d) => d.http === 200).length }), el("td", { text: hold || "n/a" }), el("td", { class: "num", style: `font-weight:650;color:${css(yx ? "--critical" : "--good")}`, text: yx ? String(yx) : "none" })));
+    }
+    ac.append(el("div", { class: "tblx" }, at));
+    const det = el("details", { class: "more" }, el("summary", { text: `Resolving domains (${AI.filter((d) => d.resolves).length})` }));
+    const dl = el("table", { class: "tbl" }); dl.append(el("tr", {}, ...["Domain", "Operation", "Hosting network", "HTTP"].map((h) => el("th", { text: h }))));
+    for (const d of AI.filter((x) => x.resolves).sort((a, b) => a.domain.localeCompare(b.domain))) dl.append(el("tr", {}, el("td", { text: d.domain }), el("td", { class: "muted", text: d.ims.replace(" (VIGINUM)", "") }), el("td", { text: short(d.holder) || "n/a" }), el("td", { class: "num", text: d.http ?? "none" })));
+    det.append(el("div", { class: "tblwrap", style: "max-height:320px;overflow:auto" }, dl)); ac.append(det);
+    const dc = card(M, "Yandex dependency of state and IO media outlets (public DNS, 13 Oct 2026)", "Hosting network of the website, mail exchanger and name servers. Only Yandex's own domains are hosted on Yandex.", "yxdep");
+    const dt = el("table", { class: "tbl" }); dt.append(el("tr", {}, ...["Domain", "Role", "Hosting", "Mail at Yandex", "DNS at Yandex"].map((h) => el("th", { text: h }))));
+    for (const d of EV.infra || []) dt.append(el("tr", {}, el("td", { text: d.domain }), el("td", { class: "muted", text: d.role.replace(/_/g, " ") }), el("td", { text: (d.asn_holders || []).join(", ").slice(0, 48) }), el("td", { text: d.yandex_mail ? "yes" : "" }), el("td", { text: d.yandex_dns ? "yes" : "" })));
+    dc.append(el("div", { class: "tblwrap", style: "max-height:360px;overflow:auto" }, dt));
+    const sc = card(M, "Source registry", `Click a row to inspect; links open the original. Grades A to ${S.unc.minRel} shown.`, "admiralty");
     const st = el("table", { class: "tbl" }); st.append(el("tr", {}, ...["Grade", "Source", "Type", "Content"].map((h) => el("th", { text: h }))));
     for (const s of EV.sources.slice().sort((a, b) => (a.rel + a.cred).localeCompare(b.rel + b.cred))) { if (REL.indexOf(s.rel) > REL.indexOf(S.unc.minRel)) continue; st.append(el("tr", { class: "click", onclick: () => inspect({ type: "source", id: s.id }) }, el("td", {}, el("span", { class: "adm", text: s.rel + s.cred })), el("td", {}, el("a", { href: s.url, target: "_blank", rel: "noopener", text: s.name, onclick: (e) => e.stopPropagation() })), el("td", { text: s.type }), el("td", { class: "muted", text: s.note }))); }
     sc.append(el("div", { class: "tblwrap" }, st));
-    const dc = card(M, "Yandex dependency of IO and media outlets (public DNS, 13 Oct 2026)", "Hosting network of the website, mail exchanger and name servers. Only Yandex's own domains are hosted on Yandex.", "yxdep");
-    const dt = el("table", { class: "tbl" }); dt.append(el("tr", {}, ...["Domain", "Role", "Hosting", "Mail at Yandex", "DNS at Yandex"].map((h) => el("th", { text: h }))));
-    for (const d of EV.infra || []) dt.append(el("tr", {}, el("td", { text: d.domain }), el("td", { class: "muted", text: d.role.replace(/_/g, " ") }), el("td", { text: (d.asn_holders || []).join(", ").slice(0, 48) }), el("td", { text: d.yandex_mail ? "yes" : "" }), el("td", { text: d.yandex_dns ? "yes" : "" })));
-    dc.append(el("div", { class: "tblwrap" }, dt));
+    const vc = card(M, "Live re-verification of the stored data", "Random samples of every stored series were downloaded again from the original source, bypassing the cache, and compared value by value.");
+    const vt = el("table", { class: "tbl" }); vt.append(el("tr", {}, ...["Source", "Check", "Values", "Exact match", "Largest difference"].map((h) => el("th", { text: h }))));
+    for (const v of EV.verification || []) vt.append(el("tr", {}, el("td", { text: v.source }), el("td", { class: "muted", text: v.check + (v.note ? `; ${v.note}` : "") }), el("td", { class: "num", text: v.n }), el("td", { class: "num", style: `color:${css(v.exact_share === 1 ? "--good" : "--ink-1")}`, text: v.exact_share == null ? "failed" : pctu(v.exact_share) }), el("td", { class: "num", text: v.max_abs_diff == null ? "n/a" : num(v.max_abs_diff) })));
+    vc.append(el("div", { class: "tblx" }, vt), el("p", { class: "note", style: "margin:8px 0 0", text: "Reddit counts can differ by a comment where content was deleted or added after collection; all other sources match exactly." }));
     const qc = card(M, "Data quality audit", "Collector completeness and continuity for every stream.");
     const q = Object.entries(EV.quality || {}).filter(([, v]) => v.status !== "ok");
     qc.append(el("p", { class: "note", text: `${Object.keys(EV.quality || {}).length} streams audited; ${q.length} flagged and excluded from inference: ${q.map(([k, v]) => `${k} (${v.status.replace("_", " ")})`).join("; ") || "none"}.` }));
@@ -811,6 +828,10 @@
     document.getElementById("gen").textContent = `Data to ${EV.meta.study_end.slice(8, 10)} Oct ${EV.meta.study_end.slice(11, 16)} UTC`;
     document.getElementById("theme").addEventListener("click", () => { const r = document.documentElement; const dark = r.dataset.theme ? r.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches; r.dataset.theme = dark ? "light" : "dark"; store.set("theme", r.dataset.theme); buildLeft(); render(); renderInspector(); });
     const th = store.get("theme", null); if (th) document.documentElement.dataset.theme = th;
+    // deep links: #view or #graph:radial
+    const [hv, ha] = decodeURIComponent(location.hash.slice(1)).split(":");
+    if (VIEWS.some(([k]) => k === hv)) S.view = hv;
+    if (hv === "graph" && ["lr", "td", "radial"].includes(ha)) S.agLayout = ha;
     applyPanels(); buildTabs(); buildLeft(); render(); renderInspector();
     let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(render, 150); });
   }

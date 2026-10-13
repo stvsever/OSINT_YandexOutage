@@ -96,7 +96,7 @@ SOURCES = [
     dict(id="SRC-PRAVDA", name="Pravda network public sitemaps", type="Measurement data",
          url="https://news-pravda.com/sitemap.xml", rel="A", cred=1, lang="multi",
          note="806,762 article timestamps on 88 subdomains, 1 Sep to 13 Oct; lastmod equals published_time (verified)."),
-    dict(id="SRC-TG", name="Telegram public channel previews (35 channels)", type="Measurement data",
+    dict(id="SRC-TG", name="Telegram public channel previews (54 channels)", type="Measurement data",
          url="https://t.me/s/rybar", rel="A", cred=1, lang="multi", note="Post timestamps and text for pro-Kremlin, IO, independent, Ukrainian and non-political channels."),
     dict(id="SRC-RD", name="Arctic Shift Reddit archive", type="Measurement data",
          url="https://arctic-shift.photon-reddit.com/", rel="A", cred=2, lang="en",
@@ -105,19 +105,20 @@ SOURCES = [
          url="https://wikimedia.org/api/rest_v1/", rel="A", cred=1, lang="en", note="Hourly user, spider and automated pageviews."),
     dict(id="SRC-DNS", name="Public DNS records (A, MX, NS) via 1.1.1.1, 8.8.8.8 and 9.9.9.9", type="Measurement data",
          url="https://stat.ripe.net/", rel="A", cred=1, lang="en",
-         note="Hosting networks (RIPE Stat network-info), mail exchangers and name servers of 51 IO, state, independent and Yandex domains on 13 Oct 2026."),
+         note="Hosting networks (RIPE Stat network-info), mail exchangers and name servers of 52 IO, state, independent and Yandex domains on 13 Oct 2026, and of 342 domains attributed to influence operations by VIGINUM and the EEAS on 13 to 14 Oct."),
     dict(id="SRC-WEB", name="Web sitemaps of ukraina.ru, zona.media and theins.ru", type="Measurement data",
          url="https://ukraina.ru/sitemap_article_index.xml", rel="A", cred=1, lang="ru",
          note="Article publication timestamps, verified against the published_time of article pages."),
-    dict(id="SRC-EURONEWS", name="Euronews fact check, 12 Oct 2026", type="Media",
-         url="https://www.euronews.com/2026/10/12/did-ukrainian-strikes-on-yandex-data-centres-cause-russian-bot-activity-to-plummet",
-         rel="B", cred=2, lang="en", note="Zelensky at the Warsaw Security Forum: fewer bots after the strikes; the 94 percent drop refers to all automated traffic from Yandex's network."),
-    dict(id="SRC-DEEPDIVE", name="The Deep Dive, 12 Oct 2026", type="Media",
-         url="https://thedeepdive.ca/bot-traffic-from-yandexs-network-falls-to-near-zero-after-third-drone-strike/",
-         rel="C", cred=3, lang="en", note="Cloudflare Radar AS13238 automated requests at 0.3 percent of chart maximum at 02:00 UTC 11 Oct, against 88.2 percent a week earlier."),
-    dict(id="SRC-HNS", name="Help Net Security, 13 Oct 2026", type="Media",
-         url="https://www.helpnetsecurity.com/2026/10/13/ukraine-drone-strikes-yandex-data-centers/",
-         rel="B", cred=2, lang="en", note="Documents the troll-farm claims and the OCCRP rebuttal that the chart measures automated web traffic."),
+    dict(id="SRC-EEAS", name="EEAS, 4th Report on FIMI Threats (March 2026)", type="Official attribution report",
+         url="https://www.eeas.europa.eu/sites/default/files/2026/documents/EEAS%204th%20Threat%20Report_web%20version_1.pdf",
+         rel="A", cred=2, lang="en",
+         note="Names the Russia-aligned IMS used here: Portal Kombat (Pravda), Storm-1516, Operation Overload, Doppelganger, RRN/Media Brands, African Initiative; sanctioned enablers SDA, Tigerweb, John Mark Dougan."),
+    dict(id="SRC-VIGINUM", name="VIGINUM technical report on Storm-1516 (May 2025)", type="Official attribution report",
+         url="https://www.sgdsn.gouv.fr/files/files/Publications/20250507_TLP-CLEAR_NP_SGDSN_VIGINUM_Technical%20report_Storm-1516.pdf",
+         rel="A", cred=2, lang="en", note="Appendix 6.2 lists 338 domains linked to CopyCop / Storm-1516; all were resolved and tested for Yandex dependency."),
+    dict(id="SRC-WP", name="WordPress REST API of African Initiative, RRN and R-FBI sites", type="Measurement data",
+         url="https://afrinz.ru/wp-json/wp/v2/posts", rel="A", cred=1, lang="multi",
+         note="Exact publication times (date_gmt) of 3,264 articles, 1 Sep to 13 Oct 2026."),
     dict(id="SRC-REUTERS", name="Reuters, 8 Oct 2026", type="Media",
          url="https://www.reuters.com/world/europe/russias-yandex-says-unclear-whether-data-centre-can-be-restored-after-drone-2026-10-08/",
          rel="A", cred=2, lang="en", note="Yandex said it was unclear whether the Sasovo data center could be restored; site housed two of three AI supercomputers."),
@@ -153,11 +154,6 @@ EVENTS = [
          detail="Regional confirmation of the strike on infrastructure on the outskirts of Vladimir.", sources=["SRC-GOV-10997"]),
     dict(id="EV-VLA-NB", t="2026-10-11T05:30:41Z", kind="telemetry", site="Vladimir", title="NetBlocks: second collapse",
          detail="Yandex Cloud about 30 percent and YANDEX LLC about 63 percent of normal connectivity.", sources=["SRC-NB-BSKY"]),
-    dict(id="EV-CLAIM-CHART", t="2026-10-11T13:00:00Z", kind="claim", site="Online", title="Viral claim: Russian bot traffic collapsed",
-         detail="Charts of Cloudflare Radar automated traffic from AS13238 circulate as evidence that troll farms went silent. The metric counts automated web requests dominated by Yandex's own crawler.",
-         sources=["SRC-DEEPDIVE", "SRC-HNS"]),
-    dict(id="EV-CLAIM-ZEL", t="2026-10-12T10:00:00Z", kind="claim", site="Online", title="Zelensky: fewer bots after the strikes",
-         detail="Statement at the Warsaw Security Forum that social media became less hostile.", sources=["SRC-EURONEWS"]),
     dict(id="EV-PAY", t="2026-10-11T18:42:45Z", kind="statement", site="Vladimir", title="Yandex Pay still disrupted",
          detail="Payments and balance checks unavailable for many users.", sources=["SRC-YTG-5903"]),
     dict(id="EV-B2B", t="2026-10-13T09:27:06Z", kind="statement", site="Yandex", title="Fees waived; services still limited",
@@ -181,6 +177,13 @@ def main():
         if m["layer"] == "exposure" and not sid.startswith("exposure."):
             continue
         rec = dict(m)
+        if m.get("hidden"):
+            st = an["series"].get(sid)
+            if st:
+                rec["stats"] = {k: st[k] for k in ("windows", "verdict", "baseline_mean", "mde80_vla24", "completeness")
+                                if k in st}
+                series[sid] = rec
+            continue
         rec["v"] = [r(x, 3) for x in wide[sid].to_numpy()]
         if sid in A:
             rec["cf"] = [r(x, 2) for x in CF[sid].reindex(hours).to_numpy()]
@@ -226,12 +229,16 @@ def main():
     trk = pd.read_parquet(PROC / "tracker_alerts.parquet")
     trk = trk[(trk.t_utc >= "2026-10-05")]
     alerts = [dict(t=str(x.t_utc), src=x.src, yandex=bool(x.yandex), text=x.text[:160].replace("\u2014", "-").replace("\u2013", "-")) for x in trk.itertuples()]
+    actor = json.loads((PROC / "actor_infra.json").read_text())
+    verification = json.loads((PROC / "verification.json").read_text())
     infra = json.loads((PROC / "infra_map.json").read_text())
     infra = [{k: d[k] for k in ("domain", "role", "asn_holders", "yandex_hosting", "yandex_mail", "yandex_dns", "mx")} for d in infra]
     quality = json.loads((PROC / "data_quality.json").read_text())
     quality = {k: {"status": v["status"]} for k, v in quality.items()}
     write("bayes", json.loads((PROC / "bayes_results.json").read_text()))
     write("evidence", {"sources": SOURCES, "events": EVENTS, "firms": firms, "alerts": alerts, "infra": infra, "quality": quality,
+                       "actor_infra": [{k: d[k] for k in ("domain", "ims", "resolves", "http", "holder", "yandex_hosting", "yandex_mail", "yandex_dns")} for d in actor],
+                       "verification": verification,
                        "analysis": {k: an[k] for k in ("onsets", "sesoi", "lags", "event_window", "contrasts", "pooled")},
                        "meta": {"study_start": str(STUDY_START), "study_end": str(STUDY_END),
                                 "baseline_end": str(BASELINE_END),

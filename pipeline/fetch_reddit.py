@@ -35,7 +35,7 @@ SUBREDDITS = {
     "ukraine": "war", "UkraineWarVideoReport": "war", "RussiaUkraineWar2022": "war",
     "UkraineRussiaReport": "war", "worldnews": "war", "europe": "war", "geopolitics": "war",
     "russia": "war",
-    # Publics referenced by the viral claims (AfD, Reform UK, MAGA, Canada, Poland)
+    # Political publics (Germany, United Kingdom, United States, Canada, Poland)
     "de": "politics", "ukpolitics": "politics", "politics": "politics",
     "Conservative": "politics", "canada": "politics", "Polska": "politics",
     # Controls without a national-interest theme

@@ -57,6 +57,11 @@ def streams():
     out["tg.grp.pro_kremlin_state.all"] = ("Pro-Kremlin state channels", counts(st.t_utc), "tg.grp.pro_kremlin_state.all")
     w = pd.read_parquet(RAW / "web_articles.parquet")
     out["web.ukraina.ru"] = ("ukraina.ru articles (RIA outlet)", counts(w[w.site == "ukraina.ru"].t_utc), "web.ukraina.ru")
+    # outlets of information-manipulation sets named in the EEAS 4th FIMI threat report
+    out["web.afrinz.ru"] = ("African Initiative website (EEAS-named)", counts(w[w.site == "afrinz.ru"].t_utc), "web.afrinz.ru")
+    out["web.rrn.com.tr"] = ("RRN / Media Brands website (EEAS-named)", counts(w[w.site == "rrn.com.tr"].t_utc), "web.rrn.com.tr")
+    ei = tg[tg.role == "io_eeas_ims"]
+    out["tg.grp.io_eeas_ims.all"] = ("African Initiative Telegram (EEAS-named)", counts(ei.t_utc), "tg.grp.io_eeas_ims.all")
     ct = tg[tg.role.isin({"control_ru_independent", "control_ukrainian", "control_ru_business"})]
     out["tg.controls.all"] = ("Control Telegram (independent and Ukrainian)", counts(ct.t_utc), "tg.controls.all")
     rd = pd.read_parquet(RAW / "reddit_authors" / "UkraineRussiaReport.parquet")

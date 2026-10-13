@@ -37,21 +37,29 @@ YANDEX_MAIL = {"readovkanews", "readovka_ru", "rybar", "rybar_in_english", "ryba
 WINDOWS = ["SAS_6h", "SAS_24h", "KAL_24h", "VLA_6h", "VLA_24h", "SEP27_24h"]
 
 
-def platform_of(sid: str, meta: dict) -> str | None:
+def platform_of(sid: str, meta: dict, theme: str = "all") -> str | None:
     m = meta[sid]
+    if theme != "all":
+        # theme-conditional runs use per-channel Telegram theme splits only
+        if not (sid.startswith("tg.chw.") and sid.endswith("." + theme)):
+            return None
+        sid = "tg.ch." + sid.split(".")[2]
+        m = {**m, "role": m["role"]}
+    elif sid.startswith("tg.chw."):
+        return None
     if sid.startswith("pravda.lang."):
         return "Pravda network (automated web)"
     if sid.startswith("tg.ch."):
         return {"pro_kremlin_state": "Telegram: state media", "pro_kremlin_milblog": "Telegram: military bloggers",
                 "pro_kremlin_tabloid": "Telegram: pro-Kremlin tabloids", "io_foreign_audience": "Telegram: foreign-audience IO",
                 "control_ru_independent": "Control: independent Russian media", "control_ukrainian": "Control: Ukrainian channels",
-                "control_ru_business": "Control: Russian business media",
+                "control_ru_business": "Control: Russian business media", "io_eeas_ims": "Telegram: EEAS-named IMS",
                 "control_ru_nonpolitical": "Control: Russian non-political"}.get(m["role"])
     if sid.startswith("rd.") and sid.endswith(".comments.all") and not sid.startswith("rd.grp."):
         return {"reddit_war": "Reddit: Ukraine war communities", "reddit_politics": "Reddit: political communities",
                 "reddit_control": "Control: non-political Reddit"}.get(m["role"])
     if sid.startswith("web."):
-        return "Web: state IO outlet" if m["role"] == "io_web" else "Control: independent web media"
+        return {"io_web": "Web: state IO outlet", "io_eeas_web": "Web: EEAS-named IMS outlets"}.get(m["role"], "Control: independent web media")
     return None
 
 
@@ -93,16 +101,10 @@ def rhat(x):  # x: chains x draws
     return float(np.sqrt(((h - 1) / h * W + Bv / h) / W))
 
 
-def main():
-    meta = json.loads((PROC / "series_meta.json").read_text())
-    an = json.loads((PROC / "analysis_results.json").read_text())
-    A = pd.read_parquet(PROC / "anomalies.parquet")
-    global PANEL
-    PANEL = pd.read_parquet(PROC / "panel.parquet").pivot(index="hour", columns="series_id", values="value")
-    onsets = {k: pd.Timestamp(v) for k, v in an["onsets"].items()}
+def run_theme(theme, meta, an, A, onsets, keep_draws):
     members = {}
-    for sid, rec in an["series"].items():
-        p = platform_of(sid, meta)
+    for sid in an["series"]:
+        p = platform_of(sid, meta, theme)
         if p:
             members[sid] = p
     groups = sorted(set(members.values()))
@@ -112,11 +114,13 @@ def main():
         ev, L = wk.split("_")[0], int(wk.split("_")[1][:-1])
         rows = [(sid, members[sid], an["series"][sid]["windows"][wk]) for sid in members
                 if wk in an["series"][sid]["windows"]]
+        if not rows:
+            continue
         y = np.array([r[2]["anomaly"] for r in rows])
         s = np.array([max(r[2]["placebo_sd"], 0.02) for r in rows])
         gi = {g: i for i, g in enumerate(groups)}
         g = np.array([gi[r[1]] for r in rows])
-        z = np.array([1.0 if r[0].replace("tg.ch.", "") in YANDEX_MAIL else 0.0 for r in rows])
+        z = np.array([1.0 if r[0].split(".")[2] in YANDEX_MAIL else 0.0 for r in rows])
         Ad, Bd, Td = gibbs(y, s, g, z, len(groups))
         res = {"n_members": len(rows), "beta_yandex_mail": None, "tau": [float(np.percentile(Td, q)) for q in (5, 50, 95)],
                "groups": {}, "members": {}}
@@ -129,19 +133,17 @@ def main():
             ids = [r[0] for r in rows if r[1] == name]
             if not ids:
                 continue
-            # common-shock variance and frequentist test from the group-mean anomaly series
             G = A[ids].mean(axis=1)
-            fv = G.first_valid_index()
-            ws = window_stats(G, onsets[ev], L, fv)
+            ws = window_stats(G, onsets[ev], L, G.first_valid_index())
             nb = A[ids][A.index < BASELINE_END]
             roll = nb.rolling(L).mean()
-            v_ind = float(np.nanmean(roll.var()) / len(ids)) if len(ids) else 0.0
+            v_ind = float(np.nanmean(roll.var()) / len(ids))
             v_tot = float(np.nanvar(roll.mean(axis=1)))
             sc2 = max(0.0, v_tot - v_ind)
             panel = PANEL[ids].sum(axis=1, min_count=len(ids))
             nv = naive_window(panel, onsets[ev], L)
-            draws = Ad[:, :, k].ravel()
-            draws = draws + np.random.default_rng(k).normal(0, np.sqrt(sc2), draws.size)
+            draws = Ad[:, :, k].ravel() + np.random.default_rng(k).normal(0, np.sqrt(sc2), Ad[:, :, k].size)
+            keep_draws[(theme, wk, name)] = draws
             eff = np.expm1(draws)
             res["groups"][name] = dict(
                 k=len(ids), median=float(np.median(eff)), ci90=[float(np.percentile(eff, 5)), float(np.percentile(eff, 95))],
@@ -151,20 +153,48 @@ def main():
                 naive_effect=nv["effect"] if nv else None, naive_p_drop=nv["p_drop"] if nv else None,
                 credible_drop=bool(ws and (eff < -0.10).mean() > 0.9 and ws["p_drop"] < 0.05
                                    and (nv is None or nv["p_drop"] < 0.10)))
-        # IO minus control contrast (average of group effects)
         io_k = [gi[n] for n in io_groups if n in res["groups"]]
         ct_k = [gi[n] for n in groups if n.startswith("Control") and n in res["groups"]]
-        diff = Ad[:, :, io_k].mean(axis=2).ravel() - Ad[:, :, ct_k].mean(axis=2).ravel()
-        res["io_minus_control"] = dict(median=float(np.expm1(np.median(diff))),
-                                       ci90=[float(np.expm1(np.percentile(diff, 5))), float(np.expm1(np.percentile(diff, 95)))],
-                                       p_negative=float((diff < 0).mean()))
-        for (sid, name, w), ii in zip(rows, range(len(rows))):
+        if io_k and ct_k:
+            diff = Ad[:, :, io_k].mean(axis=2).ravel() - Ad[:, :, ct_k].mean(axis=2).ravel()
+            res["io_minus_control"] = dict(median=float(np.expm1(np.median(diff))),
+                                           ci90=[float(np.expm1(np.percentile(diff, 5))), float(np.expm1(np.percentile(diff, 95)))],
+                                           p_negative=float((diff < 0).mean()))
+        for ii, (sid, name, w) in enumerate(rows):
             res["members"][sid] = dict(group=name, y=float(np.expm1(w["anomaly"])), s=float(w["placebo_sd"]), yandex_mail=bool(z[ii]))
         results["windows"][wk] = res
         cred = [n for n, r in res["groups"].items() if r["credible_drop"]]
-        print(f"{wk:10s} n={len(rows):3d} tau={res['tau'][1]:.3f} IO-control={res['io_minus_control']['median']:+.3f} "
-              f"beta_mail={res['beta_yandex_mail']['median'] if res['beta_yandex_mail'] else None} credible drops: {cred}")
-    save_json(results, PROC / "bayes_results.json")
+        print(f"[{theme}] {wk:10s} n={len(rows):3d} credible drops: {cred}")
+    return results
+
+
+def main():
+    meta = json.loads((PROC / "series_meta.json").read_text())
+    an = json.loads((PROC / "analysis_results.json").read_text())
+    A = pd.read_parquet(PROC / "anomalies.parquet")
+    global PANEL
+    PANEL = pd.read_parquet(PROC / "panel.parquet").pivot(index="hour", columns="series_id", values="value")
+    onsets = {k: pd.Timestamp(v) for k, v in an["onsets"].items()}
+    draws = {}
+    out = {"themes": {}}
+    for theme in ("all", "war", "other"):
+        out["themes"][theme] = run_theme(theme, meta, an, A, onsets, draws)
+    # war minus non-war contrast per Telegram group (independent posteriors)
+    dif = {"groups": out["themes"]["war"]["groups"], "io_groups": out["themes"]["war"]["io_groups"], "members": {}, "windows": {}}
+    for wk in WINDOWS:
+        gw = {}
+        for name in dif["groups"]:
+            a, b = draws.get(("war", wk, name)), draws.get(("other", wk, name))
+            if a is None or b is None:
+                continue
+            d = np.expm1(a - b)
+            gw[name] = dict(k=out["themes"]["war"]["windows"][wk]["groups"][name]["k"], median=float(np.median(d)),
+                            ci90=[float(np.percentile(d, 5)), float(np.percentile(d, 95))], p_drop10=float((d < -0.10).mean()),
+                            p_drop=float((d < 0).mean()), rhat=1.0, common_shock_sd=0.0, placebo_p_drop=None, placebo_effect=None,
+                            io=not name.startswith("Control"), naive_effect=None, naive_p_drop=None, credible_drop=False)
+        dif["windows"][wk] = {"n_members": 0, "groups": gw, "members": {}, "beta_yandex_mail": None, "tau": None}
+    out["themes"]["diff"] = dif
+    save_json(out, PROC / "bayes_results.json")
 
 
 if __name__ == "__main__":

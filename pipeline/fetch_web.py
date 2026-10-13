@@ -6,6 +6,7 @@ equal the publication time.
 """
 from __future__ import annotations
 
+import json
 import re
 
 import pandas as pd
@@ -25,8 +26,36 @@ SITES = {
 }
 
 
+# Outlets of information-manipulation sets named by the EEAS (WordPress REST API,
+# exact publication time date_gmt)
+WP_SITES = {"afrinz.ru": "African Initiative", "rrn.com.tr": "RRN / Media Brands (SDA)", "fondfbr.ru": "R-FBI"}
+
+
+def wordpress(site):
+    rows, page = [], 1
+    while True:
+        body = get(f"https://{site}/wp-json/wp/v2/posts", {"per_page": 100, "page": page, "after": "2026-09-01T00:00:00",
+                                                           "before": "2026-10-13T16:00:00", "_fields": "date_gmt,link",
+                                                           "orderby": "date", "order": "asc"},
+                   host_key=site, min_interval=1.0, headers=H, timeout=60, accept_status=(200, 400))
+        try:
+            d = json.loads(body) if body else []
+        except json.JSONDecodeError:
+            break
+        if not isinstance(d, list) or not d:
+            break
+        rows += [(site, "io_eeas_web", x["link"], x["date_gmt"] + "Z") for x in d]
+        if len(d) < 100:
+            break
+        page += 1
+    print(site, len(rows))
+    return rows
+
+
 def main():
     rows = []
+    for site in WP_SITES:
+        rows += wordpress(site)
     for site, (role, urls, field) in SITES.items():
         for u in urls:
             t = get(u, host_key=site, min_interval=1.5, headers=H, timeout=90) or ""
