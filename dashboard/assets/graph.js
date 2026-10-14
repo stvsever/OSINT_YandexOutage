@@ -134,14 +134,17 @@
       }
       pos._c = { x: cx, y: cy };
     }
-    const svg = d3.select(box).append("svg").attr("viewBox", `0 0 ${W} ${H}`).attr("height", layout === "radial" ? null : H).style("height", layout === "radial" ? "auto" : null).style("min-width", (layout === "radial" ? 900 : W) + "px");
-    const gC = svg.append("g"), gE = svg.append("g"), gN = svg.append("g");
+    // the whole graph is fitted into a fixed viewport; drag to pan, Ctrl or Cmd + wheel (or the buttons) to zoom
+    const vh = Math.round(Math.min(Math.max(520, window.innerHeight * 0.74), 900));
+    const svg = d3.select(box).append("svg").attr("viewBox", `0 0 ${W} ${H}`).attr("preserveAspectRatio", "xMidYMid meet").style("width", "100%").style("height", vh + "px").style("cursor", "grab");
+    const root = svg.append("g");
+    const gC = root.append("g"), gE = root.append("g"), gN = root.append("g");
     // layer and cluster labels
     if (layout === "lr") {
-      LAYERS.forEach((l, i) => svg.append("text").attr("class", "ag-col").attr("x", pos._colX[i]).attr("y", 14).text(l));
+      LAYERS.forEach((l, i) => root.append("text").attr("class", "ag-col").attr("x", pos._colX[i]).attr("y", 14).text(l));
       for (const c of clusters) { gC.append("rect").attr("x", c.x - 3).attr("y", c.y - 2).attr("width", c.w + 6).attr("height", c.h + 4).attr("rx", 7).attr("fill", css("--surface-2")).attr("opacity", 0.6); gC.append("text").attr("class", "ag-cl").attr("x", c.x + 2).attr("y", c.y + 8).text(c.label); }
     } else if (layout === "td") {
-      LAYERS.forEach((l, i) => svg.append("text").attr("class", "ag-col").attr("x", 6).attr("y", pos._rowY[i] + 12).text(l));
+      LAYERS.forEach((l, i) => root.append("text").attr("class", "ag-col").attr("x", 6).attr("y", pos._rowY[i] + 12).text(l));
       for (const c of clusters) { gC.append("rect").attr("x", c.x).attr("y", c.y).attr("width", c.w).attr("height", c.h).attr("rx", 8).attr("fill", css("--surface-2")).attr("opacity", 0.75); gC.append("text").attr("class", "ag-cl").attr("x", c.x + 9).attr("y", c.y + 12).text(c.label); }
     } else {
       const { x: cx, y: cy } = pos._c; const deg = Math.PI / 180;
@@ -159,9 +162,9 @@
         gC.append("path").attr("id", id).attr("d", rev ? `M${x1},${y1} A${rr},${rr} 0 0 0 ${x0},${y0}` : `M${x0},${y0} A${rr},${rr} 0 0 1 ${x1},${y1}`).attr("fill", "none");
         gC.append("text").attr("class", "ag-cl").append("textPath").attr("href", "#" + id).attr("startOffset", "50%").attr("text-anchor", "middle").text(c.label);
       }
-      svg.append("text").attr("class", "ag-col").attr("x", 12).attr("y", 18).text("Upstream evidence: sources (outer ring), observations (inner ring)");
-      svg.append("text").attr("class", "ag-col").attr("x", W - 12).attr("y", 18).attr("text-anchor", "end").text("Consequences: exposure, actors, findings (outer)");
-      svg.append("text").attr("class", "ag-col").attr("x", cx).attr("y", cy - 128).attr("text-anchor", "middle").text("Outage estimate");
+      root.append("text").attr("class", "ag-col").attr("x", 12).attr("y", 18).text("Upstream evidence: sources (outer ring), observations (inner ring)");
+      root.append("text").attr("class", "ag-col").attr("x", W - 12).attr("y", 18).attr("text-anchor", "end").text("Consequences: exposure, actors, findings (outer)");
+      root.append("text").attr("class", "ag-col").attr("x", cx).attr("y", cy - 128).attr("text-anchor", "middle").text("Outage estimate");
     }
     // edges
     const anchor = (n, side) => { const p = pos[n.id]; if (layout === "lr") return side === "out" ? [p.x + p.w, p.y + p.h / 2] : [p.x, p.y + p.h / 2]; if (layout === "td") return side === "out" ? [p.x + p.w / 2, p.y + p.h] : [p.x + p.w / 2, p.y]; return [p.x, p.y]; };
@@ -206,9 +209,15 @@
       const path = LAYERS.map((l, i) => [...keep].map((k) => G.idx[k]).filter((n) => n && n.layer === i));
       onFocus(G.idx[id], path, (nid) => focus(nid), TEXT[id], silent);
     }
-    svg.on("click", () => focus(null));
+    svg.on("click", (ev) => { if (!ev.defaultPrevented) focus(null); });
+    const zoom = d3.zoom().scaleExtent([0.6, 6]).filter((ev) => (ev.type === "wheel" ? ev.ctrlKey || ev.metaKey : !ev.button))
+      .on("start", () => svg.style("cursor", "grabbing")).on("end", () => svg.style("cursor", "grab"))
+      .on("zoom", (ev) => root.attr("transform", ev.transform));
+    svg.call(zoom).on("dblclick.zoom", null);
+    if (ctx.state.zoom) svg.call(zoom.transform, ctx.state.zoom);
+    zoom.on("end.store", (ev) => { ctx.state.zoom = ev.transform; svg.style("cursor", "grab"); });
     focus(ctx.state.focus, true);
-    return { focus };
+    return { focus, zoomBy: (k) => svg.transition().duration(250).call(zoom.scaleBy, k), fit: () => { ctx.state.zoom = null; svg.transition().duration(250).call(zoom.transform, d3.zoomIdentity); } };
   }
   window.AttributionGraph = { render, LAYERS };
 })();

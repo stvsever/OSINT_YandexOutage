@@ -30,6 +30,8 @@ from common import BASELINE_END, PROC, RAW, STUDY_END, STUDY_START, save_json
 STEP = "10min"
 GRID = pd.date_range(STUDY_START, STUDY_END, freq=STEP, inclusive="left")
 PRE, POST = pd.Timedelta(hours=12), pd.Timedelta(hours=24)
+# onset-locked test: dips that start between 30 min before and 6 h after the outage onset
+LOCK = (-3, 36)  # in 10-minute steps relative to the onset
 
 
 def counts(ts: pd.Series) -> pd.Series:
@@ -97,8 +99,23 @@ def scan(c, lam, phi):
     return llr, best
 
 
+def locked_best(llr, i0):
+    """Largest dip log-LR among dips whose start lies in the onset-locked range."""
+    a, b = max(0, i0 + LOCK[0]), min(llr.shape[0], i0 + LOCK[1] + 1)
+    sub = llr[a:b]
+    return float(sub.max()) if sub.size and np.isfinite(sub).any() else -np.inf
+
+
 def analyse(c, lam, phi, onset, t_index, full=None):
     llr, best = scan(c, lam, phi)
+    i0 = int(np.ceil((onset - t_index[0]).total_seconds() / 600))
+    lb = locked_best(llr, i0)
+    a0 = max(0, i0 + LOCK[0])
+    sub = llr[a0:i0 + LOCK[1] + 1]
+    li, lj = np.unravel_index(np.argmax(sub), sub.shape)
+    li += a0
+    locked = dict(locked_llr=lb, locked_ratio=float(c[li:lj].sum() / max(lam[li:lj].sum(), 1e-9)) if lj > li else None,
+                  locked_hours=float((lj - li) / 6.0), locked_offset_min=float((t_index[li] - onset).total_seconds() / 60))
     w = np.exp(llr - best)
     w[~np.isfinite(w)] = 0
     p_tau1 = w.sum(1)
@@ -128,6 +145,9 @@ def analyse(c, lam, phi, onset, t_index, full=None):
         deficit=deficit, surplus_next6h=surplus, naive_ratio=naive,
         recovery_ratio=float(surplus / deficit) if deficit > 0 else None,
         posterior_tau1=[round(float(x), 5) for x in p_tau1],
+        tau1_ci90_offset_min=[float((t_index[min(lo, len(t_index) - 1)] - onset).total_seconds() / 60),
+                              float((t_index[min(hi, len(t_index) - 1)] - onset).total_seconds() / 60)],
+        **locked,
     )
 
 
@@ -147,17 +167,21 @@ def main():
         phi = float(max(resid.mean(), 1.0))
         # placebo calibration of the change-point scan
         origins = GRID[base & (GRID < BASELINE_END - POST - pd.Timedelta(hours=1))]
-        null = []
+        null, null_locked = [], []
+        i0 = int(PRE / pd.Timedelta(minutes=10))
         for t0 in rng.choice(origins, 400, replace=False):
             m = (GRID >= t0 - PRE) & (GRID < t0 + POST)
-            null.append(scan(c[m].to_numpy(), lam[m].to_numpy(), phi)[1])
-        null = np.array(null)
+            llr_p, best_p = scan(c[m].to_numpy(), lam[m].to_numpy(), phi)
+            null.append(best_p)
+            null_locked.append(locked_best(llr_p, i0))
+        null, null_locked = np.array(null), np.array(null_locked)
         rec = {"label": label, "phi": phi, "events": {}}
         for k, t0 in on.items():
             m = (GRID >= t0 - PRE) & (GRID < t0 + POST)
             idx = GRID[m]
             a = analyse(c[m].to_numpy(), lam[m].to_numpy(), phi, t0, idx, full=c)
             a["p_scan"] = float((1 + (null >= a["max_llr"]).sum()) / (1 + len(null)))
+            a["p_locked"] = float((1 + (null_locked >= a["locked_llr"]).sum()) / (1 + len(null_locked)))
             rec["events"][k] = a
         res[sid] = rec
         sel = GRID >= pd.Timestamp("2026-10-05", tz="UTC")
@@ -166,7 +190,15 @@ def main():
         v = rec["events"]["VLA"]
         s = rec["events"]["SAS"]
         print(f"{sid:40s} VLA dip x{v['dip_ratio']:.2f} {v['dip_hours']:.1f}h offset {v['offset_min']:+.0f}m "
-              f"p={v['p_scan']:.3f} backlog={v['recovery_ratio']} | SAS x{s['dip_ratio']:.2f} offset {s['offset_min']:+.0f}m p={s['p_scan']:.3f}")
+              f"p={v['p_scan']:.3f} locked x{v['locked_ratio']:.2f} p_locked={v['p_locked']:.3f} backlog={v['recovery_ratio']} | SAS x{s['dip_ratio']:.2f} offset {s['offset_min']:+.0f}m p={s['p_scan']:.3f}")
+    # Benjamini-Hochberg q-values across all onset-locked tests (streams x events)
+    keys = [(sid, k) for sid in res for k in res[sid]["events"]]
+    ps = np.array([res[sid]["events"][k]["p_locked"] for sid, k in keys])
+    order = np.argsort(ps)
+    q = np.empty_like(ps)
+    q[order] = np.minimum.accumulate((ps[order] * len(ps) / np.arange(1, len(ps) + 1))[::-1])[::-1]
+    for (sid, k), qq in zip(keys, np.minimum(q, 1)):
+        res[sid]["events"][k]["q_locked"] = float(qq)
     # IODA reference at 10 minutes
     r = pd.read_parquet(RAW / "ioda_raw.parquet")
     x = r[(r.entity_code == "200350") & (r.datasource == "ping-slash24")]

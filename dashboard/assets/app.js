@@ -26,7 +26,7 @@
     sesoi: ["Smallest effect of interest", "A 20 % drop. A series rules out a meaningful reduction when the whole 90 % interval of its estimated change lies above -20 %."],
     fdr: ["False discovery rate (FDR)", "With many series some look significant by chance. Benjamini-Hochberg q-values control the expected share of false positives among flagged series."],
     bayes: ["Bayesian hierarchical model", "Effects of individual channels, languages, communities and websites are partially pooled within their platform group, with an extra term for outlets that depend on Yandex 360 mail. Group effects include the common news-shock variance measured before the strikes. A credible drop needs a posterior probability above 90 % of a drop larger than 10 % and a group placebo p below 0.05."],
-    timing: ["Change-point timing test", "A 10-minute dip model finds the most likely start, end and depth of a drop. An outage-driven dip must begin at or shortly after the measured outage onset; one that starts hours before cannot be caused by it. The scan is calibrated with 400 placebo origins."],
+    timing: ["Change-point timing test", "A 10-minute dip model finds the most likely start, end and depth of a drop. The onset-locked test only considers dips that start between 30 minutes before and 6 hours after the measured outage onset, because a dip that starts earlier cannot be caused by the outage. Both tests are calibrated with 400 placebo origins in the pre-strike period, and q-values control the false discovery rate across all streams and events."],
     backlog: ["Backlog recovery", "Surplus output in the 6 hours after a dip divided by the deficit inside it. Near 100 % means items were queued and published late (a stalled pipeline); near 0 % means output was lost."],
     theme: ["Theme conditioning", "Posts and threads are labelled Ukraine-war or other with a multilingual keyword lexicon. A dependency specific to war propaganda would show as a larger drop in war content than in other content."],
     ach: ["Analysis of competing hypotheses (ACH)", "Each piece of evidence is rated consistent, inconsistent or not diagnostic with each hypothesis. The hypothesis with the least weighted inconsistency is preferred (Heuer)."],
@@ -70,7 +70,7 @@
     layersOn: { eof: true, infrastructure: true, services: true, io: true, control: true },
     inspect: null, tEvent: "VLA", tStream: "pravda.total",
     attr: { metric: "VLA_24h", layer: "io" }, esSeries: "pravda.total", esSmooth: 3, emapWin: "VLA_6h",
-    agFocus: null, agLayout: store.get("agLayout", "lr"), search: "",
+    agFocus: null, agLayout: store.get("agLayout2", "radial"), agZoom: null, search: "",
   };
   // Bayesian results per theme; the overall answer always uses the "all" theme
   const BYA = BY.themes.all;
@@ -332,9 +332,9 @@
   function inspTiming(root, sid) {
     const r = TM.results[sid]; if (!r) return;
     root.append(el("h3", { text: r.label }), el("div", { class: "lbl", style: "margin:6px 0" }, "Change-point dip per event ", info("timing")));
-    const t = el("table", { class: "tbl" }); t.append(el("tr", {}, ...["Event", "Dip", "Hours", "Start", "p"].map((h) => el("th", { text: h }))));
-    for (const [k, e] of Object.entries(r.events)) t.append(el("tr", {}, el("td", { text: EVN[k] }), el("td", { class: "num", text: pct(e.dip_ratio - 1) }), el("td", { class: "num", text: e.dip_hours.toFixed(1) }), el("td", { class: "num", text: `${e.offset_min > 0 ? "+" : ""}${e.offset_min.toFixed(0)}m` }), el("td", { class: "num", text: pv(e.p_scan) })));
-    root.append(t, el("p", { class: "note", text: "Start is relative to the measured outage onset. Attribution requires p < 0.05 and a start at or after the onset." }));
+    const t = el("table", { class: "tbl" }); t.append(el("tr", {}, ...["Event", "Locked dip", "Start", "q (locked)", "Strongest dip", "Its start"].map((h) => el("th", { text: h }))));
+    for (const [k, e] of Object.entries(r.events)) t.append(el("tr", {}, el("td", { text: EVN[k] }), el("td", { class: "num", text: pct((e.locked_ratio ?? 1) - 1) }), el("td", { class: "num", text: `${e.locked_offset_min > 0 ? "+" : ""}${(e.locked_offset_min ?? 0).toFixed(0)}m` }), el("td", { class: "num", style: e.q_locked < 0.05 ? "font-weight:700" : "", text: pv(e.q_locked) }), el("td", { class: "num", text: pct(e.dip_ratio - 1) }), el("td", { class: "num", text: `${e.offset_min > 0 ? "+" : ""}${(e.offset_min / 60).toFixed(1)}h` })));
+    root.append(t, el("p", { class: "note", text: "Starts are relative to the measured outage onset. A dip is time-locked when it starts between 30 min before and 6 h after the onset and the onset-locked q-value is below 0.05." }));
   }
   function inspGroup(root, name, o) {
     const th = o.theme || "all"; const w = (BY.themes[th] || BYA).windows[o.win]; const g = w?.groups[name]; if (!g) return;
@@ -546,11 +546,13 @@
   function vGraph(M) {
     header(M, "Attribution graph: from sources to findings", "Each finding traces back to graded sources through dated observations, the outage estimate for each site, the channel through which Yandex could matter, and the measured outcome per actor or platform. Nodes are clustered by type within each layer. Click a node to trace its upstream evidence and downstream consequences.", "admiralty");
     const c = card(M); const tools = el("div", { class: "ag-tools" }); const crumbs = el("div", { class: "ag-crumbs" });
-    const lay = seg(["lr", "td", "radial"], S.agLayout, (v) => { S.agLayout = v; store.set("agLayout", v); try { history.replaceState(null, "", "#graph:" + v); } catch (e) { /* file:// */ } render(); }, { lr: "Left to right", td: "Top down", radial: "Radial" }); lay.classList.add("inline");
+    const lay = seg(["lr", "td", "radial"], S.agLayout, (v) => { S.agLayout = v; S.agZoom = null; store.set("agLayout2", v); try { history.replaceState(null, "", "#graph:" + v); } catch (e) { /* file:// */ } render(); }, { lr: "Left to right", td: "Top down", radial: "Radial" }); lay.classList.add("inline");
     const f = (id) => () => gapi && gapi.focus(id);
     tools.append(el("span", { class: "lbl", text: "Layout" }), lay, el("span", { class: "ag-sep" }), el("span", { class: "lbl", text: "Trace" }),
       el("button", { class: "btn sm", onclick: f("act.pravda") }, "Pravda effect"), el("button", { class: "btn sm", onclick: f("site.VLA") }, "Vladimir outage"), el("button", { class: "btn sm", onclick: f("exp.mail") }, "Yandex 360 mail"),
-      el("button", { class: "btn sm", onclick: f("act.afri") }, "African Initiative"), el("button", { class: "btn sm ghost", onclick: f(null) }, "Reset"));
+      el("button", { class: "btn sm", onclick: f("act.afri") }, "African Initiative"), el("button", { class: "btn sm ghost", onclick: f(null) }, "Reset"),
+      el("span", { class: "ag-sep" }), el("span", { class: "lbl", text: "Zoom" }), el("button", { class: "btn sm", title: "Zoom in", onclick: () => gapi && gapi.zoomBy(1.4) }, "+"), el("button", { class: "btn sm", title: "Zoom out", onclick: () => gapi && gapi.zoomBy(1 / 1.4) }, "−"), el("button", { class: "btn sm", title: "Fit the whole graph", onclick: () => gapi && gapi.fit() }, "Fit"),
+      el("span", { class: "muted", style: "font-size:11.5px", text: "Drag to pan; Ctrl or Cmd + scroll to zoom" }));
     const box = el("div", { class: "chart ag-box" });
     c.append(tools, crumbs, box);
     c.append(el("div", { class: "legend" }, ...[["--seq-5", "Source grade A"], ["--seq-4", "Grade B"], ["--seq-3", "Grade C"], ["--critical", "Strike, outage or effect"], ["--s3", "Telemetry"], ["--s4", "Confounder or service effect"], ["--s1", "Exposure channel"], ["--good", "No effect"]].map(([v, l]) => el("span", {}, el("span", { class: "swatch", style: `background:${css(v)};height:8px;width:8px;border-radius:2px` }), l)), el("span", { class: "muted", text: `Sources graded A to ${S.unc.minRel} (uncertainty filter)` })));
@@ -562,7 +564,7 @@
       if (silent) return;
       if (n.ref && !text) inspect(n.ref); else inspect({ type: "node", id: n.id, node: { label: n.label, colLabel: `${window.AttributionGraph.LAYERS[n.layer]} · ${n.cluster}`, html: () => el("div", {}, el("p", { class: "note", text: text || n.label }), n.ref ? el("button", { class: "btn sm", onclick: () => inspect(n.ref) }, "Open the data") : "") } });
     };
-    requestAnimationFrame(() => { gapi = window.AttributionGraph.render(box, { EV: EVf, BY: BYA, TM, SER, css, pct, showTip, hideTip, layout: S.agLayout, state: { get focus() { return S.agFocus; }, set focus(v) { S.agFocus = v; } }, onFocus }); });
+    requestAnimationFrame(() => { gapi = window.AttributionGraph.render(box, { EV: EVf, BY: BYA, TM, SER, css, pct, showTip, hideTip, layout: S.agLayout, state: { get focus() { return S.agFocus; }, set focus(v) { S.agFocus = v; }, get zoom() { return S.agZoom; }, set zoom(v) { S.agZoom = v; } }, onFocus }); });
   }
 
   // ---- timeline
@@ -590,14 +592,25 @@
     const evs = el("div", { class: "seg inline" }); for (const k of ["SAS", "KAL", "VLA"]) evs.append(el("button", { class: S.tEvent === k ? "on" : "", onclick: () => { S.tEvent = k; render(); } }, EVN[k]));
     ctlc.append(el("div", { style: "display:flex;gap:14px;flex-wrap:wrap;align-items:center" }, el("span", { class: "lbl", text: "Event" }), evs, el("span", { class: "lbl", text: "Stream" }), ss, info("backlog")));
     const r = TM.results[S.tStream], e = r.events[S.tEvent], on = ONSETS[S.tEvent];
-    const ok = e.p_scan < 0.05 && e.offset_min >= -30;
-    const c1 = card(M, `${r.label}: ${EVN[S.tEvent]} (onset ${fmtT(on)})`, `${ok ? "Time-locked dip" : "No time-locked dip"}. Most likely dip ${pct(e.dip_ratio - 1)} over ${e.dip_hours.toFixed(1)} h, starting ${e.offset_min > 0 ? "+" : ""}${e.offset_min.toFixed(0)} min vs onset (90%: ${e.offset_ci90_min[0].toFixed(0)} to ${e.offset_ci90_min[1].toFixed(0)}), scan p ${pv(e.p_scan)}, backlog recovered ${e.recovery_ratio == null ? "n/a" : pctu(e.recovery_ratio)}.`);
+    const ok = e.q_locked != null ? e.q_locked < 0.05 : e.p_scan < 0.05 && e.offset_min >= -30;
+    const fmtOff = (m) => `${m > 0 ? "+" : ""}${Math.abs(m) >= 90 ? (m / 60).toFixed(1) + " h" : m.toFixed(0) + " min"}`;
+    const c1 = card(M, `${r.label}: ${EVN[S.tEvent]} (onset ${fmtT(on)})`, "");
+    const sum = el("div", { class: "tsum" });
+    const box1 = (t, v, d, hot) => sum.append(el("div", { class: "tbox" + (hot ? " hot" : "") }, el("div", { class: "k", text: t }), el("div", { class: "v", text: v }), el("div", { class: "d", text: d })));
+    box1("Verdict", ok ? "Time-locked dip" : "No time-locked dip", ok ? "Significant dip starting within 30 min before to 6 h after the onset, after false-discovery control" : "No significant dip starting near the onset", ok);
+    box1("Onset-locked dip", pct((e.locked_ratio ?? 1) - 1), `${(e.locked_hours ?? 0).toFixed(1)} h, starting ${fmtOff(e.locked_offset_min ?? 0)}; p ${pv(e.p_locked)}, q ${pv(e.q_locked)}`, ok);
+    box1("Strongest dip anywhere", pct(e.dip_ratio - 1), `${e.dip_hours.toFixed(1)} h, starting ${fmtOff(e.offset_min)}; p ${pv(e.p_scan)}`);
+    box1("Backlog published later", e.recovery_ratio == null ? "n/a" : pctu(Math.max(0, e.recovery_ratio)), "Surplus in the 6 h after the dip relative to the deficit inside it");
+    c1.append(sum);
     const box = el("div", { class: "chart" }); c1.append(box); requestAnimationFrame(() => timingChart(box, S.tStream, S.tEvent));
-    const c2 = card(M, "Posterior of the dip start relative to the outage onset"); const b2 = el("div", { class: "chart" }); c2.append(b2); requestAnimationFrame(() => posteriorChart(b2, e));
-    const c3 = card(M, "All streams", "Bold p-values mark dips that are significant and start at or after the onset.");
-    const t = el("table", { class: "tbl" }); t.append(el("tr", {}, ...["Stream", "Event", "Dip", "Duration", "Start vs onset", "p (scan)", "Backlog"].map((h) => el("th", { text: h }))));
-    for (const [sid, rr] of Object.entries(TM.results)) for (const k of ["SAS", "KAL", "VLA", "SEP27"]) { const ee = rr.events[k]; if (!ee) continue; const strong = ee.p_scan < 0.05 && ee.offset_min >= -30;
-      t.append(el("tr", { class: "click" + (sid === S.tStream && k === S.tEvent ? " sel" : ""), onclick: () => { if (k !== "SEP27") { S.tStream = sid; S.tEvent = k; render(); } inspect({ type: "timing", id: sid }); } }, el("td", { text: rr.label }), el("td", { text: EVN[k] }), el("td", { class: "num", text: pct(ee.dip_ratio - 1) }), el("td", { class: "num", text: ee.dip_hours.toFixed(1) + " h" }), el("td", { class: "num", text: `${ee.offset_min > 0 ? "+" : ""}${ee.offset_min.toFixed(0)} min` }), el("td", { class: "num", style: strong ? "font-weight:750" : "", text: pv(ee.p_scan) }), el("td", { class: "num", text: ee.recovery_ratio == null ? "n/a" : pctu(ee.recovery_ratio) }))); }
+    const c2 = card(M, "Where does the strongest dip start?", "Posterior of the dip start relative to the outage onset, conditional on a dip being present somewhere in the window (12 h before to 24 h after). Mass far before the onset means the strongest dip is unrelated to the outage. Shaded: onset-locked window (green) and 90% interval of the start (blue).");
+    const b2 = el("div", { class: "chart" }); c2.append(b2); requestAnimationFrame(() => posteriorChart(b2, e));
+    const c3 = card(M, "All streams", "Onset-locked test with Benjamini-Hochberg q-values across all streams and events; bold rows are significant (q below 0.05). The 27 Sep control period should show no hits.");
+    const t = el("table", { class: "tbl" }); t.append(el("tr", {}, ...["Stream", "Event", "Locked dip", "Duration", "Start vs onset", "p (locked)", "q (locked)", "Strongest dip", "Its start", "Backlog"].map((h) => el("th", { text: h }))));
+    for (const [sid, rr] of Object.entries(TM.results)) for (const k of ["SAS", "KAL", "VLA", "SEP27"]) { const ee = rr.events[k]; if (!ee) continue; const strong = ee.q_locked < 0.05;
+      t.append(el("tr", { class: "click" + (sid === S.tStream && k === S.tEvent ? " sel" : ""), style: strong ? "font-weight:650" : "", onclick: () => { if (k !== "SEP27") { S.tStream = sid; S.tEvent = k; render(); } inspect({ type: "timing", id: sid }); } },
+        el("td", { text: rr.label }), el("td", { text: EVN[k] }), el("td", { class: "num", text: pct((ee.locked_ratio ?? 1) - 1) }), el("td", { class: "num", text: (ee.locked_hours ?? 0).toFixed(1) + " h" }), el("td", { class: "num", text: fmtOff(ee.locked_offset_min ?? 0) }),
+        el("td", { class: "num", text: pv(ee.p_locked) }), el("td", { class: "num", style: strong ? `color:${css("--critical")}` : "", text: pv(ee.q_locked) }), el("td", { class: "num", text: pct(ee.dip_ratio - 1) }), el("td", { class: "num", text: fmtOff(ee.offset_min) }), el("td", { class: "num", text: ee.recovery_ratio == null ? "n/a" : pctu(Math.max(0, ee.recovery_ratio)) }))); }
     c3.append(el("div", { class: "tblwrap" }, t));
   }
   function timingChart(box, sid, ek) {
@@ -627,16 +640,24 @@
     box.append(el("div", { class: "legend" }, el("span", {}, el("span", { class: "swatch", style: `background:${css("--s3")};height:8px` }), "Observed per 10 min"), el("span", {}, el("span", { class: "swatch", style: `background:${css("--ink-1")}` }), "Expected"), el("span", {}, el("span", { class: "swatch", style: `background:${css("--s2")}` }), "IODA reachability"), el("span", {}, el("span", { class: "swatch", style: `background:${css("--band-strong")};height:8px` }), "Most likely dip")));
   }
   function posteriorChart(box, e) {
-    const p = e.posterior_tau1; const W = Math.max(320, box.clientWidth || 900), H = 140, m = { l: 50, r: 14, t: 8, b: 24 };
+    const p = e.posterior_tau1; const W = Math.max(320, box.clientWidth || 900), H = 170, m = { l: 20, r: 14, t: 18, b: 26 };
     const rel = p.map((_, i) => -720 + i * 10);
     const svg = d3.select(box).append("svg").attr("viewBox", `0 0 ${W} ${H}`).attr("height", H);
     const x = d3.scaleLinear().domain([-720, 1440]).range([m.l, W - m.r]); const y = d3.scaleLinear().domain([0, d3.max(p) || 1]).range([H - m.b, m.t]);
-    svg.append("g").attr("class", "axis").attr("transform", `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(12).tickFormat((d) => (d > 0 ? "+" : "") + (d / 60).toFixed(0) + " h"));
+    // onset-locked window and 90% interval of the start
+    svg.append("rect").attr("x", x(-30)).attr("width", x(360) - x(-30)).attr("y", m.t).attr("height", H - m.t - m.b).attr("fill", css("--good")).attr("opacity", 0.1);
+    const ci = e.tau1_ci90_offset_min || e.offset_ci90_min;
+    if (ci) svg.append("rect").attr("x", x(ci[0])).attr("width", Math.max(2, x(ci[1]) - x(ci[0]))).attr("y", H - m.b - 6).attr("height", 6).attr("fill", css("--s1")).attr("opacity", 0.55);
+    svg.append("g").attr("class", "axis").attr("transform", `translate(0,${H - m.b})`).call(d3.axisBottom(x).tickValues(d3.range(-720, 1441, 180)).tickFormat((d) => (d > 0 ? "+" : "") + d / 60 + " h"));
     svg.append("path").datum(p).attr("d", d3.area().x((d, i) => x(rel[i])).y0(y(0)).y1((d) => y(d)).curve(d3.curveStepAfter)).attr("fill", css("--band-strong"));
     svg.append("path").datum(p).attr("d", d3.line().x((d, i) => x(rel[i])).y((d) => y(d)).curve(d3.curveStepAfter)).attr("fill", "none").attr("stroke", css("--s1")).attr("stroke-width", 1.5);
-    svg.append("line").attr("x1", x(0)).attr("x2", x(0)).attr("y1", m.t).attr("y2", H - m.b).attr("stroke", css("--critical")).attr("stroke-width", 1.5);
-    svg.append("text").attr("class", "evlabel").attr("x", x(0) + 4).attr("y", m.t + 10).text("outage onset");
+    svg.append("line").attr("x1", x(0)).attr("x2", x(0)).attr("y1", m.t - 6).attr("y2", H - m.b).attr("stroke", css("--critical")).attr("stroke-width", 1.5);
+    svg.append("text").attr("class", "evlabel").attr("x", x(0) - 4).attr("y", m.t + 2).attr("text-anchor", "end").text("outage onset");
+    svg.append("text").attr("class", "plab-sub").attr("x", x(360) + 4).attr("y", m.t + 2).text("onset-locked window");
+    const mapX = x(e.offset_min); svg.append("circle").attr("cx", mapX).attr("cy", y(d3.max(p))).attr("r", 3.5).attr("fill", css("--s1"));
+    svg.append("text").attr("class", "plab-sub").attr("x", mapX + (mapX > W - 160 ? -8 : 8)).attr("y", y(d3.max(p)) + 16).attr("text-anchor", mapX > W - 160 ? "end" : "start").text(`most likely start ${e.offset_min > 0 ? "+" : ""}${(e.offset_min / 60).toFixed(1)} h`);
   }
+
 
   // ---- effects
   function vEffects(M) {

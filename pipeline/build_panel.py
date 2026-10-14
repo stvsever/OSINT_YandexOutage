@@ -77,10 +77,29 @@ def infra():
 
 
 # ------------------------------------------------------------------ dependent services / crawler exposure
+def bot_bursts(w: pd.DataFrame) -> dict:
+    """Hours per project in which 'user' views exceed 2.5 times and 'automated' views twice the median of the
+    same hour of day over the surrounding 14 days: undeclared bot bursts labelled as users by Wikimedia."""
+    out = {}
+    for proj, g in w.groupby("project"):
+        x = g.pivot_table(index="hour", columns="agent", values="views", aggfunc="sum").sort_index()
+        if not {"user", "automated"} <= set(x.columns):
+            continue
+        ref = x.groupby(x.index.hour).transform(lambda c: c.rolling(15, center=True, min_periods=5).median())
+        out[proj] = x.index[(x["user"] > 2.5 * ref["user"]) & (x["automated"] > 2 * ref["automated"])]
+    return out
+
+
 def services():
     w = pd.read_parquet(PROC / "wikimedia_agents_hourly.parquet")
+    bursts = bot_bursts(w)
+    for proj, hrs in bursts.items():
+        if len(hrs):
+            print(f"wikimedia {proj}: masked {len(hrs)} bot-burst hours", [str(h) for h in hrs][:5])
     for (proj, agent), g in w.groupby(["project", "agent"]):
         s = g.set_index("hour")["views"].astype(float)
+        if agent == "user" and proj in bursts:
+            s[s.index.isin(bursts[proj])] = np.nan
         role = "treated" if proj.startswith("ru.") else "control"
         add(f"wiki.{proj}.{agent}", s, layer="services", group=f"Wikimedia {agent} traffic", role=role,
             label=f"{proj} pageviews, agent={agent}", unit="pageviews per hour",
@@ -92,6 +111,8 @@ def services():
         if access == "all-access":
             continue
         s = g.set_index("hour")["views"].astype(float)
+        if proj in bursts:
+            s[s.index.isin(bursts[proj])] = np.nan
         add(f"wiki.{proj}.user.{access}", s, layer="services", group="Wikimedia user traffic", role="treated",
             label=f"{proj} user pageviews, {access}", unit="pageviews per hour",
             source="Wikimedia REST pageviews API", source_url="https://wikimedia.org/api/rest_v1/",

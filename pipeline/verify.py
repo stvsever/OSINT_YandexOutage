@@ -144,13 +144,26 @@ def ripe():
 
 
 def main():
+    import sys
+    path = PROC / "verification.json"
+    prev = {r["source"]: r for r in json.loads(path.read_text())} if path.exists() else {}
+    only = set(sys.argv[1:])
+    names = {"ioda": "IODA", "wikimedia": "Wikimedia", "pravda": "Pravda network", "telegram": "Telegram",
+             "reddit": "Reddit (Arctic Shift)", "web": "Web (WordPress API)", "ripe": "RIPE Stat"}
     for f in (ioda, wikimedia, pravda, telegram, reddit, web, ripe):
+        if only and f.__name__ not in only:
+            if names[f.__name__] in prev:
+                OUT.append(prev[names[f.__name__]])
+            continue
         try:
             f()
-        except Exception as e:  # report but continue
-            OUT.append(dict(source=f.__name__, check="failed", n=0, max_abs_diff=None, exact_share=None, note=str(e)[:120]))
+        except Exception as e:  # keep the last successful check if the service is temporarily unreachable
             print("FAILED", f.__name__, e)
-    save_json(OUT, PROC / "verification.json")
+            if names[f.__name__] in prev and prev[names[f.__name__]].get("exact_share") is not None:
+                OUT.append(prev[names[f.__name__]])
+            else:
+                OUT.append(dict(source=names[f.__name__], check="failed", n=0, max_abs_diff=None, exact_share=None, note=str(e)[:120]))
+    save_json(OUT, path)
 
 
 if __name__ == "__main__":
