@@ -27,39 +27,6 @@
         {
             "type": "attack-pattern",
             "spec_version": "2.1",
-            "id": "attack-pattern--70717452-f7e3-4ce8-956f-39a4d34c5cfb",
-            "created_by_ref": "identity--f1a0f560-2d9e-4c5d-bf47-7e96e805de82",
-            "created": "2024-11-22T16:43:58.079782Z",
-            "modified": "2024-11-22T16:43:58.079782Z",
-            "name": "Facilitate State Propaganda",
-            "description": "Organise citizens around pro-state messaging. Coordinate paid or volunteer groups to push state propaganda.",
-            "kill_chain_phases": [
-                {
-                    "kill_chain_name": "mitre-attack",
-                    "phase_name": "plan-objectives"
-                }
-            ],
-            "external_references": [
-                {
-                    "source_name": "mitre-attack",
-                    "url": "https://github.com/DISARMFoundation/DISARMframeworks/blob/main/generated_pages/techniques/T0002.md",
-                    "external_id": "T0002"
-                }
-            ],
-            "object_marking_refs": [
-                "marking-definition--f79f25d2-8b96-4580-b169-eb7b613a7c31"
-            ],
-            "x_mitre_is_subtechnique": false,
-            "x_mitre_platforms": [
-                "Windows",
-                "Linux",
-                "Mac"
-            ],
-            "x_mitre_version": "2.1"
-        },
-        {
-            "type": "attack-pattern",
-            "spec_version": "2.1",
             "id": "attack-pattern--cec91e97-76c8-4a1f-8397-a06939a558ef",
             "created_by_ref": "identity--f1a0f560-2d9e-4c5d-bf47-7e96e805de82",
             "created": "2024-11-22T16:43:58.091598Z",
@@ -487,14 +454,34 @@
             "x_mitre_version": "2.1"
         },
         {
+            "type": "marking-definition",
+            "spec_version": "2.1",
+            "id": "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487",
+            "created": "2022-10-01T00:00:00.000Z",
+            "name": "TLP:CLEAR",
+            "extensions": {
+                "extension-definition--60a3c5c5-0d10-413e-aab3-9e08dde9e88d": {
+                    "extension_type": "property-extension",
+                    "tlp_2_0": "clear"
+                }
+            }
+        },
+        {
             "type": "identity",
             "spec_version": "2.1",
             "id": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
             "created": "2026-10-14T00:00:00.000Z",
             "modified": "2026-10-14T00:00:00.000Z",
-            "name": "OSINT_YandexOutage study",
-            "description": "Independent open-source study of the October 2026 Yandex data-center strikes.",
-            "identity_class": "organization"
+            "name": "Independent analyst (OSINT_YandexOutage)",
+            "description": "Author of the open-source study of the October 2026 Yandex data-center strikes.",
+            "identity_class": "individual",
+            "external_references": [
+                {
+                    "source_name": "OSINT_YandexOutage",
+                    "description": "Yandex Cloud Outages as a Natural Experiment on Russian Influence Operations (report and data)",
+                    "url": "https://github.com/stvsever/OSINT_YandexOutage"
+                }
+            ]
         },
         {
             "type": "incident",
@@ -504,8 +491,28 @@
             "created": "2026-10-14T00:00:00.000Z",
             "modified": "2026-10-14T00:00:00.000Z",
             "name": "Strikes on Yandex data centers and Yandex Cloud outage, 7 to 11 October 2026",
-            "description": "Drone strikes on Yandex data centers in Sasovo, Kaluga and Vladimir; measured Yandex Cloud reachability fell by about a third after Sasovo and by 78% in total after Vladimir.",
+            "description": "Ukrainian drone strikes on Yandex data centers in Sasovo, Ryazan Oblast (night of 7 to 8 October), Kaluga (9 October) and Vladimir (11 October). Measured Yandex Cloud reachability (IODA active probing) fell by about a third after Sasovo and by 78% in total after Vladimir, with no recovery by 13 October 2026.",
             "external_references": [
+                {
+                    "source_name": "The Moscow Times",
+                    "description": "Ukrainian drones hit Yandex data center, industrial facilities across Russia (8 October 2026)",
+                    "url": "https://www.themoscowtimes.com/2026/10/08/ukrainian-drones-hit-yandex-data-center-after-wave-of-russian-attacks-a93915"
+                },
+                {
+                    "source_name": "The Moscow Times",
+                    "description": "Ukraine drones hit second Yandex data center in two days (9 October 2026)",
+                    "url": "https://www.themoscowtimes.com/2026/10/09/ukraine-drones-hit-second-yandex-data-center-in-two-days-a93927"
+                },
+                {
+                    "source_name": "Al Jazeera",
+                    "description": "Russia's Yandex says data centre in Vladimir shut down after drone attack (11 October 2026)",
+                    "url": "https://www.aljazeera.com/news/2026/10/11/russias-yandex-says-data-centre-in-vladimir-shut-down-after-drone-attack"
+                },
+                {
+                    "source_name": "Yandex Cloud status",
+                    "description": "Incidents 2092 (Sasovo) and 2136 (Vladimir)",
+                    "url": "https://status.yandex.cloud/ru/incidents/2136"
+                },
                 {
                     "source_name": "OSINT_YandexOutage",
                     "description": "Yandex Cloud Outages as a Natural Experiment on Russian Influence Operations (report and data)",
@@ -513,7 +520,7 @@
                 }
             ],
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -524,7 +531,9 @@
             "created": "2026-10-14T00:00:00.000Z",
             "modified": "2026-10-14T00:00:00.000Z",
             "name": "Russian information operations on the war in Ukraine, observed 1 September to 13 October 2026",
-            "description": "Publication output of the actor sets below, measured in this study.",
+            "description": "Publication output of the actor sets below, measured hourly and at 10-minute resolution in this study.",
+            "first_seen": "2026-09-01T00:00:00Z",
+            "last_seen": "2026-10-13T12:00:00Z",
             "external_references": [
                 {
                     "source_name": "OSINT_YandexOutage",
@@ -532,8 +541,105 @@
                     "url": "https://github.com/stvsever/OSINT_YandexOutage"
                 }
             ],
+            "objective": "Promote Russian state narratives on the war in Ukraine to domestic and foreign audiences.",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
+            ]
+        },
+        {
+            "type": "location",
+            "spec_version": "2.1",
+            "id": "location--da67b81f-4fe9-5a76-9fa0-29c52f1dad73",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "name": "Yandex data center, Sasovo",
+            "latitude": 54.373,
+            "longitude": 41.937,
+            "precision": 1000.0,
+            "region": "eastern-europe",
+            "object_marking_refs": [
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
+            ],
+            "country": "RU",
+            "administrative_area": "Ryazan Oblast",
+            "city": "Sasovo"
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--34b41136-2a7d-5893-9ff9-8104ed6b5276",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "related-to",
+            "description": "Struck data center (Sasovo).",
+            "source_ref": "incident--02313d84-035b-5c1f-bad0-d79b3e0c7b31",
+            "target_ref": "location--da67b81f-4fe9-5a76-9fa0-29c52f1dad73",
+            "object_marking_refs": [
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
+            ]
+        },
+        {
+            "type": "location",
+            "spec_version": "2.1",
+            "id": "location--0f47055e-426f-50bf-be4c-a54c63de0566",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "name": "Yandex data center, Kaluga",
+            "administrative_area": "Kaluga Oblast",
+            "region": "eastern-europe",
+            "city": "Kaluga",
+            "object_marking_refs": [
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
+            ],
+            "country": "RU"
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--7115a5c3-557a-5f3e-a6d8-9c1c6cacb590",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "related-to",
+            "description": "Struck data center (Kaluga).",
+            "source_ref": "incident--02313d84-035b-5c1f-bad0-d79b3e0c7b31",
+            "target_ref": "location--0f47055e-426f-50bf-be4c-a54c63de0566",
+            "object_marking_refs": [
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
+            ]
+        },
+        {
+            "type": "location",
+            "spec_version": "2.1",
+            "id": "location--2c62670b-0517-5a2c-adce-edb5adb07f02",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "name": "Yandex data center, Vladimir",
+            "administrative_area": "Vladimir Oblast",
+            "region": "eastern-europe",
+            "city": "Vladimir",
+            "object_marking_refs": [
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
+            ],
+            "country": "RU"
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--e1e8d641-2296-52eb-b598-299232049fa2",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "related-to",
+            "description": "Struck data center (Vladimir).",
+            "source_ref": "incident--02313d84-035b-5c1f-bad0-d79b3e0c7b31",
+            "target_ref": "location--2c62670b-0517-5a2c-adce-edb5adb07f02",
+            "object_marking_refs": [
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -544,7 +650,7 @@
             "created": "2026-10-14T00:00:00.000Z",
             "modified": "2026-10-14T00:00:00.000Z",
             "name": "Pravda network",
-            "description": "Automated network of news portals in dozens of languages that republishes and machine-translates content from Russian state media and pro-Kremlin Telegram channels.",
+            "description": "Pro-Kremlin amplification network of automated news portals in dozens of languages that republishes and machine-translates content from Russian state media and pro-Kremlin Telegram channels, first exposed by VIGINUM as Portal Kombat.",
             "aliases": [
                 "Portal Kombat"
             ],
@@ -561,7 +667,7 @@
                 }
             ],
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -575,7 +681,7 @@
             "source_ref": "campaign--00979a54-36a2-55a2-a0b7-cfd372394305",
             "target_ref": "intrusion-set--afcbf621-544f-5c6b-80cf-adce9502cd50",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -590,7 +696,7 @@
             "source_ref": "intrusion-set--afcbf621-544f-5c6b-80cf-adce9502cd50",
             "target_ref": "attack-pattern--9636ae57-0b93-41a0-8323-85109ee34877",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -605,7 +711,7 @@
             "source_ref": "intrusion-set--afcbf621-544f-5c6b-80cf-adce9502cd50",
             "target_ref": "attack-pattern--8676cd4b-39ec-4219-9b93-27f2b7fb5d27",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -620,7 +726,7 @@
             "source_ref": "intrusion-set--afcbf621-544f-5c6b-80cf-adce9502cd50",
             "target_ref": "attack-pattern--e0f07568-5a2b-429d-94b9-b1ff3c17adea",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -635,7 +741,7 @@
             "source_ref": "intrusion-set--afcbf621-544f-5c6b-80cf-adce9502cd50",
             "target_ref": "attack-pattern--11352e9a-a52b-4ade-ad4f-ec64a15fa1d5",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -650,7 +756,7 @@
             "source_ref": "intrusion-set--afcbf621-544f-5c6b-80cf-adce9502cd50",
             "target_ref": "attack-pattern--cec91e97-76c8-4a1f-8397-a06939a558ef",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -665,7 +771,7 @@
             "source_ref": "intrusion-set--afcbf621-544f-5c6b-80cf-adce9502cd50",
             "target_ref": "attack-pattern--836e9eef-b446-4f68-805f-0f10116d6e7f",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -680,7 +786,7 @@
             "source_ref": "intrusion-set--afcbf621-544f-5c6b-80cf-adce9502cd50",
             "target_ref": "attack-pattern--0f040af8-7434-4fb8-be96-30a3123c8644",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -696,8 +802,9 @@
                 "intrusion-set--afcbf621-544f-5c6b-80cf-adce9502cd50",
                 "incident--02313d84-035b-5c1f-bad0-d79b3e0c7b31"
             ],
+            "confidence": 70,
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -712,7 +819,7 @@
             "source_ref": "incident--02313d84-035b-5c1f-bad0-d79b3e0c7b31",
             "target_ref": "intrusion-set--afcbf621-544f-5c6b-80cf-adce9502cd50",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -732,7 +839,7 @@
                 }
             ],
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -746,7 +853,7 @@
             "source_ref": "campaign--00979a54-36a2-55a2-a0b7-cfd372394305",
             "target_ref": "intrusion-set--e73fb747-6998-59dc-9354-cf45f79cd72e",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -761,7 +868,7 @@
             "source_ref": "intrusion-set--e73fb747-6998-59dc-9354-cf45f79cd72e",
             "target_ref": "attack-pattern--54d8019d-4687-46f5-a4c9-1b9414b80d35",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -776,7 +883,7 @@
             "source_ref": "intrusion-set--e73fb747-6998-59dc-9354-cf45f79cd72e",
             "target_ref": "attack-pattern--11352e9a-a52b-4ade-ad4f-ec64a15fa1d5",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -791,7 +898,7 @@
             "source_ref": "intrusion-set--e73fb747-6998-59dc-9354-cf45f79cd72e",
             "target_ref": "attack-pattern--0f040af8-7434-4fb8-be96-30a3123c8644",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -806,7 +913,7 @@
             "source_ref": "intrusion-set--e73fb747-6998-59dc-9354-cf45f79cd72e",
             "target_ref": "attack-pattern--292fa0bb-3762-41cf-ba2a-c547ef35268d",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -822,8 +929,9 @@
                 "intrusion-set--e73fb747-6998-59dc-9354-cf45f79cd72e",
                 "incident--02313d84-035b-5c1f-bad0-d79b3e0c7b31"
             ],
+            "confidence": 85,
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -843,7 +951,7 @@
                 }
             ],
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -857,7 +965,7 @@
             "source_ref": "campaign--00979a54-36a2-55a2-a0b7-cfd372394305",
             "target_ref": "intrusion-set--08a90461-d1ac-5437-a69d-b628006e6e40",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -872,7 +980,7 @@
             "source_ref": "intrusion-set--08a90461-d1ac-5437-a69d-b628006e6e40",
             "target_ref": "attack-pattern--e0f07568-5a2b-429d-94b9-b1ff3c17adea",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -887,7 +995,7 @@
             "source_ref": "intrusion-set--08a90461-d1ac-5437-a69d-b628006e6e40",
             "target_ref": "attack-pattern--54d8019d-4687-46f5-a4c9-1b9414b80d35",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -902,7 +1010,7 @@
             "source_ref": "intrusion-set--08a90461-d1ac-5437-a69d-b628006e6e40",
             "target_ref": "attack-pattern--0f040af8-7434-4fb8-be96-30a3123c8644",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -918,8 +1026,9 @@
                 "intrusion-set--08a90461-d1ac-5437-a69d-b628006e6e40",
                 "incident--02313d84-035b-5c1f-bad0-d79b3e0c7b31"
             ],
+            "confidence": 85,
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -942,7 +1051,7 @@
                 }
             ],
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -956,7 +1065,7 @@
             "source_ref": "campaign--00979a54-36a2-55a2-a0b7-cfd372394305",
             "target_ref": "intrusion-set--9af29287-5f26-5c2a-977c-867189999884",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -971,7 +1080,7 @@
             "source_ref": "intrusion-set--9af29287-5f26-5c2a-977c-867189999884",
             "target_ref": "attack-pattern--48a53a0e-fc2d-4f28-84d5-0eb615d168f4",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -986,7 +1095,7 @@
             "source_ref": "intrusion-set--9af29287-5f26-5c2a-977c-867189999884",
             "target_ref": "attack-pattern--0f040af8-7434-4fb8-be96-30a3123c8644",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -1003,7 +1112,7 @@
                 "incident--02313d84-035b-5c1f-bad0-d79b3e0c7b31"
             ],
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -1013,14 +1122,8 @@
             "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
             "created": "2026-10-14T00:00:00.000Z",
             "modified": "2026-10-14T00:00:00.000Z",
-            "name": "Foreign-audience pro-Kremlin channels",
-            "description": "Telegram channels and outlets that relay Russian state narratives to foreign audiences in multiple languages.",
-            "aliases": [
-                "InfoDefense",
-                "Strategic Culture",
-                "Sputnik Africa",
-                "DD Geopolitics"
-            ],
+            "name": "Foreign-audience pro-Kremlin channels (analytic grouping)",
+            "description": "Analytic grouping, not a single operator: Telegram channels that relay Russian state narratives to foreign audiences in several languages, including InfoDefense, Strategic Culture, Sputnik Africa and DD Geopolitics.",
             "external_references": [
                 {
                     "source_name": "OSINT_YandexOutage",
@@ -1029,7 +1132,7 @@
                 }
             ],
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -1043,7 +1146,7 @@
             "source_ref": "campaign--00979a54-36a2-55a2-a0b7-cfd372394305",
             "target_ref": "intrusion-set--e4005a51-c25f-53cc-8dd5-9575406afcc8",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -1058,7 +1161,7 @@
             "source_ref": "intrusion-set--e4005a51-c25f-53cc-8dd5-9575406afcc8",
             "target_ref": "attack-pattern--11352e9a-a52b-4ade-ad4f-ec64a15fa1d5",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -1073,7 +1176,7 @@
             "source_ref": "intrusion-set--e4005a51-c25f-53cc-8dd5-9575406afcc8",
             "target_ref": "attack-pattern--0d094dfb-61f9-42d3-a9cf-697fdcbee944",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -1088,7 +1191,7 @@
             "source_ref": "intrusion-set--e4005a51-c25f-53cc-8dd5-9575406afcc8",
             "target_ref": "attack-pattern--292fa0bb-3762-41cf-ba2a-c547ef35268d",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -1103,7 +1206,7 @@
             "source_ref": "intrusion-set--e4005a51-c25f-53cc-8dd5-9575406afcc8",
             "target_ref": "attack-pattern--836e9eef-b446-4f68-805f-0f10116d6e7f",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -1113,14 +1216,15 @@
             "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
             "created": "2026-10-14T00:00:00.000Z",
             "modified": "2026-10-14T00:00:00.000Z",
-            "abstract": "Effect of the Yandex outages on Foreign-audience pro-Kremlin channels",
+            "abstract": "Effect of the Yandex outages on Foreign-audience pro-Kremlin channels (analytic grouping)",
             "content": "No credible drop; output rose relative to controls with coverage of the strikes.",
             "object_refs": [
                 "intrusion-set--e4005a51-c25f-53cc-8dd5-9575406afcc8",
                 "incident--02313d84-035b-5c1f-bad0-d79b3e0c7b31"
             ],
+            "confidence": 85,
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -1130,16 +1234,8 @@
             "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
             "created": "2026-10-14T00:00:00.000Z",
             "modified": "2026-10-14T00:00:00.000Z",
-            "name": "Russian state media channels",
-            "description": "Overt state and state-aligned media channels on Telegram.",
-            "aliases": [
-                "TASS",
-                "Zvezda",
-                "Vesti",
-                "Izvestia",
-                "Channel One Kremlin pool",
-                "War on Fakes"
-            ],
+            "name": "Russian state media channels (analytic grouping)",
+            "description": "Analytic grouping of overt state and state-aligned media channels on Telegram, including TASS, Zvezda, Vesti, Izvestia, the Channel One Kremlin pool and War on Fakes.",
             "external_references": [
                 {
                     "source_name": "OSINT_YandexOutage",
@@ -1148,7 +1244,7 @@
                 }
             ],
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -1162,22 +1258,7 @@
             "source_ref": "campaign--00979a54-36a2-55a2-a0b7-cfd372394305",
             "target_ref": "intrusion-set--52163fd9-ed96-5e85-b422-2e827f55a43e",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
-            ]
-        },
-        {
-            "type": "relationship",
-            "spec_version": "2.1",
-            "id": "relationship--25e03f5a-eca2-5d83-ad3e-1c19af03e999",
-            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
-            "created": "2026-10-14T00:00:00.000Z",
-            "modified": "2026-10-14T00:00:00.000Z",
-            "relationship_type": "uses",
-            "description": "Observed in this study's publication data.",
-            "source_ref": "intrusion-set--52163fd9-ed96-5e85-b422-2e827f55a43e",
-            "target_ref": "attack-pattern--70717452-f7e3-4ce8-956f-39a4d34c5cfb",
-            "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -1192,7 +1273,7 @@
             "source_ref": "intrusion-set--52163fd9-ed96-5e85-b422-2e827f55a43e",
             "target_ref": "attack-pattern--292fa0bb-3762-41cf-ba2a-c547ef35268d",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -1207,7 +1288,7 @@
             "source_ref": "intrusion-set--52163fd9-ed96-5e85-b422-2e827f55a43e",
             "target_ref": "attack-pattern--1997947a-7e08-4ea9-802c-85391d561266",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -1222,7 +1303,7 @@
             "source_ref": "intrusion-set--52163fd9-ed96-5e85-b422-2e827f55a43e",
             "target_ref": "attack-pattern--b2a7561a-28ad-426c-a249-f415b5f11cee",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -1232,14 +1313,15 @@
             "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
             "created": "2026-10-14T00:00:00.000Z",
             "modified": "2026-10-14T00:00:00.000Z",
-            "abstract": "Effect of the Yandex outages on Russian state media channels",
+            "abstract": "Effect of the Yandex outages on Russian state media channels (analytic grouping)",
             "content": "No credible drop; non-war posts fell while war posts rose (topic substitution toward strike news).",
             "object_refs": [
                 "intrusion-set--52163fd9-ed96-5e85-b422-2e827f55a43e",
                 "incident--02313d84-035b-5c1f-bad0-d79b3e0c7b31"
             ],
+            "confidence": 85,
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -1249,15 +1331,8 @@
             "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
             "created": "2026-10-14T00:00:00.000Z",
             "modified": "2026-10-14T00:00:00.000Z",
-            "name": "Pro-Kremlin military bloggers",
-            "description": "War-focused Telegram channels that amplify Russian military narratives.",
-            "aliases": [
-                "Rybar",
-                "WarGonzo",
-                "Readovka",
-                "Two Majors",
-                "Kotsnews"
-            ],
+            "name": "Pro-Kremlin military bloggers (analytic grouping)",
+            "description": "Analytic grouping of war-focused Telegram channels that amplify Russian military narratives, including Rybar, WarGonzo, Readovka, Two Majors and Kotsnews.",
             "external_references": [
                 {
                     "source_name": "OSINT_YandexOutage",
@@ -1266,7 +1341,7 @@
                 }
             ],
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -1280,7 +1355,7 @@
             "source_ref": "campaign--00979a54-36a2-55a2-a0b7-cfd372394305",
             "target_ref": "intrusion-set--e3c99491-9adf-53ef-b1a2-4afffcd53890",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -1295,7 +1370,7 @@
             "source_ref": "intrusion-set--e3c99491-9adf-53ef-b1a2-4afffcd53890",
             "target_ref": "attack-pattern--292fa0bb-3762-41cf-ba2a-c547ef35268d",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -1310,7 +1385,7 @@
             "source_ref": "intrusion-set--e3c99491-9adf-53ef-b1a2-4afffcd53890",
             "target_ref": "attack-pattern--1997947a-7e08-4ea9-802c-85391d561266",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -1325,7 +1400,7 @@
             "source_ref": "intrusion-set--e3c99491-9adf-53ef-b1a2-4afffcd53890",
             "target_ref": "attack-pattern--836e9eef-b446-4f68-805f-0f10116d6e7f",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -1340,7 +1415,7 @@
             "source_ref": "intrusion-set--e3c99491-9adf-53ef-b1a2-4afffcd53890",
             "target_ref": "attack-pattern--b2a7561a-28ad-426c-a249-f415b5f11cee",
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -1350,14 +1425,15 @@
             "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
             "created": "2026-10-14T00:00:00.000Z",
             "modified": "2026-10-14T00:00:00.000Z",
-            "abstract": "Effect of the Yandex outages on Pro-Kremlin military bloggers",
+            "abstract": "Effect of the Yandex outages on Pro-Kremlin military bloggers (analytic grouping)",
             "content": "No credible drop after the strikes.",
             "object_refs": [
                 "intrusion-set--e3c99491-9adf-53ef-b1a2-4afffcd53890",
                 "incident--02313d84-035b-5c1f-bad0-d79b3e0c7b31"
             ],
+            "confidence": 85,
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ]
         },
         {
@@ -1379,6 +1455,12 @@
                 "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
                 "incident--02313d84-035b-5c1f-bad0-d79b3e0c7b31",
                 "campaign--00979a54-36a2-55a2-a0b7-cfd372394305",
+                "location--da67b81f-4fe9-5a76-9fa0-29c52f1dad73",
+                "relationship--34b41136-2a7d-5893-9ff9-8104ed6b5276",
+                "location--0f47055e-426f-50bf-be4c-a54c63de0566",
+                "relationship--7115a5c3-557a-5f3e-a6d8-9c1c6cacb590",
+                "location--2c62670b-0517-5a2c-adce-edb5adb07f02",
+                "relationship--e1e8d641-2296-52eb-b598-299232049fa2",
                 "intrusion-set--afcbf621-544f-5c6b-80cf-adce9502cd50",
                 "relationship--f7077069-5941-59a1-99eb-0e52c4eb5218",
                 "relationship--29451b31-4cf9-5e47-94ba-cdb27274ad76",
@@ -1417,7 +1499,6 @@
                 "note--9177778e-17bb-5564-8583-cc09fad148ca",
                 "intrusion-set--52163fd9-ed96-5e85-b422-2e827f55a43e",
                 "relationship--2ef2f308-e539-5f13-8438-4a95251ee5f0",
-                "relationship--25e03f5a-eca2-5d83-ad3e-1c19af03e999",
                 "relationship--55115341-bb15-5a9d-bc71-02c31b46c662",
                 "relationship--81062109-51fd-5abf-9252-6fdb3583e999",
                 "relationship--d3ff5440-a5fa-5a83-866b-fe7461b90c81",
@@ -1429,7 +1510,6 @@
                 "relationship--c5760d37-97fd-526f-8f57-01bbec917853",
                 "relationship--346ebdd7-12c8-5ecf-a653-8259ecd566ce",
                 "note--5d6b2f84-f623-5302-b773-f71c5a754a92",
-                "attack-pattern--70717452-f7e3-4ce8-956f-39a4d34c5cfb",
                 "attack-pattern--cec91e97-76c8-4a1f-8397-a06939a558ef",
                 "attack-pattern--b2a7561a-28ad-426c-a249-f415b5f11cee",
                 "attack-pattern--9636ae57-0b93-41a0-8323-85109ee34877",
@@ -1445,7 +1525,7 @@
                 "attack-pattern--0f040af8-7434-4fb8-be96-30a3123c8644"
             ],
             "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487"
             ],
             "external_references": [
                 {
@@ -1464,17 +1544,6 @@
                     "url": "https://www.sgdsn.gouv.fr/files/files/20240212_NP_SGDSN_VIGINUM_PORTAL-KOMBAT-NETWORK_ENG_VF.pdf"
                 }
             ]
-        },
-        {
-            "type": "marking-definition",
-            "spec_version": "2.1",
-            "id": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
-            "created": "2017-01-20T00:00:00.000Z",
-            "definition_type": "tlp",
-            "name": "TLP:WHITE",
-            "definition": {
-                "tlp": "white"
-            }
         }
     ]
 }

@@ -2,7 +2,7 @@
 
 This study systematically investigates whether the October 2026 Ukrainian drone strikes on Yandex data centers in Sasovo, Kaluga and Vladimir reduced the output of Russian information operations. The strikes are treated as a natural experiment: an expected-outage function reconstructed from graded public reports is validated against measured outages, and the output of publicly attributed influence operations, state media and military bloggers is compared with seasonal counterfactuals, control sources and placebo periods.
 
-**Bottom line.** The strikes caused a major Yandex Cloud outage but no broad reduction in Russian information operations. One automated pipeline, the Pravda network, stalled for about 11 hours, starting within the hour after the Vladimir outage. Telegram channels of state media, military bloggers and foreign-audience outlets, Reddit communities and the websites of influence operations named by the EEAS show no credible drop.
+**Bottom line.** The strikes caused a major Yandex Cloud outage but no broad reduction in Russian information operations. One known pro-Kremlin amplification network, "Pravda" (frequently referred to as Portal Kombat), stalled for about 11 hours, starting within the hour after the Vladimir outage. Telegram channels of state media, military bloggers and foreign-audience outlets, Reddit communities and the websites of influence operations reported by the European External Action Service (EEAS) show no credible drop.
 
 ## Repository
 

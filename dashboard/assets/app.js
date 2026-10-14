@@ -780,29 +780,40 @@
   function vEvidence(M) {
     header(M, "Evidence: competing hypotheses, sources and data quality", "Every source was opened for this study and graded. The ACH matrix scores each evidence item against four hypotheses; rows and sources below the minimum grade in the uncertainty filter are hidden.", "ach");
     const pr = TM.results["pravda.total"].events; const W = (id, k = "VLA_24h") => SER[id]?.stats?.windows?.[k]; const v24 = BYA.windows.VLA_24h, g24 = v24.groups;
-    const H = ["H1 Broad IO collapse", "H2 Narrow pipeline dependency", "H3 No IO effect", "H4 Artefact or confounder"];
+    const H = [["H1", "Broad collapse", "The strikes broadly reduced Russian IO output across platforms."], ["H2", "Narrow dependency", "Only specific automated pipelines that ran on lost Yandex capacity stalled."],
+      ["H3", "No effect", "IO output was unaffected by the outages."], ["H4", "Artefact", "Apparent changes reflect data artefacts, news cycles or other confounders."]];
+    const L = TM.results["pravda.total"].events.VLA;
     const evid = [
-      [`IODA: Yandex Cloud ${pctu(d3.mean(E.ioda_obs.filter((x) => x != null).slice(-12)))} unreachable; onsets match status pages within minutes`, "A1", ["C", "C", "C", "C"]],
-      [`Pravda dip ${pct(pr.VLA.dip_ratio - 1)} for ${pr.VLA.dip_hours.toFixed(0)} h, starting ${pr.VLA.offset_min.toFixed(0)} min after the Vladimir onset, p ${pv(pr.VLA.p_scan)}`, "A1", ["C", "C", "I", "I"]],
-      ["No Pravda dip time-locked to Sasovo (decline began 7 h before the strike)", "A1", ["I", "N", "C", "N"]],
-      ["Upstream pro-Kremlin Telegram input shows no dip at Vladimir", "A1", ["I", "C", "C", "N"]],
-      [`Telegram state media ${pct(g24["Telegram: state media"]?.median)}, military bloggers ${pct(g24["Telegram: military bloggers"]?.median)}, foreign-audience IO ${pct(g24["Telegram: foreign-audience IO"]?.median)} (Bayesian, 24 h)`, "A1", ["I", "C", "C", "N"]],
-      [`Outlets on Yandex 360 mail: no extra effect (${pct(v24.beta_yandex_mail?.median)})`, "A2", ["I", "C", "C", "N"]],
-      [`EEAS-named outlets: African Initiative and RRN websites ${pct(g24["Web: EEAS-named IMS outlets"]?.median)}, African Initiative Telegram ${pct(g24["Telegram: EEAS-named IMS"]?.median)}`, "A1", ["I", "C", "C", "N"]],
-      [`Web IO outlet ukraina.ru ${pct(W("web.ukraina.ru")?.effect)}; Reddit political communities ${pct(g24["Reddit: political communities"]?.median)}`, "A2", ["I", "C", "C", "N"]],
-      ["War-theme minus non-war contrasts show no war-specific drop", "A2", ["I", "C", "C", "N"]],
-      [`ru.wikipedia user traffic ${pct(W("wiki.ru.wikipedia.user")?.effect)}; Yandex complaint alerts surge`, "A2", ["N", "C", "C", "N"]],
-      ["27 Sep unexplained Yandex Cloud dip: no Pravda dip", "A1", ["N", "N", "C", "C"]],
-    ].filter((e) => REL.indexOf(e[1][0]) <= REL.indexOf(S.unc.minRel));
-    const relW = { A1: 1, A2: 0.9, B1: 0.85, B2: 0.75 }; const score = H.map((_, h) => d3.sum(evid, (e) => (e[2][h] === "I" ? relW[e[1]] || 0.5 : 0)));
-    const c = card(M, "Analysis of competing hypotheses", "C consistent, I inconsistent, N not diagnostic. Lower weighted inconsistency is better.", "ach");
-    const t = el("table", { class: "tbl ach" }); t.append(el("tr", {}, el("th", { text: "Evidence" }), el("th", { text: "Grade" }), ...H.map((h) => el("th", { text: h }))));
-    for (const e of evid) t.append(el("tr", {}, el("td", { text: e[0] }), el("td", {}, el("span", { class: "adm", text: e[1] })), ...e[2].map((v) => el("td", { class: v.toLowerCase(), text: v }))));
-    t.append(el("tr", {}, el("td", { style: "font-weight:650", text: "Weighted inconsistency" }), el("td"), ...score.map((s) => el("td", { class: "num", style: `font-weight:750;${s === d3.min(score) ? `color:${css("--good")}` : ""}`, text: s.toFixed(2) }))));
-    c.append(el("div", { class: "tblx" }, t));
-    const dc = card(M, "Yandex dependency of state and IO media outlets (public DNS, 13 Oct 2026)", "Hosting network of the website, mail exchanger and name servers, used to identify outlets that run their mail on Yandex 360.", "yxdep");
-    const dt = el("table", { class: "tbl" }); dt.append(el("tr", {}, ...["Domain", "Role", "Hosting", "Mail at Yandex", "DNS at Yandex"].map((h) => el("th", { text: h }))));
-    for (const d of EV.infra || []) dt.append(el("tr", {}, el("td", { text: d.domain }), el("td", { class: "muted", text: d.role.replace(/_/g, " ") }), el("td", { text: (d.asn_holders || []).join(", ").slice(0, 48) }), el("td", { text: d.yandex_mail ? "yes" : "" }), el("td", { text: d.yandex_dns ? "yes" : "" })));
+      ["Outage", `Yandex Cloud ${pctu(d3.mean(E.ioda_obs.filter((x) => x != null).slice(-12)))} unreachable; published onsets match the measurement within minutes`, "IODA, status pages", "A1", ["C", "C", "C", "C"]],
+      ["Timing", `Pravda network ${pct(L.locked_ratio - 1)} for ${L.locked_hours.toFixed(0)} h, starting ${L.locked_offset_min.toFixed(0)} min after the Vladimir onset (onset-locked q ${pv(L.q_locked)})`, "Pravda sitemaps", "A1", ["C", "C", "I", "I"]],
+      ["Timing", "Same dip in the English, German and French editions; none in the 27 Sep control period", "Pravda sitemaps", "A1", ["N", "C", "I", "I"]],
+      ["Timing", `No onset-locked Pravda dip after Sasovo (q ${pv(pr.SAS.q_locked)})`, "Pravda sitemaps", "A1", ["I", "N", "C", "N"]],
+      ["Upstream", "The Telegram channels Pravda republishes show no dip at Vladimir", "Telegram", "A1", ["I", "C", "C", "N"]],
+      ["Platforms", `Telegram state media ${pct(g24["Telegram: state media"]?.median)}, military bloggers ${pct(g24["Telegram: military bloggers"]?.median)}, foreign-audience IO ${pct(g24["Telegram: foreign-audience IO"]?.median)} (24 h, Bayesian)`, "Telegram", "A1", ["I", "C", "C", "N"]],
+      ["Platforms", `EEAS-reported outlets: African Initiative and RRN websites ${pct(g24["Web: EEAS-named IMS outlets"]?.median)}, African Initiative Telegram ${pct(g24["Telegram: EEAS-named IMS"]?.median)}`, "WordPress, Telegram", "A1", ["I", "C", "C", "N"]],
+      ["Platforms", `ukraina.ru ${pct(W("web.ukraina.ru")?.effect)}; Reddit political communities ${pct(g24["Reddit: political communities"]?.median)}`, "Sitemaps, Reddit", "A2", ["I", "C", "C", "N"]],
+      ["Exposure", `Outlets on Yandex 360 mail: extra effect ${pct(v24.beta_yandex_mail?.median)}, no different from the control period`, "DNS, Telegram", "A2", ["I", "C", "C", "N"]],
+      ["Themes", "War-minus-non-war contrasts show no war-specific drop; non-war posts fell as war coverage rose", "Telegram", "A2", ["I", "C", "C", "C"]],
+      ["Users", `Russian Wikipedia user traffic ${pct(W("wiki.ru.wikipedia.user")?.effect)}; complaint alerts for Yandex services`, "Wikimedia, trackers", "A2", ["N", "C", "C", "N"]],
+    ].filter((e) => REL.indexOf(e[3][0]) <= REL.indexOf(S.unc.minRel));
+    const relW = { A1: 1, A2: 0.9, B1: 0.85, B2: 0.75 }; const score = H.map((_, h) => d3.sum(evid, (e) => (e[4][h] === "I" ? relW[e[3]] || 0.5 : 0)));
+    const best = H[score.indexOf(d3.min(score))];
+    const c = card(M, "Analysis of competing hypotheses", "Question: did the Yandex outages reduce Russian information-operation output? Each evidence item is rated against four hypotheses; the hypothesis with the least weighted inconsistency is preferred.", "ach");
+    const hg = el("div", { class: "hyps" }); for (const [k, n, d] of H) hg.append(el("div", {}, el("b", { text: `${k} ${n}` }), el("span", { text: d }))); c.append(hg);
+    const t = el("table", { class: "tbl ach" }); t.append(el("tr", {}, el("th", { text: "Type" }), el("th", { text: "Evidence" }), el("th", { text: "Basis" }), el("th", { text: "Grade" }), ...H.map(([k]) => el("th", { style: "text-align:center", text: k }))));
+    for (const e of evid) t.append(el("tr", {}, el("td", { class: "muted", text: e[0] }), el("td", { text: e[1] }), el("td", { class: "muted", text: e[2] }), el("td", {}, el("span", { class: "adm", text: e[3] })), ...e[4].map((v) => el("td", { class: v.toLowerCase(), style: "text-align:center", text: v }))));
+    t.append(el("tr", {}, el("td"), el("td", { style: "font-weight:650", text: "Weighted inconsistency (lower is better)" }), el("td"), el("td"), ...score.map((s) => el("td", { class: "num", style: `text-align:center;font-weight:750;${s === d3.min(score) ? `color:${css("--good")}` : ""}`, text: s.toFixed(1) }))));
+    c.append(el("div", { class: "tblx" }, t), el("p", { class: "note", style: "margin:10px 0 0" }, el("b", { text: `Conclusion: ${best[0]} ${best[1].toLowerCase()}. ` }), best[2], " Every platform-level measurement is inconsistent with a broad collapse; only the Pravda timing contradicts the no-effect hypothesis. C consistent, I inconsistent, N not diagnostic; grades follow the Admiralty system."));
+    const mailN = (EV.infra || []).filter((d) => d.yandex_mail && d.role !== "positive_control"), allN = (EV.infra || []).filter((d) => d.role !== "positive_control");
+    const roleL = { state_foreign: "State media, foreign audience", state_domestic: "State media, domestic", io_web: "IO website", io_automated: "Automated IO network", loyal_domestic: "Pro-Kremlin domestic media", control_independent: "Independent media (control)", control_business: "Business media (control)", positive_control: "Yandex (reference)" };
+    const dc = card(M, "Which outlets depend on Yandex? (public DNS, 13 Oct 2026)", "Mail exchangers (MX) show which state and IO outlets run their e-mail on Yandex 360. Outlets on Yandex mail form a separate exposure group in the Bayesian model.", "yxdep");
+    const pills = el("div", { class: "tsum", style: "grid-template-columns:repeat(3,minmax(0,1fr))" });
+    for (const [k, v, d] of [["Domains checked", String(allN.length), "State media, IO outlets and independent media"], ["On Yandex 360 mail", String(mailN.length), mailN.map((d) => d.domain).join(", ")], ["Effect for this group", pct(v24.beta_yandex_mail?.median), "Extra change after Vladimir relative to other outlets; no different from the control period"]])
+      pills.append(el("div", { class: "tbox" }, el("div", { class: "k", text: k }), el("div", { class: "v", text: v }), el("div", { class: "d", text: d })));
+    dc.append(pills);
+    const dt = el("table", { class: "tbl" }); dt.append(el("tr", {}, ...["Domain", "Outlet type", "Mail servers (MX)", "Yandex 360 mail", "Website network"].map((h) => el("th", { text: h }))));
+    for (const d of allN.slice().sort((a, b) => (b.yandex_mail - a.yandex_mail) || a.domain.localeCompare(b.domain)))
+      dt.append(el("tr", { style: d.yandex_mail ? "font-weight:600" : "" }, el("td", { text: d.domain }), el("td", { class: "muted", text: roleL[d.role] || d.role.replace(/_/g, " ") }), el("td", { class: "muted", text: (d.mx || []).slice(0, 2).join(", ") || "none" }), el("td", { text: d.yandex_mail ? "yes" : "no" }), el("td", { class: "muted", text: (d.asn_holders || []).join(", ").replace(/^[A-Z0-9-]+ /, "").slice(0, 40) })));
     dc.append(el("div", { class: "tblwrap", style: "max-height:360px;overflow:auto" }, dt));
     const sc = card(M, "Source registry", `Click a row to inspect; links open the original. Grades A to ${S.unc.minRel} shown.`, "admiralty");
     const st = el("table", { class: "tbl" }); st.append(el("tr", {}, ...["Grade", "Source", "Type", "Content"].map((h) => el("th", { text: h }))));
@@ -877,7 +888,7 @@
 
   // ------------------------------------------------------------------ init
   function init() {
-    document.getElementById("gen").textContent = `Data to ${EV.meta.study_end.slice(8, 10)} Oct ${EV.meta.study_end.slice(11, 16)} UTC`;
+    document.getElementById("gen").textContent = `Data to ${EV.meta.study_end.slice(8, 10)} Oct ${EV.meta.study_end.slice(11, 16)} UTC · updated 14 Oct 2026`;
     document.getElementById("theme").addEventListener("click", () => { const r = document.documentElement; const dark = r.dataset.theme ? r.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches; r.dataset.theme = dark ? "light" : "dark"; store.set("theme", r.dataset.theme); buildLeft(); render(); renderInspector(); });
     const th = store.get("theme", null); if (th) document.documentElement.dataset.theme = th;
     // deep links: #view or #graph:radial
