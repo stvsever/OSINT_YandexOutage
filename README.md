@@ -1,4 +1,4 @@
-# Yandex Ablation: Did the Data-Center Strikes Silence Russian Information Operations?
+# Yandex Cloud Outages as a Natural Experiment on Russian Influence Operations: Bayesian Outage Modelling with Change-Point Attribution
 
 This study systematically investigates whether the October 2026 Ukrainian drone strikes on Yandex data centers in Sasovo, Kaluga and Vladimir reduced the output of Russian information operations. The strikes are treated as a natural experiment: an expected-outage function reconstructed from graded public reports is validated against measured outages, and the output of publicly attributed influence operations, state media and military bloggers is compared with seasonal counterfactuals, control sources and placebo periods.
 

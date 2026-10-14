@@ -147,7 +147,7 @@ def an_(n):
     return "an" if str(int(round(n))).startswith(("8", "11", "18")) else "a"
 
 
-TITLE = "Yandex Ablation: Did the Data-Center Strikes Silence Russian Information Operations?"
+TITLE = "Yandex Cloud Outages as a Natural Experiment on Russian Influence Operations: Bayesian Outage Modelling with Change-Point Attribution"
 
 
 def build():
@@ -378,14 +378,14 @@ a.cite, a.int {{ color: #143e86; }}
 .title {{ position: relative; width: 210mm; height: 297mm; overflow: hidden; page-break-after: always; color: #fff; }}
 .title svg.band {{ position: absolute; inset: 0; width: 100%; height: 100%; }}
 .title .in {{ position: relative; height: 297mm; padding: 0 20mm 16mm; display: flex; flex-direction: column; }}
-.title .top {{ margin-top: 52mm; }}
-.title .abs {{ margin-top: 16mm; }}
-.title .abs h2 {{ font-size: 11pt; margin: 0 0 2.4mm; color: #fff; }}
-.title .abs p {{ font-size: 9.8pt; line-height: 1.5; color: rgba(255,255,255,.93); }}
-.title h1 {{ font-size: 21pt; line-height: 1.22; margin: 0 0 6mm; font-weight: 700; text-align: justify; text-align-last: justify; hyphens: none; }}
-.title h1 .l2 {{ letter-spacing: .028em; }}
-.title .sub {{ font-size: 11.5pt; line-height: 1.42; font-style: italic; text-align: justify; hyphens: none; opacity: .94; }}
-.title .date {{ margin-top: auto; font-family: "Helvetica Neue", Arial, sans-serif; font-size: 10pt; opacity: .9; }}
+.title .top {{ margin-top: 40mm; }}
+.title .abs {{ margin-top: 13mm; }}
+.title .abs h2 {{ font-size: 13pt; margin: 0 0 2.8mm; color: #fff; }}
+.title .abs p {{ font-size: 10.6pt; line-height: 1.5; color: rgba(255,255,255,.94); }}
+.title h1 {{ font-size: 30pt; line-height: 1.16; margin: 0 0 7mm; font-weight: 700; text-align: left; hyphens: none; text-wrap: balance; }}
+.title h1 .rest {{ display: block; font-size: 17pt; font-weight: 400; line-height: 1.3; margin-top: 3.5mm; opacity: .95; }}
+.title .sub {{ font-size: 12.5pt; line-height: 1.45; font-style: italic; text-align: left; hyphens: none; opacity: .92; }}
+.title .date {{ margin-top: auto; font-family: "Helvetica Neue", Arial, sans-serif; font-size: 11pt; opacity: .9; }}
 h2 {{ font-size: 12pt; margin: 5mm 0 2mm; font-weight: 700; break-after: avoid; }}
 h3 {{ font-size: 9.8pt; margin: 3.2mm 0 1mm; font-weight: 700; font-style: italic; break-after: avoid; }}
 p {{ margin: 0 0 2mm; text-align: justify; hyphens: auto; }}
@@ -420,8 +420,8 @@ li {{ margin-bottom: .9mm; text-align: justify; }}
 
 <section class="title">{band}<div class="in">
   <div class="top">
-  <h1>Yandex Ablation: Did the Data-Center Strikes<br><span class="l2">Silence Russian Information Operations?</span></h1>
-  <div class="sub">A time-resolved attribution of the October 2026 drone strikes on Yandex data centers to Russian influence-operation output on Telegram, Reddit, the Pravda network, Russian state media websites and the websites of influence operations named by the EEAS</div>
+  <h1>Yandex Cloud Outages as a Natural Experiment on Russian Influence Operations:<span class="rest">Bayesian Outage Modelling with Change-Point Attribution</span></h1>
+  <div class="sub">Evidence from the October 2026 drone strikes on Yandex data centers, measured across Telegram, Reddit, the Pravda network, Russian state media and influence operations named by the EEAS</div>
   </div>
   <div class="abs"><h2>Abstract</h2><p>{abstract}</p></div>
   <div class="date">October 2026</div>
