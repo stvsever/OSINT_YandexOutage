@@ -223,7 +223,6 @@ def build():
         "ripe": f"RIPE NCC. (2026). <i>RIPE Stat: BGP update activity and network information.</i> {L('https://stat.ripe.net/')}",
         "delmoral": f"Del Moral, P., Doucet, A., &amp; Jasra, A. (2006). Sequential Monte Carlo samplers. <i>Journal of the Royal Statistical Society: Series B, 68</i>(3), 411-436. {DOI('10.1111/j.1467-9868.2006.00553.x')}",
         "heuer": f"Heuer, R. J. (1999). <i>Psychology of intelligence analysis.</i> Center for the Study of Intelligence. {L('https://www.cia.gov/resources/csi/books-monographs/psychology-of-intelligence-analysis-2/', 'cia.gov')}",
-        "icd": f"Office of the Director of National Intelligence. (2015). <i>Intelligence Community Directive 203: Analytic standards.</i> {L('https://www.dni.gov/files/documents/ICD/ICD-203.pdf', 'dni.gov')}",
         "eeas": f"European External Action Service. (2026). <i>4th EEAS report on foreign information manipulation and interference threats.</i> {L('https://www.eeas.europa.eu/sites/default/files/2026/documents/EEAS%204th%20Threat%20Report_web%20version_1.pdf', 'eeas.europa.eu')}",
         "viginum_pk": f"VIGINUM. (2024). <i>Portal Kombat: A structured and coordinated pro-Russian propaganda network.</i> SGDSN. {L('https://www.sgdsn.gouv.fr/files/files/20240212_NP_SGDSN_VIGINUM_PORTAL-KOMBAT-NETWORK_ENG_VF.pdf', 'sgdsn.gouv.fr')}",
         "pravda": f"Pravda network. (2026). <i>Public XML sitemaps of news-pravda.com and its subdomains.</i> {L('https://news-pravda.com/sitemap.xml')}",
@@ -274,21 +273,6 @@ def build():
                 f"{pr['dip_ratio'] * 100:.0f}% of expected for {pr['dip_hours']:.0f} hours, starting {pr['offset_min']:.0f} minutes after the "
                 f"Vladimir outage. No other platform group shows a credible drop. The strikes disrupted Yandex substantially but did not measurably "
                 f"silence Russian information operations; the one observed effect was narrow and transient.")
-
-    def kj(i, head, lik, conf, body):
-        return (f"<div class='kj'><p class='kjh'><span class='kjn'>{i}</span><b>{head}</b></p>"
-                f"<p class='kjm'><i>{lik}; {conf} confidence.</i></p><p class='kjb'>{body}</p></div>")
-
-    KJ = "".join([
-        kj(1, "The strikes caused a major, sustained loss of Yandex Cloud capacity.", "Almost certain (95 to 99%)", "high",
-           f"Measured reachability of Yandex Cloud fell by {off_sas * 100:.0f}% after the Sasovo strike (night of 7 to 8 October) and by {off_now * 100:.0f}% in total after the Vladimir strike (11 October), with no recovery by 13 October {c('ioda')}. The Kaluga strike (9 October) left no measurable cloud signature. Operator status pages, the regional governor, NetBlocks, Cloudflare Radar and NASA FIRMS agree to within minutes {c('ycs', 'gov', 'nb', 'cfr', 'firms')}."),
-        kj(2, "The outage temporarily stalled one automated influence pipeline, the Pravda network.", "Likely (55 to 80%)", "moderate",
-           f"The network's output fell to {pr['dip_ratio'] * 100:.0f}% of expected for {pr['dip_hours']:.1f} h, starting {pr['offset_min']:.0f} min after the measured Vladimir outage (change-point scan p = {fp(pr['p_scan'])}), across its language editions, while the Telegram channels it republishes did not dip; {pr['recovery_ratio'] * 100:.0f}% of the backlog was published later ({X('fig1', 'Figure 1B')}). Confidence is moderate because Sasovo produced no comparable dip and the network's hosting, behind Cloudflare, cannot be observed {c('viginum_pk')}."),
-        kj(3, "Russian information-operation output on the observed platforms continued at expected levels.", "Very likely (80 to 95%)", "moderate",
-           f"Across {nmem} channels, language editions, communities and websites, no platform group other than the Pravda network shows a credible drop ({X('fig2', 'Figure 2')}). This includes Telegram state media, military bloggers, tabloids and foreign-audience channels, outlets on Yandex 360 mail, and the outlets of African Initiative and RRN named by the EEAS {c('eeas')}. Relative to controls, IO groups moved {pct(iom['median'])} (90% credible interval {pct(iom['ci90'][0])} to {pct(iom['ci90'][1])}) in the 24 h after Vladimir. The judgment covers public output; X, VK and closed bot infrastructure could not be observed."),
-    ])
-
-    kj_note = f"""<p class="note"><i>Note.</i> Likelihood follows the estimative scale of Intelligence Community Directive 203 {c('icd')}; confidence reflects the quality, independence and coverage of the evidence.</p>"""
 
     # ------------------------------------------------------------ body, in document order
     exact = [x for x in ver if x.get("exact_share") == 1]
@@ -393,24 +377,12 @@ li {{ margin-bottom: .9mm; text-align: justify; }}
 <section class="title">{band}<div class="in">
   <div class="top">
   <h1>Yandex Cloud Outages as a Natural Experiment<br>on Russian Influence Operations: Bayesian<br>Outage Modelling with Change-Point Attribution</h1>
-  <div class="sub">Evidence from the October 2026 drone strikes on Yandex data centers, measured across Telegram, Reddit, the Pravda network and Russian state media</div>
   </div>
   <div class="abs"><h2>Abstract</h2><p>{abstract}</p></div>
   <div class="date">October 2026</div>
 </div></section>
 
-<section class="page2">
-<div class="bl"><p class="lab">Bottom line</p>
-<p class="txt">The strikes caused a major Yandex Cloud outage but no broad reduction in Russian information operations.</p>
-<div class="grid">
-<div class="c1"><b>Outage</b>Yandex Cloud lost {off_sas * 100:.0f}% of its reachable capacity after Sasovo and {off_now * 100:.0f}% after Vladimir, with no recovery by 13 October.</div>
-<div class="c2"><b>Effect found</b>The automated Pravda network stalled for {pr['dip_hours']:.0f} hours, starting {pr['offset_min']:.0f} minutes after the Vladimir outage.</div>
-<div class="c3"><b>No effect</b>Telegram, Reddit, state media and EEAS-named outlets continued at expected levels or rose with coverage of the strikes.</div>
-</div></div>
-<h2>Key Judgments</h2>
-{KJ}
-{kj_note}
-</section>
+
 
 <section>
 {sec1}{sec2}{sec3}{sec32}{sec4}{fig1}{fig2}
