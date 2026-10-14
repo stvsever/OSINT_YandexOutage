@@ -14,7 +14,7 @@
     const E = (a, b, w = 1, kind = "") => edges.push({ a, b, w, kind });
     const srcCluster = (t) => ({ "Official operator statement": "Operator statements", "Regional official": "Regional officials", "Satellite remote sensing": "Satellite", "Third-party telemetry report": "Telemetry reports", "Measurement data": "Measured data", "Crowdsourced outage tracker": "Complaint trackers", "Official attribution report": "Attribution reports", Media: "Media" }[t] || "Other");
     const used = new Set(EV.events.flatMap((e) => e.sources));
-    ["SRC-EEAS", "SRC-VIGINUM", "SRC-VIGINUM-PK", "SRC-DNS", "SRC-WP", "SRC-PRAVDA", "SRC-TG", "SRC-RD", "SRC-WEB", "SRC-WIKI"].forEach((s) => used.add(s));
+    ["SRC-EEAS", "SRC-VIGINUM-PK", "SRC-DNS", "SRC-WP", "SRC-PRAVDA", "SRC-TG", "SRC-RD", "SRC-WEB", "SRC-WIKI"].forEach((s) => used.add(s));
     for (const s of EV.sources) if (used.has(s.id)) N({ id: s.id, layer: 0, cluster: srcCluster(s.type), label: SRC_SHORT[s.id] || s.name, full: s.name, kind: "source", rel: s.rel, ref: { type: "source", id: s.id } });
     const siteOf = (e) => (["Sasovo", "Kaluga", "Vladimir"].includes(e.site) ? e.site : "Other");
     for (const e of EV.events.slice().sort((a, b) => Date.parse(a.t) - Date.parse(b.t))) {
@@ -23,18 +23,17 @@
     }
     for (const [k, l, cl] of [["SAS", "Sasovo outage", "Strikes"], ["KAL", "Kaluga strike", "Strikes"], ["VLA", "Vladimir outage", "Strikes"], ["SEP", "27 Sep control (no strike)", "Control period"]]) N({ id: "site." + k, layer: 2, cluster: cl, label: l, kind: "site", ref: k === "SEP" ? { type: "event", id: "EV-SEP27" } : { type: "eof" } });
     for (const e of EV.events) { const k = { Sasovo: "SAS", Kaluga: "KAL", Vladimir: "VLA" }[e.site]; if (k) E(e.id, "site." + k, 1); if (e.id === "EV-SEP27") E(e.id, "site.SEP", 1); }
-    const exps = [["exp.cloud", "Yandex Cloud capacity", "Compute"], ["exp.consumer", "Consumer services", "Services"], ["exp.mail", "Yandex 360 mail", "Organisational"], ["exp.none", "No Yandex dependency", "Organisational"]];
+    const exps = [["exp.cloud", "Yandex Cloud capacity", "Compute"], ["exp.consumer", "Consumer services", "Services"], ["exp.mail", "Yandex 360 mail", "Organisational"], ["exp.none", "No documented dependency", "Organisational"]];
     for (const [id, l, cl] of exps) N({ id, layer: 3, cluster: cl, label: l, kind: "exposure" });
     E("site.SAS", "exp.cloud", 3); E("site.VLA", "exp.cloud", 3); E("site.KAL", "exp.cloud", 0.3); E("site.SEP", "exp.cloud", 1);
     E("site.SAS", "exp.consumer", 2); E("site.VLA", "exp.consumer", 3); E("site.SAS", "exp.mail", 1); E("site.VLA", "exp.mail", 1);
-    E("SRC-IODA", "exp.cloud", 1); E("SRC-DNS", "exp.mail", 1); E("SRC-DNS", "exp.none", 1); E("SRC-VIGINUM", "exp.none", 1);
+    E("SRC-IODA", "exp.cloud", 1); E("SRC-DNS", "exp.mail", 1); E("SRC-DNS", "exp.none", 1);
     const g = (BY.windows.VLA_24h || {}).groups || {};
     const pr = TM.results["pravda.total"]?.events?.VLA;
     const actors = [
       ["act.pravda", "Pravda network", "EEAS-named IMS", pr ? pr.dip_ratio - 1 : null, ["exp.cloud"], ["SRC-PRAVDA", "SRC-EEAS", "SRC-VIGINUM-PK"], "f.drop", { type: "timing", id: "pravda.total" }],
       ["act.afri", "African Initiative", "EEAS-named IMS", g["Web: EEAS-named IMS outlets"]?.median, ["exp.none"], ["SRC-WP", "SRC-TG", "SRC-EEAS"], "f.none", { type: "group", id: "Web: EEAS-named IMS outlets", win: "VLA_24h" }],
       ["act.rrn", "RRN, R-FBI", "EEAS-named IMS", g["Web: EEAS-named IMS outlets"]?.median, ["exp.none"], ["SRC-WP", "SRC-EEAS"], "f.none", { type: "group", id: "Web: EEAS-named IMS outlets", win: "VLA_24h" }],
-      ["act.storm", "Storm-1516 sites", "EEAS-named IMS", null, ["exp.none"], ["SRC-VIGINUM", "SRC-DNS", "SRC-EEAS"], "f.nodep", null],
       ["act.state", "State media", "Telegram", g["Telegram: state media"]?.median, ["exp.none"], ["SRC-TG"], "f.none", { type: "group", id: "Telegram: state media", win: "VLA_24h" }],
       ["act.milb", "Military bloggers", "Telegram", g["Telegram: military bloggers"]?.median, ["exp.none", "exp.mail"], ["SRC-TG"], "f.none", { type: "group", id: "Telegram: military bloggers", win: "VLA_24h" }],
       ["act.tab", "Tabloids", "Telegram", g["Telegram: pro-Kremlin tabloids"]?.median, ["exp.none"], ["SRC-TG"], "f.none", { type: "group", id: "Telegram: pro-Kremlin tabloids", win: "VLA_24h" }],
@@ -50,7 +49,7 @@
       for (const s of srcs) E(s, id, 0.5, "attr");
       E(id, f, id === "act.pravda" ? 3 : 1);
     }
-    for (const [id, l, color] of [["f.drop", "Time-locked drop", "--critical"], ["f.small", "Service-level drop", "--s4"], ["f.none", "No credible drop", "--good"], ["f.nodep", "No Yandex dependency", "--good"]]) N({ id, layer: 5, cluster: "Findings", label: l, kind: "finding", color });
+    for (const [id, l, color] of [["f.drop", "Time-locked drop", "--critical"], ["f.small", "Service-level drop", "--s4"], ["f.none", "No credible drop", "--good"]]) N({ id, layer: 5, cluster: "Findings", label: l, kind: "finding", color });
     const idx = Object.fromEntries(nodes.map((n) => [n.id, n]));
     return { nodes, edges: edges.filter((e) => idx[e.a] && idx[e.b]), idx };
   }
@@ -59,12 +58,10 @@
     "exp.cloud": "Loss of Yandex Cloud compute and network capacity measured by IODA: 34% after Sasovo, 78% after Vladimir, none after Kaluga. Any pipeline running in the lost zones is exposed.",
     "exp.consumer": "Yandex consumer services (Search, Pay, Go, Alice, KinoPoisk) were disrupted; Russian Wikipedia visits fell 7%, consistent with lost search and app referrals.",
     "exp.mail": "Public DNS shows seven media and IO outlets on Yandex 360 mail (rt.com, vz.ru, readovka.news, rybar.ru, strategic-culture.su, topcor.ru, eadaily.com). Their channels show no strike-specific effect.",
-    "exp.none": "No IO or state-media website among 51 media domains and 342 domains attributed to Storm-1516, African Initiative, RRN, R-FBI and the Pravda network resolves to a Yandex network or uses Yandex mail or DNS.",
-    "act.storm": "VIGINUM lists 338 domains linked to Storm-1516 (CopyCop). On 13 to 14 Oct 2026, 96 resolved and 63 answered; none was hosted on Yandex. Most are dormant or parked, so their output cannot be measured hourly.",
+    "exp.none": "Outlets without a documented Yandex dependency in their public DNS records (website hosting, mail or name servers).",
     "f.drop": "Only the Pravda network shows a significant dip that starts after the outage onset, replicated across its language editions.",
     "f.small": "Consumer-level effects such as fewer Russian Wikipedia visits are consistent with Yandex Search and app disruption.",
     "f.none": "No credible drop: either the interval rules out drops larger than 20%, or any change is matched in controls and placebo windows.",
-    "f.nodep": "The infrastructure of these operations shows no technical dependency on Yandex.",
   };
 
   function render(box, ctx) {

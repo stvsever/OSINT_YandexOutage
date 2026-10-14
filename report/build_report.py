@@ -194,29 +194,6 @@ def build():
     early = [(n, e) for n, e in early if e["p_scan"] < 0.05 and 0 <= e["offset_min"] <= 60]
     early_txt = (f"The {', '.join(n for n, _ in early[:-1])} and {early[-1][0]} editions dip {min(e['offset_min'] for _, e in early):.0f} min after onset."
                  if len(early) >= 2 else "")
-    # infrastructure of attributed operations
-    A = D["actors"]
-    by_ims = collections.OrderedDict()
-    for d in sorted(A, key=lambda d: (not d["ims"].startswith("Storm"), d["ims"])):
-        by_ims.setdefault(d["ims"], []).append(d)
-
-    def holder(h):
-        h = re.sub(r"^\S+\s+(-\s+)?", "", h or "").replace('"', "")
-        h = re.sub(r",? (Inc|LLC|Ltd|Limited|GmbH|SE|SAS)\.?$", "", h).replace("Domain names registrar ", "")
-        return h
-
-    nA = len(A); nAres = sum(d["resolves"] for d in A)
-    st_ = by_ims.get("Storm-1516 / CopyCop (VIGINUM)", [])
-    st_hold = collections.Counter(holder(d["holder"]) for d in st_ if d.get("holder")).most_common(2)
-    site_host = {d["domain"]: holder(d["holder"]) for d in A if d["ims"] != "Storm-1516 / CopyCop (VIGINUM)"}
-    n_media = sum(1 for d in D["infra"] if d["role"] != "positive_control")
-    infra_txt = (f"Of the {len(st_)} Storm-1516 domains listed by VIGINUM, {sum(d['resolves'] for d in st_)} resolved and "
-                 f"{sum(1 for d in st_ if d.get('http') == 200)} answered on 13 to 14 October; the answering sites sit mainly behind "
-                 f"{st_hold[0][0]} ({st_hold[0][1]}) and {st_hold[1][0]} ({st_hold[1][1]}), and most of the rest are dormant or parked, so their output cannot be measured hourly. "
-                 f"The websites of African Initiative (afrinz.ru) and R-FBI (fondfbr.ru) are hosted by {site_host.get('afrinz.ru', 'n/a')}, "
-                 f"and those of RRN (rrn.com.tr) and the Pravda network behind {site_host.get('rrn.com.tr', 'n/a')}. "
-                 f"None of these {nA} domains, and none of the {n_media} state and IO media domains mapped for this study, is hosted on a Yandex network or uses Yandex name servers. "
-                 f"Seven media outlets use Yandex 360 mail ({', '.join(ymail)}); their channels show no strike-specific change (Section 2.2).")
     ver = D["ver"]; nver = sum(x["n"] for x in ver)
     quality = json.loads((PROC / "data_quality.json").read_text())
     q_bad = {k: v["status"] for k, v in quality.items() if v["status"] != "ok"}
@@ -249,7 +226,6 @@ def build():
         "icd": f"Office of the Director of National Intelligence. (2015). <i>Intelligence Community Directive 203: Analytic standards.</i> {L('https://www.dni.gov/files/documents/ICD/ICD-203.pdf', 'dni.gov')}",
         "eeas": f"European External Action Service. (2026). <i>4th EEAS report on foreign information manipulation and interference threats.</i> {L('https://www.eeas.europa.eu/sites/default/files/2026/documents/EEAS%204th%20Threat%20Report_web%20version_1.pdf', 'eeas.europa.eu')}",
         "viginum_pk": f"VIGINUM. (2024). <i>Portal Kombat: A structured and coordinated pro-Russian propaganda network.</i> SGDSN. {L('https://www.sgdsn.gouv.fr/files/files/20240212_NP_SGDSN_VIGINUM_PORTAL-KOMBAT-NETWORK_ENG_VF.pdf', 'sgdsn.gouv.fr')}",
-        "viginum_storm": f"VIGINUM. (2025). <i>Storm-1516: Technical and tactical analysis of a Russian information manipulation set.</i> SGDSN. {L('https://www.sgdsn.gouv.fr/files/files/Publications/20250507_TLP-CLEAR_NP_SGDSN_VIGINUM_Technical%20report_Storm-1516.pdf', 'sgdsn.gouv.fr')}",
         "pravda": f"Pravda network. (2026). <i>Public XML sitemaps of news-pravda.com and its subdomains.</i> {L('https://news-pravda.com/sitemap.xml')}",
         "tg": f"Telegram. (2026). <i>Public channel previews</i> ({n_ch_coll} channels, t.me/s/&lt;channel&gt;). {L('https://t.me/s/rybar', 't.me/s')}",
         "wp": f"African Initiative, RRN and R-FBI. (2026). <i>WordPress REST API post feeds.</i> {L('https://afrinz.ru/wp-json/wp/v2/posts', 'afrinz.ru/wp-json')}; {L('https://rrn.com.tr/wp-json/wp/v2/posts', 'rrn.com.tr/wp-json')}; {L('https://fondfbr.ru/wp-json/wp/v2/posts', 'fondfbr.ru/wp-json')}",
@@ -310,8 +286,6 @@ def build():
            f"The network's output fell to {pr['dip_ratio'] * 100:.0f}% of expected for {pr['dip_hours']:.1f} h, starting {pr['offset_min']:.0f} min after the measured Vladimir outage (change-point scan p = {fp(pr['p_scan'])}), across its language editions, while the Telegram channels it republishes did not dip; {pr['recovery_ratio'] * 100:.0f}% of the backlog was published later ({X('fig1', 'Figure 1B')}). Confidence is moderate because Sasovo produced no comparable dip and the network's hosting, behind Cloudflare, cannot be observed {c('viginum_pk')}."),
         kj(3, "Russian information-operation output on the observed platforms continued at expected levels.", "Very likely (80 to 95%)", "moderate",
            f"Across {nmem} channels, language editions, communities and websites, no platform group other than the Pravda network shows a credible drop ({X('fig2', 'Figure 2')}). This includes Telegram state media, military bloggers, tabloids and foreign-audience channels, outlets on Yandex 360 mail, and the outlets of African Initiative and RRN named by the EEAS {c('eeas')}. Relative to controls, IO groups moved {pct(iom['median'])} (90% credible interval {pct(iom['ci90'][0])} to {pct(iom['ci90'][1])}) in the 24 h after Vladimir. The judgment covers public output; X, VK and closed bot infrastructure could not be observed."),
-        kj(4, "The web infrastructure of attributed influence operations does not run on Yandex.", "Very likely (80 to 95%)", "moderate",
-           f"None of {nA} domains attributed to Storm-1516, African Initiative, RRN, R-FBI or the Pravda network by VIGINUM and the EEAS {c('viginum_storm', 'eeas')} ({nAres} resolving), and none of the state and IO media domains mapped here, is hosted on a Yandex network or uses Yandex name servers ({X('s33', 'Section 3.3')}). Seven media outlets use Yandex 360 mail; their channels show no strike-specific change. DNS was measured after the strikes, so earlier migrations cannot be excluded."),
     ])
 
     kj_note = f"""<p class="note"><i>Note.</i> Likelihood follows the estimative scale of Intelligence Community Directive 203 {c('icd')}; confidence reflects the quality, independence and coverage of the evidence.</p>"""
@@ -327,7 +301,7 @@ def build():
 <h3 id="s21">2.1 Expected Outage Function</h3>
 <p>Each strike contributes a capacity-weighted damage curve whose timing, onset lag, failure ramp, damage and recovery follow from graded reports {c('ycs', 'ytg', 'gov', 'firms', 'cfr', 'nb', 'trk')}. Source grades (NATO Admiralty system) are converted into probabilities and pooled into each strike's credibility. The model is estimated in three nested Bayesian stages with adaptive-tempering sequential Monte Carlo {c('delmoral')} on a 10-minute grid: attack reports only (S0), all published information (S1), and fused with active-probing telemetry from IODA (S2) {c('dainotti', 'quan')}; BGP visibility is taken from RIPE Stat {c('ripe')}. Stage 1 is validated out of sample against the measurement ({X('fig1', 'Figure 1A')}).</p>
 <h3 id="s22">2.2 Actors and Outcome Data</h3>
-<p>The actor set follows public attributions: the Pravda network (Portal Kombat) {c('viginum_pk')}, Storm-1516 {c('viginum_storm')}, and African Initiative, RRN and R-FBI {c('eeas')}. It is extended with Russian state broadcasters, the Ministry of Defence broadcaster Zvezda, the Channel One Kremlin pool, the Kremlin-linked "War on Fakes" channel, foreign-audience outlets (InfoDefense, Strategic Culture, Sputnik Africa, DD Geopolitics) and the most prominent military bloggers. Output is measured as publication timestamps from Pravda sitemaps {c('pravda')}, Telegram channel previews {c('tg')}, WordPress feeds and sitemaps {c('wp', 'web')} and Reddit {c('arctic')}; independent Russian, Ukrainian, business and non-political sources serve as controls. Russian Wikipedia pageviews {c('wiki')} are a positive control for user-facing disruption: Yandex Search refers a substantial share of visits while Wikimedia's own infrastructure is unaffected, so a dip there shows that the outage reached ordinary users. Yandex dependency is mapped from public DNS records with network attribution from RIPE Stat.</p>
+<p>The actor set follows public attributions: the Pravda network (Portal Kombat) {c('viginum_pk')} and African Initiative, RRN and R-FBI {c('eeas')}. It is extended with Russian state broadcasters, the Ministry of Defence broadcaster Zvezda, the Channel One Kremlin pool, the Kremlin-linked "War on Fakes" channel, foreign-audience outlets (InfoDefense, Strategic Culture, Sputnik Africa, DD Geopolitics) and the most prominent military bloggers. Output is measured as publication timestamps from Pravda sitemaps {c('pravda')}, Telegram channel previews {c('tg')}, WordPress feeds and sitemaps {c('wp', 'web')} and Reddit {c('arctic')}; independent Russian, Ukrainian, business and non-political sources serve as controls. Russian Wikipedia pageviews {c('wiki')} are a positive control for user-facing disruption: Yandex Search refers a substantial share of visits while Wikimedia's own infrastructure is unaffected, so a dip there shows that the outage reached ordinary users. Yandex dependency is mapped from public DNS records with network attribution from RIPE Stat.</p>
 <h3 id="s23">2.3 Statistical Inference</h3>
 <p>Each series receives an out-of-sample seasonal counterfactual (hour of day, day of week and trend, fitted on the baseline only) {c('brodersen')}. Inference combines placebo-in-time windows of 6 and 24 hours {c('abadie')} with a same-weekday check; a Bayesian hierarchical model that pools {nmem} member series into platform groups {c('dersimonian')}, with a Yandex-dependency term, the common news-shock variance and convergence checked by R-hat {c('gelman')}; change-point dating of dips against the outage onset, calibrated with 400 placebo origins; dose-response on the expected outage function with HAC errors {c('newey')}; war-minus-non-war theme contrasts; false-discovery control {c('bh')}; a 20% equivalence bound {c('lakens')}; and analysis of competing hypotheses {c('heuer')}. A drop is credible only if the posterior probability of a drop larger than 10% exceeds 90%, the group placebo p is below 0.05 and the same-weekday check agrees; a dip is time-locked only if it is significant and starts at or after the onset.</p>
 <h3 id="s24">2.4 Data Verification</h3>
@@ -354,11 +328,8 @@ def build():
 {fig_groups(by)}
 <p class="note"><i>Note.</i> Posterior median (value at right) and 90% credible interval, including the common news-shock variance estimated before the strikes. Red: credible drop. Green: drops larger than 20% ruled out. Grey: inconclusive. The shaded band marks drops beyond the 20% smallest effect of interest.</p></figure>
 """
-    sec33 = f"""<h3 id="s33">3.3 Infrastructure of Attributed Influence Operations</h3>
-<p>{infra_txt.replace('(Section 2.2)', '(' + X('s32', 'Section 3.2') + ')')}</p>
-"""
     sec4 = f"""<h2 id="s4">4. Conclusion</h2>
-<p>The October 2026 drone strikes by the Ukrainian armed forces on Yandex data centers produced a large and sustained outage of Yandex Cloud, and published reports alone were sufficient to reconstruct its timing to within minutes. The evidence does not support the view that the strikes silenced Russian information operations. Their only measurable effect on IO output was {an_(pr['dip_hours'])} {pr['dip_hours']:.0f}-hour stall of the Pravda network after the Vladimir strike, a pro-Kremlin amplification network that automatically republishes state media and Telegram content rather than producing original disinformation, so the stall reduced the reach of existing narratives rather than their production. This pattern is consistent with a dependency of one republishing pipeline on lost capacity rather than with a broad loss of capability. The human-operated Telegram channels of state media, military bloggers and foreign-audience outlets continued and partly intensified with coverage of the strikes, and the infrastructure of the attributed operations is hosted largely on Cloudflare, Amazon and Russian providers other than Yandex, which explains this resilience.</p>
+<p>The October 2026 drone strikes by the Ukrainian armed forces on Yandex data centers produced a large and sustained outage of Yandex Cloud, and published reports alone were sufficient to reconstruct its timing to within minutes. The evidence does not support the view that the strikes silenced Russian information operations. Their only measurable effect on IO output was {an_(pr['dip_hours'])} {pr['dip_hours']:.0f}-hour stall of the Pravda network after the Vladimir strike, a pro-Kremlin amplification network that automatically republishes state media and Telegram content rather than producing original disinformation, so the stall reduced the reach of existing narratives rather than their production. This pattern is consistent with a dependency of one republishing pipeline on lost capacity rather than with a broad loss of capability. The human-operated Telegram channels of state media, military bloggers and foreign-audience outlets continued and partly intensified with coverage of the strikes.</p>
 """
 
     refs = "".join(f'<li id="ref-{i + 1}">{REF[k]}</li>' for i, k in enumerate(order))
@@ -431,7 +402,7 @@ li {{ margin-bottom: .9mm; text-align: justify; }}
 <div class="grid">
 <div class="c1"><b>Outage</b>Yandex Cloud lost {off_sas * 100:.0f}% of its reachable capacity after Sasovo and {off_now * 100:.0f}% after Vladimir, with no recovery by 13 October.</div>
 <div class="c2"><b>Effect found</b>The automated Pravda network stalled for {pr['dip_hours']:.0f} hours, starting {pr['offset_min']:.0f} minutes after the Vladimir outage.</div>
-<div class="c3"><b>No effect</b>Telegram, Reddit, state media and EEAS-named outlets continued at expected levels; none of their websites runs on Yandex.</div>
+<div class="c3"><b>No effect</b>Telegram, Reddit, state media and EEAS-named outlets continued at expected levels or rose with coverage of the strikes.</div>
 </div></div>
 <h2>Key Judgments</h2>
 {KJ}
@@ -439,7 +410,7 @@ li {{ margin-bottom: .9mm; text-align: justify; }}
 </section>
 
 <section>
-{sec1}{sec2}{sec3}{fig1}{sec32}{fig2}{sec33}{sec4}
+{sec1}{sec2}{sec3}{fig1}{sec32}{fig2}{sec4}
 </section>
 
 <section class="refs"><h2 id="refs">References</h2><ol>{refs}</ol></section>

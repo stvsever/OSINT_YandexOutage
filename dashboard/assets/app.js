@@ -31,7 +31,7 @@
     theme: ["Theme conditioning", "Posts and threads are labelled Ukraine-war or other with a multilingual keyword lexicon. A dependency specific to war propaganda would show as a larger drop in war content than in other content."],
     ach: ["Analysis of competing hypotheses (ACH)", "Each piece of evidence is rated consistent, inconsistent or not diagnostic with each hypothesis. The hypothesis with the least weighted inconsistency is preferred (Heuer)."],
     icd: ["Estimative language (ICD 203)", "Almost certain 95 to 99 %, very likely 80 to 95 %, likely 55 to 80 %, roughly even 45 to 55 %, unlikely 20 to 45 %, very unlikely 5 to 20 %."],
-    yxdep: ["Yandex dependency (DNS)", "Public DNS records of each outlet show where its website is hosted, who runs its mail (MX) and its name servers (NS). No IO website is hosted on Yandex; seven outlets, including RT, Readovka, Rybar and Strategic Culture, run their mail on Yandex 360."],
+    yxdep: ["Yandex dependency (DNS)", "Public DNS records of each outlet show where its website is hosted, who runs its mail (MX) and its name servers (NS). Seven outlets, including RT, Readovka, Rybar and Strategic Culture, run their mail on Yandex 360."],
     wiki: ["Russian Wikipedia as a positive control", "Russian Wikipedia user pageviews are not an information operation. They test whether the outage reached ordinary users: Yandex Search, Russia's dominant search engine, refers a substantial share of visits, while Wikimedia's own servers were unaffected. A dip there, together with complaint alerts for Yandex services, confirms consumer-facing disruption."],
     pravda: ["Pravda network (Portal Kombat)", "An automated network of sites in dozens of languages that republishes and machine-translates pro-Kremlin Telegram content. Its public sitemaps give the exact publication time of every article."],
   };
@@ -454,7 +454,7 @@
   function themeSeg() { const s = seg(["all", "war", "other", "diff"], S.theme, (v) => { S.theme = v; if (v === "diff") S.norm = "anom"; buildLeft(); render(); toast(`Theme: ${THEME_L[v]}`); }, { all: "All posts", war: "War", other: "Non-war", diff: "War minus non-war" }); s.classList.add("inline"); return s; }
   function vOverview(M) {
     const pr = TM.results["pravda.total"].events.VLA; const v24 = BYA.windows.VLA_24h;
-    const nMem = Object.keys(v24.members).length, AI = EV.actor_infra || [], nAI = AI.length, nAIy = AI.filter((d) => d.yandex_hosting || d.yandex_dns).length;
+    const nMem = Object.keys(v24.members).length;
     const sasOff = offShare(+ONSETS.SAS + 3 * HOUR, +ONSETS.VLA - HOUR), vlaOff = d3.mean(E.ioda_obs.filter((x) => x != null).slice(-12));
     const hero = el("div", { class: "hero bluf" }); hero.append(wavesSVG());
     const main = el("div", { class: "bluf-main" },
@@ -465,7 +465,7 @@
     const row = (c, k, v, on) => side.append(el("button", { class: "bl-row", type: "button", onclick: on }, el("i", { style: `background:${c}` }), el("span", { class: "bl-k", text: k }), el("span", { class: "bl-v", text: v })));
     row(css("--div-neg"), "Effect observed", `Pravda network ${pct(pr.dip_ratio - 1)} for ${pr.dip_hours.toFixed(0)} h`, () => { S.tStream = "pravda.total"; S.tEvent = "VLA"; go("timing"); });
     row("#7fd4a0", "No credible drop", "Telegram, Reddit, web, EEAS-named outlets", () => go("effects"));
-    row("#7fd4a0", "No Yandex hosting", `${nAI} attributed IO domains, ${nAIy} on Yandex`, () => go("evidence"));
+    row("#7fd4a0", "IO output vs controls", `${pct(v24.io_minus_control.median)} in the 24 h after Vladimir`, () => go("effects"));
     row("#9ec5ff", "Outage measured", `Yandex Cloud ${pctu(vlaOff)} unreachable`, () => go("timeline"));
     hero.append(main, side); M.append(hero);
     const kp = el("div", { class: "kpis" });
@@ -503,9 +503,6 @@
       ["Russian IO output on the observed platforms continued at expected levels.", "Very likely", "80 to 95%", 0.87, "Moderate",
         `No other platform group shows a credible drop: Telegram state media, military bloggers, tabloids and foreign-audience channels, outlets on Yandex 360 mail, the RIA outlet ukraina.ru, the EEAS-named African Initiative and RRN, and Reddit communities. Relative to controls, IO groups moved ${pct(io.median)} (90% ${pct(io.ci90[0])} to ${pct(io.ci90[1])}) in the 24 h after Vladimir.`,
         `${nMem} series pooled in a hierarchical model with placebo and same-weekday checks.`, "X, VK and closed bot infrastructure are not observable with public data."],
-      ["The web infrastructure of attributed influence operations does not run on Yandex.", "Very likely", "80 to 95%", 0.87, "Moderate",
-        `None of ${nAI} domains attributed to Storm-1516, African Initiative, RRN, R-FBI or the Pravda network by VIGINUM and the EEAS, nor ${(EV.infra || []).length} state and IO media domains, is hosted on a Yandex network or uses Yandex DNS. Seven outlets use Yandex 360 mail; their channels show no strike-specific change.`,
-        "Live DNS through public resolvers with network attribution from RIPE.", "Measured after the strikes; earlier migrations would need passive DNS history."],
     ];
     const jg = el("div", { class: "jgrid" });
     J.forEach(([h, lik, rng, v, conf, body, basis, gap], i) => jg.append(el("div", { class: "jcard" },
@@ -553,10 +550,10 @@
     const f = (id) => () => gapi && gapi.focus(id);
     tools.append(el("span", { class: "lbl", text: "Layout" }), lay, el("span", { class: "ag-sep" }), el("span", { class: "lbl", text: "Trace" }),
       el("button", { class: "btn sm", onclick: f("act.pravda") }, "Pravda effect"), el("button", { class: "btn sm", onclick: f("site.VLA") }, "Vladimir outage"), el("button", { class: "btn sm", onclick: f("exp.mail") }, "Yandex 360 mail"),
-      el("button", { class: "btn sm", onclick: f("act.storm") }, "Storm-1516"), el("button", { class: "btn sm", onclick: f("act.afri") }, "African Initiative"), el("button", { class: "btn sm ghost", onclick: f(null) }, "Reset"));
+      el("button", { class: "btn sm", onclick: f("act.afri") }, "African Initiative"), el("button", { class: "btn sm ghost", onclick: f(null) }, "Reset"));
     const box = el("div", { class: "chart ag-box" });
     c.append(tools, crumbs, box);
-    c.append(el("div", { class: "legend" }, ...[["--seq-5", "Source grade A"], ["--seq-4", "Grade B"], ["--seq-3", "Grade C"], ["--critical", "Strike, outage or effect"], ["--s3", "Telemetry"], ["--s4", "Confounder or service effect"], ["--s1", "Exposure channel"], ["--good", "No effect or no dependency"]].map(([v, l]) => el("span", {}, el("span", { class: "swatch", style: `background:${css(v)};height:8px;width:8px;border-radius:2px` }), l)), el("span", { class: "muted", text: `Sources graded A to ${S.unc.minRel} (uncertainty filter)` })));
+    c.append(el("div", { class: "legend" }, ...[["--seq-5", "Source grade A"], ["--seq-4", "Grade B"], ["--seq-3", "Grade C"], ["--critical", "Strike, outage or effect"], ["--s3", "Telemetry"], ["--s4", "Confounder or service effect"], ["--s1", "Exposure channel"], ["--good", "No effect"]].map(([v, l]) => el("span", {}, el("span", { class: "swatch", style: `background:${css(v)};height:8px;width:8px;border-radius:2px` }), l)), el("span", { class: "muted", text: `Sources graded A to ${S.unc.minRel} (uncertainty filter)` })));
     const ok = (sid) => { const s = EV.sources.find((x) => x.id === sid); return s && REL.indexOf(s.rel) <= REL.indexOf(S.unc.minRel); };
     const EVf = { ...EV, sources: EV.sources.filter((s) => ok(s.id)), events: EV.events.filter((e) => e.sources.some(ok)).map((e) => ({ ...e, sources: e.sources.filter(ok) })) };
     const onFocus = (n, path, fx, text, silent) => {
@@ -762,7 +759,6 @@
   function vEvidence(M) {
     header(M, "Evidence: competing hypotheses, sources and data quality", "Every source was opened for this study and graded. The ACH matrix scores each evidence item against four hypotheses; rows and sources below the minimum grade in the uncertainty filter are hidden.", "ach");
     const pr = TM.results["pravda.total"].events; const W = (id, k = "VLA_24h") => SER[id]?.stats?.windows?.[k]; const v24 = BYA.windows.VLA_24h, g24 = v24.groups;
-    const AI = EV.actor_infra || [];
     const H = ["H1 Broad IO collapse", "H2 Narrow pipeline dependency", "H3 No IO effect", "H4 Artefact or confounder"];
     const evid = [
       [`IODA: Yandex Cloud ${pctu(d3.mean(E.ioda_obs.filter((x) => x != null).slice(-12)))} unreachable; onsets match status pages within minutes`, "A1", ["C", "C", "C", "C"]],
@@ -774,7 +770,6 @@
       [`EEAS-named outlets: African Initiative and RRN websites ${pct(g24["Web: EEAS-named IMS outlets"]?.median)}, African Initiative Telegram ${pct(g24["Telegram: EEAS-named IMS"]?.median)}`, "A1", ["I", "C", "C", "N"]],
       [`Web IO outlet ukraina.ru ${pct(W("web.ukraina.ru")?.effect)}; Reddit political communities ${pct(g24["Reddit: political communities"]?.median)}`, "A2", ["I", "C", "C", "N"]],
       ["War-theme minus non-war contrasts show no war-specific drop", "A2", ["I", "C", "C", "N"]],
-      [`None of ${AI.length} domains attributed to Storm-1516, African Initiative, RRN, R-FBI or Pravda is hosted on Yandex or uses Yandex DNS`, "A2", ["I", "N", "C", "N"]],
       [`ru.wikipedia user traffic ${pct(W("wiki.ru.wikipedia.user")?.effect)}; Yandex complaint alerts surge`, "A2", ["N", "C", "C", "N"]],
       ["27 Sep unexplained Yandex Cloud dip: no Pravda dip", "A1", ["N", "N", "C", "C"]],
     ].filter((e) => REL.indexOf(e[1][0]) <= REL.indexOf(S.unc.minRel));
@@ -784,20 +779,7 @@
     for (const e of evid) t.append(el("tr", {}, el("td", { text: e[0] }), el("td", {}, el("span", { class: "adm", text: e[1] })), ...e[2].map((v) => el("td", { class: v.toLowerCase(), text: v }))));
     t.append(el("tr", {}, el("td", { style: "font-weight:650", text: "Weighted inconsistency" }), el("td"), ...score.map((s) => el("td", { class: "num", style: `font-weight:750;${s === d3.min(score) ? `color:${css("--good")}` : ""}`, text: s.toFixed(2) }))));
     c.append(el("div", { class: "tblx" }, t));
-    const ac = card(M, "Infrastructure of attributed influence operations (public DNS, 13 to 14 Oct 2026)", `Domains named by VIGINUM (Storm-1516, appendix 6.2) and by the EEAS 4th FIMI threat report. Hosting network of each resolving domain, its mail exchanger and name servers, and whether the site answered over HTTP.`, "yxdep");
-    const at = el("table", { class: "tbl" }); at.append(el("tr", {}, ...["Operation", "Attributed by", "Domains", "Resolving", "Answering", "Main hosting networks", "On Yandex"].map((h) => el("th", { text: h }))));
-    const by = d3.group(AI, (d) => d.ims); const short = (h) => (h || "").replace(/^\S+\s+(-\s+)?/, "").replace(/"/g, "").replace(/,? (Inc|LLC|Ltd|Limited|B\.V\.|GmbH|SE|SAS|S\.p\.A)\.?$/, "").replace("Domain names registrar ", "").slice(0, 30);
-    for (const [ims, arr] of [...by].sort((a, b) => b[1].length - a[1].length)) {
-      const hold = d3.rollups(arr.filter((d) => d.holder), (v) => v.length, (d) => short(d.holder)).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([h, n]) => (arr.length > 1 ? `${h} (${n})` : h)).join(", ");
-      const yx = arr.filter((d) => d.yandex_hosting || d.yandex_mail || d.yandex_dns).length;
-      at.append(el("tr", {}, el("td", { text: ims.replace(" (VIGINUM)", "") }), el("td", { class: "muted", text: ims.includes("VIGINUM") ? "VIGINUM" : "EEAS" }), el("td", { class: "num", text: arr.length }), el("td", { class: "num", text: arr.filter((d) => d.resolves).length }), el("td", { class: "num", text: arr.filter((d) => d.http === 200).length }), el("td", { text: hold || "n/a" }), el("td", { class: "num", style: `font-weight:650;color:${css(yx ? "--critical" : "--good")}`, text: yx ? String(yx) : "none" })));
-    }
-    ac.append(el("div", { class: "tblx" }, at));
-    const det = el("details", { class: "more" }, el("summary", { text: `Resolving domains (${AI.filter((d) => d.resolves).length})` }));
-    const dl = el("table", { class: "tbl" }); dl.append(el("tr", {}, ...["Domain", "Operation", "Hosting network", "HTTP"].map((h) => el("th", { text: h }))));
-    for (const d of AI.filter((x) => x.resolves).sort((a, b) => a.domain.localeCompare(b.domain))) dl.append(el("tr", {}, el("td", { text: d.domain }), el("td", { class: "muted", text: d.ims.replace(" (VIGINUM)", "") }), el("td", { text: short(d.holder) || "n/a" }), el("td", { class: "num", text: d.http ?? "none" })));
-    det.append(el("div", { class: "tblwrap", style: "max-height:320px;overflow:auto" }, dl)); ac.append(det);
-    const dc = card(M, "Yandex dependency of state and IO media outlets (public DNS, 13 Oct 2026)", "Hosting network of the website, mail exchanger and name servers. Only Yandex's own domains are hosted on Yandex.", "yxdep");
+    const dc = card(M, "Yandex dependency of state and IO media outlets (public DNS, 13 Oct 2026)", "Hosting network of the website, mail exchanger and name servers, used to identify outlets that run their mail on Yandex 360.", "yxdep");
     const dt = el("table", { class: "tbl" }); dt.append(el("tr", {}, ...["Domain", "Role", "Hosting", "Mail at Yandex", "DNS at Yandex"].map((h) => el("th", { text: h }))));
     for (const d of EV.infra || []) dt.append(el("tr", {}, el("td", { text: d.domain }), el("td", { class: "muted", text: d.role.replace(/_/g, " ") }), el("td", { text: (d.asn_holders || []).join(", ").slice(0, 48) }), el("td", { text: d.yandex_mail ? "yes" : "" }), el("td", { text: d.yandex_dns ? "yes" : "" })));
     dc.append(el("div", { class: "tblwrap", style: "max-height:360px;overflow:auto" }, dt));

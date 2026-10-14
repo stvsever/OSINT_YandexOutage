@@ -2,7 +2,7 @@
 
 This study systematically investigates whether the October 2026 Ukrainian drone strikes on Yandex data centers in Sasovo, Kaluga and Vladimir reduced the output of Russian information operations. The strikes are treated as a natural experiment: an expected-outage function reconstructed from graded public reports is validated against measured outages, and the output of publicly attributed influence operations, state media and military bloggers is compared with seasonal counterfactuals, control sources and placebo periods.
 
-**Bottom line.** The strikes caused a major Yandex Cloud outage but no broad reduction in Russian information operations. One automated pipeline, the Pravda network, stalled for about 11 hours, starting within the hour after the Vladimir outage. Telegram channels of state media, military bloggers and foreign-audience outlets, Reddit communities and the websites of influence operations named by the EEAS show no credible drop, and none of 342 domains attributed to Russian influence operations by VIGINUM and the EEAS is hosted on Yandex.
+**Bottom line.** The strikes caused a major Yandex Cloud outage but no broad reduction in Russian information operations. One automated pipeline, the Pravda network, stalled for about 11 hours, starting within the hour after the Vladimir outage. Telegram channels of state media, military bloggers and foreign-audience outlets, Reddit communities and the websites of influence operations named by the EEAS show no credible drop.
 
 ## Repository
 
@@ -12,7 +12,7 @@ This study systematically investigates whether the October 2026 Ukrainian drone 
 | [`dashboard/`](dashboard) | Interactive dashboard (static HTML and D3); open `dashboard/index.html` |
 | [`pipeline/`](pipeline) | Data collection, outage model, statistical analysis, verification and dashboard export |
 | [`report/`](report) | Builder for `REPORT.pdf` |
-| [`config/study.json`](config/study.json) | Outage-model priors and OSINT constraints, and the VIGINUM Storm-1516 domain list |
+| [`config/study.json`](config/study.json) | Outage-model priors and OSINT constraints, and the VIGINUM Storm-1516 domain list used by `fetch_actor_infra.py` |
 | [`.github/workflows/pages.yml`](.github/workflows/pages.yml) | Publishes `dashboard/` to GitHub Pages when the repository is public |
 
 ## Data
@@ -26,7 +26,7 @@ This study systematically investigates whether the October 2026 Ukrainian drone 
   - Reddit communities (Arctic Shift).
 - **Controls:** independent Russian, Ukrainian, business and non-political Telegram channels; independent web outlets; non-political Reddit communities; other Russian hosting and access networks.
 - **Positive control for user impact:** Russian Wikipedia pageviews. Yandex Search refers a substantial share of visits while Wikimedia's own infrastructure is unaffected, so a dip shows that the outage reached ordinary users.
-- **Yandex dependency:** public DNS records (A, MX, NS) with RIPE network attribution for state and IO media and for 342 domains attributed to influence operations by VIGINUM and the EEAS.
+- **Yandex dependency:** public DNS mail records (MX) of state and IO media, used to identify outlets that run their mail on Yandex 360.
 
 ## Method
 
