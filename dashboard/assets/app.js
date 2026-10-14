@@ -16,7 +16,7 @@
 
   // ------------------------------------------------------------------ glossary
   const GLOSS = {
-    eof: ["Expected outage function (EOF)", "A time-varying estimate of the share of Yandex capacity that is offline, computed from open sources. Each strike contributes a capacity-weighted damage curve whose timing, severity, credibility and recovery come from graded reports. It has three stages: S0 uses strike reports only, S1 adds published statements, status pages, satellite fire detections and complaint alerts, and S2 also fuses direct network measurements."],
+    eof: ["Expected outage function (EOF)", "A time-varying estimate of the share of Yandex capacity that is offline, computed from published reports. Each strike contributes a capacity-weighted damage curve whose timing, severity, credibility and recovery come from graded reports. It has three stages: S0 uses strike reports only, S1 adds published statements, status pages, satellite fire detections and complaint alerts, and S2 also fuses direct network measurements."],
     stages: ["Estimation stages", "S0 attack prior: strike windows and damage wording only. S1 OSINT-conditioned: S0 plus everything published (status pages, statements, FIRMS, NetBlocks, Cloudflare, complaint alerts). S2 telemetry-fused: S1 plus the IODA active-probing measurement. Comparing S1 with the measurement validates the open-source method."],
     ioda: ["IODA active probing", "Georgia Tech's Internet Outage Detection and Analysis pings address blocks (/24) in each network every 10 minutes. The share of blocks that stop answering is the measured outage."],
     admiralty: ["Admiralty grading", "NATO source grading. Reliability of the source from A (completely reliable) to F (cannot be judged); credibility of the item from 1 (confirmed) to 6 (cannot be judged). Grades are converted to probabilities and pooled into each strike's credibility."],
@@ -394,7 +394,7 @@
         chk("Weight strikes by Admiralty credibility", o.credibility, (v) => { o.credibility = v; }),
         ctl("Strikes included", gb([["SAS", "Sasovo"], ["KAL", "Kaluga"], ["VLA", "Vladimir"]].map(([k, l]) => [k, (o.events[k] ? "✓ " : "") + l]), null, (k) => { o.events[k] = !o.events[k]; buildLeft(); })),
         el("button", { class: "btn primary", onclick: () => { runCustom(); upd(`What-if recomputed (${S.eof.opts.n} draws)`, "eof"); } }, "Recompute"));
-      if (S.eof.custom) eb.push(el("div", { class: "hint", text: `${S.eof.opts.n} draws, effective sample size ${S.eof.custom.ess.toFixed(0)}.` }));
+      if (S.eof.custom) eb.push(el("div", { class: "hint", style: S.eof.custom.ess < 50 ? `color:${css("--critical")}` : "", text: `${S.eof.opts.n} draws, effective sample size ${S.eof.custom.ess.toFixed(0)}.` + (S.eof.custom.ess < 50 ? " Too few effective draws: these settings conflict with the published reports, so the what-if curve is unreliable." : "") }));
     }
     eb.push(el("button", { class: "btn sm", onclick: () => inspect({ type: "eof" }) }, "Validation and downtime"));
     L.append(sec("Expected outage function", true, "eof", scoped("eof", el("div", {}, ...eb))));
@@ -798,12 +798,60 @@
 
   // ---- method
   function vMethod(M) {
-    header(M, "Method", "The full methodology, results and sources are in the report (Report PDF in the top bar). This page summarises the pipeline and defines every term used in the dashboard.");
-    const c = card(M, "Pipeline");
-    const fl = el("div", { class: "flow" });
-    for (const [t, d] of [["Collect", "Outage: IODA, RIPE, FIRMS, status API. Exposure: DNS. IO output: Telegram, Pravda and web sitemaps, WordPress, Reddit. Positive control: Wikimedia"], ["Grade", "Admiralty grades pooled into strike credibility"], ["Model outage", "Three-stage Bayesian EOF (SMC), 10 minute grid"], ["Counterfactual", "Seasonal regression, leave-one-day-out"], ["Test", "Placebo windows, change points, dose-response, Bayesian pooling"], ["Decide", "FDR, equivalence, ACH, ICD 203"]]) fl.append(el("div", { class: "node" }, el("div", { class: "t", text: t }), el("div", { class: "d", text: d })));
-    c.append(fl);
-    const g = card(M, "Glossary"); const dl = el("dl", { class: "gloss" }); for (const [, [t, d]] of Object.entries(GLOSS)) dl.append(el("dt", { text: t }), el("dd", { text: d })); g.append(dl);
+    header(M, "Method", "How the study is designed, what each analysis step does and why, which data play which role, and what counts as an effect. The full text with references is in the report (Report PDF in the top bar).");
+    const nMem = Object.keys(BYA.windows.VLA_24h.members).length;
+    // 1. design
+    const d = card(M, "Research design", "The strikes are treated as a natural experiment.");
+    const facts = [["Question", "Did the October 2026 strikes on Yandex data centers reduce the output of Russian information operations?"],
+      ["Treated events", "Sasovo (7 to 8 Oct), Kaluga (9 Oct) and Vladimir (11 Oct)."],
+      ["Control period", "27 Sep: an unexplained Yandex Cloud dip without any strike, analysed exactly like a strike."],
+      ["Logic", "Each link of the causal chain is measured separately: strike, capacity loss, dependent services, automated pipelines, social-media and web output. A break shows where the effect stops."]];
+    const fg = el("div", { class: "mfacts" }); for (const [k, v] of facts) fg.append(el("div", {}, el("b", { text: k }), el("span", { text: v }))); d.append(fg);
+    // 2. pipeline
+    const pc = card(M, "Analysis pipeline", "Six steps, from raw sources to a decision. Click a term marked i for its definition.");
+    const steps = [
+      ["Collect", "Download outage measurements, outage reports and the publication timestamps of every IO and control source.", "IODA, RIPE Stat, NASA FIRMS, status pages, Telegram, Pravda and web sitemaps, WordPress feeds, Reddit, Wikimedia, public DNS.", null],
+      ["Grade", "Rate every report for reliability and credibility, and discount reports that repeat another source.", "A credibility weight per strike.", "admiralty"],
+      ["Model the outage", "Reconstruct when and how severely Yandex went offline, first from reports only, then fused with the IODA measurement.", "The expected outage function on a 10-minute grid, with uncertainty bands and onset times.", "eof"],
+      ["Build counterfactuals", "Predict each series from hour of day, day of week and trend, fitted on the pre-strike period only.", "Expected output for every hour; deviations are measured against it.", "counterfactual"],
+      ["Test", "Compare post-strike deviations with placebo windows and earlier weekdays, pool series in a Bayesian model, and date any dip on a 10-minute grid.", `Effects per series and per platform group (${nMem} pooled series), dip timing and backlog.`, "bayes"],
+      ["Decide", "Correct for multiple testing, check equivalence with a 20% bound, and weigh the evidence against competing hypotheses.", "Verdict per series and group; the Evidence view shows the hypothesis matrix.", "ach"]];
+    const sl = el("ol", { class: "msteps" });
+    steps.forEach(([t, what, out, key], i) => sl.append(el("li", {}, el("span", { class: "n", text: String(i + 1) }), el("div", {}, el("div", { class: "t" }, t, key ? " " : "", key ? info(key) : null), el("p", { text: what }), el("p", { class: "out" }, el("b", { text: "Output: " }), out)))));
+    pc.append(sl);
+    // 3. data by role
+    const dc = card(M, "Data by role", "Every source is listed with its grade and link in the Evidence view.");
+    const roles = [["Outage measurement", "IODA active probing, RIPE Stat BGP data, NASA FIRMS fire detections, Yandex Cloud status incidents.", "--s2"],
+      ["Outage reports", "Yandex and regional-governor posts, NetBlocks, Cloudflare Radar, complaint trackers, Reuters. Graded and used to build the outage function.", "--s3"],
+      ["Information-operation output", "Pravda network sitemaps; Telegram channels of state media, Zvezda, Kremlin pools, military bloggers, tabloids, foreign-audience outlets and EEAS-named sets; WordPress feeds and sitemaps; Reddit communities.", "--critical"],
+      ["Controls", "Independent Russian, Ukrainian, business and non-political channels and websites, non-political Reddit, other Russian hosting and access networks.", "--good"],
+      ["Positive control", "Russian Wikipedia pageviews: shows whether the outage reached ordinary users.", "--s4"],
+      ["Exposure", "Public DNS mail records identify outlets that run their mail on Yandex 360.", "--s1"]];
+    const rg = el("div", { class: "mroles" }); for (const [t, v, c] of roles) rg.append(el("div", { class: "mrole", style: `border-left-color:${css(c)}` }, el("b", { text: t }), el("span", { text: v }))); dc.append(rg);
+    // 4. decision rules
+    const rc = card(M, "What counts as an effect", "The same rules are applied to every series and platform group.");
+    const rules = [["Credible drop (platform group)", "Posterior probability of a drop larger than 10% above 90%, group placebo p below 0.05, and the same-weekday check agrees.", "bayes"],
+      ["Time-locked dip (10-minute stream)", "Significant against 400 placebo origins (p below 0.05) and starting at or after the measured outage onset; a dip that starts earlier cannot be caused by the outage.", "timing"],
+      ["Large drop ruled out (series)", "The whole 90% interval of the change lies above -20%.", "sesoi"],
+      ["Drop detected (series)", "FDR-corrected significance in the placebo test, confirmed by the same-weekday check.", "fdr"]];
+    const rt = el("table", { class: "tbl" }); rt.append(el("tr", {}, el("th", { text: "Verdict" }), el("th", { text: "Rule" })));
+    for (const [k, v, key] of rules) rt.append(el("tr", {}, el("td", { style: "font-weight:600;white-space:nowrap" }, k, " ", info(key)), el("td", { text: v })));
+    rc.append(el("div", { class: "tblx" }, rt));
+    // 5. glossary by topic
+    const gc = card(M, "Glossary", "All terms used in the dashboard, grouped by topic.");
+    const groups = [["Outage model", ["eof", "stages", "ioda", "admiralty"]], ["Statistics", ["counterfactual", "placebo", "bayes", "timing", "backlog", "mde", "sesoi", "fdr", "theme"]],
+      ["Assessment", ["ach", "icd"]], ["Actors and exposure", ["pravda", "yxdep", "wiki"]]];
+    const q = el("input", { class: "search", placeholder: "Search terms", style: "max-width:320px;margin-bottom:10px" }); gc.append(q);
+    const gl = el("div"); gc.append(gl);
+    const fill = () => {
+      gl.replaceChildren(); const f = q.value.toLowerCase();
+      for (const [g, keys] of groups) {
+        const items = keys.filter((k) => GLOSS[k] && (!f || (GLOSS[k][0] + GLOSS[k][1]).toLowerCase().includes(f))); if (!items.length) continue;
+        const dl = el("dl", { class: "gloss" }); for (const k of items) dl.append(el("dt", { text: GLOSS[k][0] }), el("dd", { text: GLOSS[k][1] }));
+        gl.append(el("div", { class: "lbl", style: "margin:12px 0 6px", text: g }), dl);
+      }
+    };
+    q.addEventListener("input", fill); fill();
   }
 
   // ------------------------------------------------------------------ init
