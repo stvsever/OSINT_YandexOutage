@@ -1,0 +1,1480 @@
+{
+    "type": "bundle",
+    "id": "bundle--cb361ab5-6e24-5feb-a778-be41cfa017a2",
+    "objects": [
+        {
+            "type": "identity",
+            "spec_version": "2.1",
+            "id": "identity--f1a0f560-2d9e-4c5d-bf47-7e96e805de82",
+            "created": "2024-11-22T16:43:58.073632Z",
+            "modified": "2024-11-22T16:43:58.073632Z",
+            "name": "DISARM Foundation",
+            "description": "DISARM is a framework designed for describing and understanding disinformation incidents.",
+            "identity_class": "organization"
+        },
+        {
+            "type": "marking-definition",
+            "spec_version": "2.1",
+            "id": "marking-definition--f79f25d2-8b96-4580-b169-eb7b613a7c31",
+            "created_by_ref": "identity--f1a0f560-2d9e-4c5d-bf47-7e96e805de82",
+            "created": "2024-11-22T16:43:58.073969Z",
+            "definition_type": "statement",
+            "name": "DISARM Foundation",
+            "definition": {
+                "statement": "CC-BY-SA-4.0 DISARM Foundation"
+            }
+        },
+        {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--70717452-f7e3-4ce8-956f-39a4d34c5cfb",
+            "created_by_ref": "identity--f1a0f560-2d9e-4c5d-bf47-7e96e805de82",
+            "created": "2024-11-22T16:43:58.079782Z",
+            "modified": "2024-11-22T16:43:58.079782Z",
+            "name": "Facilitate State Propaganda",
+            "description": "Organise citizens around pro-state messaging. Coordinate paid or volunteer groups to push state propaganda.",
+            "kill_chain_phases": [
+                {
+                    "kill_chain_name": "mitre-attack",
+                    "phase_name": "plan-objectives"
+                }
+            ],
+            "external_references": [
+                {
+                    "source_name": "mitre-attack",
+                    "url": "https://github.com/DISARMFoundation/DISARMframeworks/blob/main/generated_pages/techniques/T0002.md",
+                    "external_id": "T0002"
+                }
+            ],
+            "object_marking_refs": [
+                "marking-definition--f79f25d2-8b96-4580-b169-eb7b613a7c31"
+            ],
+            "x_mitre_is_subtechnique": false,
+            "x_mitre_platforms": [
+                "Windows",
+                "Linux",
+                "Mac"
+            ],
+            "x_mitre_version": "2.1"
+        },
+        {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--cec91e97-76c8-4a1f-8397-a06939a558ef",
+            "created_by_ref": "identity--f1a0f560-2d9e-4c5d-bf47-7e96e805de82",
+            "created": "2024-11-22T16:43:58.091598Z",
+            "modified": "2024-11-22T16:43:58.091598Z",
+            "name": "Inauthentic Sites Amplify News and Narratives",
+            "description": "Inauthentic sites circulate cross-post stories and amplify narratives. Often these sites have no masthead, bylines or attribution.",
+            "kill_chain_phases": [
+                {
+                    "kill_chain_name": "mitre-attack",
+                    "phase_name": "maximise-exposure"
+                }
+            ],
+            "external_references": [
+                {
+                    "source_name": "mitre-attack",
+                    "url": "https://github.com/DISARMFoundation/DISARMframeworks/blob/main/generated_pages/techniques/T0049.007.md",
+                    "external_id": "T0049.007"
+                }
+            ],
+            "object_marking_refs": [
+                "marking-definition--f79f25d2-8b96-4580-b169-eb7b613a7c31"
+            ],
+            "x_mitre_is_subtechnique": true,
+            "x_mitre_platforms": [
+                "Windows",
+                "Linux",
+                "Mac"
+            ],
+            "x_mitre_version": "2.1"
+        },
+        {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--b2a7561a-28ad-426c-a249-f415b5f11cee",
+            "created_by_ref": "identity--f1a0f560-2d9e-4c5d-bf47-7e96e805de82",
+            "created": "2024-11-22T16:43:58.09395Z",
+            "modified": "2024-11-22T16:43:58.09395Z",
+            "name": "Respond to Breaking News Event or Active Crisis",
+            "description": "Media attention on a story or event is heightened during a breaking news event, where unclear facts and incomplete information increase speculation, rumours, and conspiracy theories, which are all vulnerable to manipulation.",
+            "kill_chain_phases": [
+                {
+                    "kill_chain_name": "mitre-attack",
+                    "phase_name": "develop-narratives"
+                }
+            ],
+            "external_references": [
+                {
+                    "source_name": "mitre-attack",
+                    "url": "https://github.com/DISARMFoundation/DISARMframeworks/blob/main/generated_pages/techniques/T0068.md",
+                    "external_id": "T0068"
+                }
+            ],
+            "object_marking_refs": [
+                "marking-definition--f79f25d2-8b96-4580-b169-eb7b613a7c31"
+            ],
+            "x_mitre_is_subtechnique": false,
+            "x_mitre_platforms": [
+                "Windows",
+                "Linux",
+                "Mac"
+            ],
+            "x_mitre_version": "2.1"
+        },
+        {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--9636ae57-0b93-41a0-8323-85109ee34877",
+            "created_by_ref": "identity--f1a0f560-2d9e-4c5d-bf47-7e96e805de82",
+            "created": "2024-11-22T16:43:58.102007Z",
+            "modified": "2024-11-22T16:43:58.102007Z",
+            "name": "Reuse Existing Content",
+            "description": "When an operation recycles content from its own previous operations or plagiarises from external operations. An operation may launder information to conserve resources that would have otherwise been utilised to develop new content.",
+            "kill_chain_phases": [
+                {
+                    "kill_chain_name": "mitre-attack",
+                    "phase_name": "develop-content"
+                }
+            ],
+            "external_references": [
+                {
+                    "source_name": "mitre-attack",
+                    "url": "https://github.com/DISARMFoundation/DISARMframeworks/blob/main/generated_pages/techniques/T0084.md",
+                    "external_id": "T0084"
+                }
+            ],
+            "object_marking_refs": [
+                "marking-definition--f79f25d2-8b96-4580-b169-eb7b613a7c31"
+            ],
+            "x_mitre_is_subtechnique": false,
+            "x_mitre_platforms": [
+                "Windows",
+                "Linux",
+                "Mac"
+            ],
+            "x_mitre_version": "2.1"
+        },
+        {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--8676cd4b-39ec-4219-9b93-27f2b7fb5d27",
+            "created_by_ref": "identity--f1a0f560-2d9e-4c5d-bf47-7e96e805de82",
+            "created": "2024-11-22T16:43:58.105931Z",
+            "modified": "2024-11-22T16:43:58.105931Z",
+            "name": "Machine Translated Text",
+            "description": "Text which has been translated into another language using machine translation tools, such as AI.",
+            "kill_chain_phases": [
+                {
+                    "kill_chain_name": "mitre-attack",
+                    "phase_name": "develop-content"
+                }
+            ],
+            "external_references": [
+                {
+                    "source_name": "mitre-attack",
+                    "url": "https://github.com/DISARMFoundation/DISARMframeworks/blob/main/generated_pages/techniques/T0085.008.md",
+                    "external_id": "T0085.008"
+                }
+            ],
+            "object_marking_refs": [
+                "marking-definition--f79f25d2-8b96-4580-b169-eb7b613a7c31"
+            ],
+            "x_mitre_is_subtechnique": true,
+            "x_mitre_platforms": [
+                "Windows",
+                "Linux",
+                "Mac"
+            ],
+            "x_mitre_version": "2.1"
+        },
+        {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--54d8019d-4687-46f5-a4c9-1b9414b80d35",
+            "created_by_ref": "identity--f1a0f560-2d9e-4c5d-bf47-7e96e805de82",
+            "created": "2024-11-22T16:43:58.139245Z",
+            "modified": "2024-11-22T16:43:58.139245Z",
+            "name": "News Outlet Persona",
+            "description": "An institution with a news outlet persona presents itself as an organisation which delivers new information to its target audience.<br><br> While presenting as a news outlet is not an indication of inauthentic behaviour, an influence operation may have its narratives amplified by news organisations. Threat actors can fabricate news organisations (T0143.002: Fabricated Persona, T0097.202: News Outlet Persona), or they can impersonate existing news outlets (T0143.003: Impersonated Persona, T0097.202: News Outlet Persona).<br><br> Legitimate news organisations could use their persona for malicious purposes, or be exploited by threat actors (T0143.001: Authentic Persona, T0097.202: News Outlet Persona).<br><br> <b>Associated Techniques and Sub-techniques</b></br> <b>T0097.102: Journalist Persona:</b> Institutions presenting as news outlets may also present journalists working within the organisation.<br> <b>T0097.201: Local Institution Persona:</b> Institutions presenting as news outlets may present as being a local news outlet.<br> <b>T0097.203: Fact Checking Organisation Persona:</b> Institutions presenting as news outlets may also deliver a fact checking service (e.g. The UK\u2019s BBC News has the fact checking service BBC Verify). When an actor presents as the fact checking arm of a news outlet, they are presenting both a News Outlet Persona and a Fact Checking Organisation Persona.",
+            "kill_chain_phases": [
+                {
+                    "kill_chain_name": "mitre-attack",
+                    "phase_name": "establish-legitimacy"
+                }
+            ],
+            "external_references": [
+                {
+                    "source_name": "mitre-attack",
+                    "url": "https://github.com/DISARMFoundation/DISARMframeworks/blob/main/generated_pages/techniques/T0097.202.md",
+                    "external_id": "T0097.202"
+                }
+            ],
+            "object_marking_refs": [
+                "marking-definition--f79f25d2-8b96-4580-b169-eb7b613a7c31"
+            ],
+            "x_mitre_is_subtechnique": true,
+            "x_mitre_platforms": [
+                "Windows",
+                "Linux",
+                "Mac"
+            ],
+            "x_mitre_version": "2.1"
+        },
+        {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--48a53a0e-fc2d-4f28-84d5-0eb615d168f4",
+            "created_by_ref": "identity--f1a0f560-2d9e-4c5d-bf47-7e96e805de82",
+            "created": "2024-11-22T16:43:58.141607Z",
+            "modified": "2024-11-22T16:43:58.141607Z",
+            "name": "NGO Persona",
+            "description": "Institutions which present themselves as an NGO (Non-Governmental Organisation), an organisation which provides services or advocates for public policy (while not being directly affiliated with any government), are presenting an NGO persona.<br><br> While presenting as an NGO is not an indication of inauthentic behaviour, NGO personas are commonly used by threat actors (such as intelligence services) as a front for their operational activity (T0143.002: Fabricated Persona, T0097.207: NGO Persona). They are created to give legitimacy to the influence operation and potentially infiltrate grassroots movements<br><br> Legitimate NGOs could use their persona for malicious purposes, or be exploited by threat actors (T0143.001: Authentic Persona, T0097.207: NGO Persona). For example, an NGO could take money for using their position to provide legitimacy to a false narrative, or be tricked into doing so without their knowledge.<br><br> <b>Associated Techniques and Sub-techniques:</b><br> <b>T0097.103: Activist Persona:</b> Institutions presenting as activist groups may also present activists working within the organisation.",
+            "kill_chain_phases": [
+                {
+                    "kill_chain_name": "mitre-attack",
+                    "phase_name": "establish-legitimacy"
+                }
+            ],
+            "external_references": [
+                {
+                    "source_name": "mitre-attack",
+                    "url": "https://github.com/DISARMFoundation/DISARMframeworks/blob/main/generated_pages/techniques/T0097.207.md",
+                    "external_id": "T0097.207"
+                }
+            ],
+            "object_marking_refs": [
+                "marking-definition--f79f25d2-8b96-4580-b169-eb7b613a7c31"
+            ],
+            "x_mitre_is_subtechnique": true,
+            "x_mitre_platforms": [
+                "Windows",
+                "Linux",
+                "Mac"
+            ],
+            "x_mitre_version": "2.1"
+        },
+        {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--e0f07568-5a2b-429d-94b9-b1ff3c17adea",
+            "created_by_ref": "identity--f1a0f560-2d9e-4c5d-bf47-7e96e805de82",
+            "created": "2024-11-22T16:43:58.143152Z",
+            "modified": "2024-11-22T16:43:58.143152Z",
+            "name": "Create Inauthentic News Sites",
+            "description": "Create Inauthentic News Sites",
+            "kill_chain_phases": [
+                {
+                    "kill_chain_name": "mitre-attack",
+                    "phase_name": "establish-legitimacy"
+                }
+            ],
+            "external_references": [
+                {
+                    "source_name": "mitre-attack",
+                    "url": "https://github.com/DISARMFoundation/DISARMframeworks/blob/main/generated_pages/techniques/T0098.001.md",
+                    "external_id": "T0098.001"
+                }
+            ],
+            "object_marking_refs": [
+                "marking-definition--f79f25d2-8b96-4580-b169-eb7b613a7c31"
+            ],
+            "x_mitre_is_subtechnique": true,
+            "x_mitre_platforms": [
+                "Windows",
+                "Linux",
+                "Mac"
+            ],
+            "x_mitre_version": "2.1"
+        },
+        {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--11352e9a-a52b-4ade-ad4f-ec64a15fa1d5",
+            "created_by_ref": "identity--f1a0f560-2d9e-4c5d-bf47-7e96e805de82",
+            "created": "2024-11-22T16:43:58.145965Z",
+            "modified": "2024-11-22T16:43:58.145965Z",
+            "name": "Create Localised Content",
+            "description": "Localised content refers to content that appeals to a specific community of individuals, often in defined geographic areas. An operation may create localised content using local language and dialects to resonate with its target audience and blend in with other local news and social media. Localised content may help an operation increase legitimacy, avoid detection, and complicate external attribution.",
+            "kill_chain_phases": [
+                {
+                    "kill_chain_name": "mitre-attack",
+                    "phase_name": "microtarget"
+                }
+            ],
+            "external_references": [
+                {
+                    "source_name": "mitre-attack",
+                    "url": "https://github.com/DISARMFoundation/DISARMframeworks/blob/main/generated_pages/techniques/T0101.md",
+                    "external_id": "T0101"
+                }
+            ],
+            "object_marking_refs": [
+                "marking-definition--f79f25d2-8b96-4580-b169-eb7b613a7c31"
+            ],
+            "x_mitre_is_subtechnique": false,
+            "x_mitre_platforms": [
+                "Windows",
+                "Linux",
+                "Mac"
+            ],
+            "x_mitre_version": "2.1"
+        },
+        {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--1997947a-7e08-4ea9-802c-85391d561266",
+            "created_by_ref": "identity--f1a0f560-2d9e-4c5d-bf47-7e96e805de82",
+            "created": "2024-11-22T16:43:58.153166Z",
+            "modified": "2024-11-22T16:43:58.153166Z",
+            "name": "Post Content",
+            "description": "Delivering content by posting via owned media (assets that the operator controls).",
+            "kill_chain_phases": [
+                {
+                    "kill_chain_name": "mitre-attack",
+                    "phase_name": "deliver-content"
+                }
+            ],
+            "external_references": [
+                {
+                    "source_name": "mitre-attack",
+                    "url": "https://github.com/DISARMFoundation/DISARMframeworks/blob/main/generated_pages/techniques/T0115.md",
+                    "external_id": "T0115"
+                }
+            ],
+            "object_marking_refs": [
+                "marking-definition--f79f25d2-8b96-4580-b169-eb7b613a7c31"
+            ],
+            "x_mitre_is_subtechnique": false,
+            "x_mitre_platforms": [
+                "Windows",
+                "Linux",
+                "Mac"
+            ],
+            "x_mitre_version": "2.1"
+        },
+        {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--836e9eef-b446-4f68-805f-0f10116d6e7f",
+            "created_by_ref": "identity--f1a0f560-2d9e-4c5d-bf47-7e96e805de82",
+            "created": "2024-11-22T16:43:58.159747Z",
+            "modified": "2024-11-22T16:43:58.159747Z",
+            "name": "Amplify Existing Narrative",
+            "description": "An influence operation may amplify existing narratives that align with its narratives to support operation objectives.",
+            "kill_chain_phases": [
+                {
+                    "kill_chain_name": "mitre-attack",
+                    "phase_name": "maximise-exposure"
+                }
+            ],
+            "external_references": [
+                {
+                    "source_name": "mitre-attack",
+                    "url": "https://github.com/DISARMFoundation/DISARMframeworks/blob/main/generated_pages/techniques/T0118.md",
+                    "external_id": "T0118"
+                }
+            ],
+            "object_marking_refs": [
+                "marking-definition--f79f25d2-8b96-4580-b169-eb7b613a7c31"
+            ],
+            "x_mitre_is_subtechnique": false,
+            "x_mitre_platforms": [
+                "Windows",
+                "Linux",
+                "Mac"
+            ],
+            "x_mitre_version": "2.1"
+        },
+        {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--0d094dfb-61f9-42d3-a9cf-697fdcbee944",
+            "created_by_ref": "identity--f1a0f560-2d9e-4c5d-bf47-7e96e805de82",
+            "created": "2024-11-22T16:43:58.161064Z",
+            "modified": "2024-11-22T16:43:58.161064Z",
+            "name": "Post across Groups",
+            "description": "An influence operation may post content across groups to spread narratives and content to new communities within the target audiences or to new target audiences.",
+            "kill_chain_phases": [
+                {
+                    "kill_chain_name": "mitre-attack",
+                    "phase_name": "maximise-exposure"
+                }
+            ],
+            "external_references": [
+                {
+                    "source_name": "mitre-attack",
+                    "url": "https://github.com/DISARMFoundation/DISARMframeworks/blob/main/generated_pages/techniques/T0119.001.md",
+                    "external_id": "T0119.001"
+                }
+            ],
+            "object_marking_refs": [
+                "marking-definition--f79f25d2-8b96-4580-b169-eb7b613a7c31"
+            ],
+            "x_mitre_is_subtechnique": true,
+            "x_mitre_platforms": [
+                "Windows",
+                "Linux",
+                "Mac"
+            ],
+            "x_mitre_version": "2.1"
+        },
+        {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--292fa0bb-3762-41cf-ba2a-c547ef35268d",
+            "created_by_ref": "identity--f1a0f560-2d9e-4c5d-bf47-7e96e805de82",
+            "created": "2024-11-22T16:43:58.243548Z",
+            "modified": "2024-11-22T16:43:58.243548Z",
+            "name": "Chat Broadcast Group",
+            "description": "A Chat Broadcast Group is a type of Chat Group in which only specific members can send content to the channel (typically administrators, or approved group members). Members of the channel may be able to react to content, or comment on it, but can\u2019t directly push new content to the channel.<br><br>Examples include:<br>WhatsApp, Telegram, Discord: Chat Groups in which only admins are able to post new content.<br>X (prev. Twitter): Spaces (an audio discussion hosting feature) in which admins control who can speak at a given moment.",
+            "kill_chain_phases": [
+                {
+                    "kill_chain_name": "mitre-attack",
+                    "phase_name": "select-channels-and-affordances"
+                }
+            ],
+            "external_references": [
+                {
+                    "source_name": "mitre-attack",
+                    "url": "https://github.com/DISARMFoundation/DISARMframeworks/blob/main/generated_pages/techniques/T0151.007.md",
+                    "external_id": "T0151.007"
+                }
+            ],
+            "object_marking_refs": [
+                "marking-definition--f79f25d2-8b96-4580-b169-eb7b613a7c31"
+            ],
+            "x_mitre_is_subtechnique": true,
+            "x_mitre_platforms": [
+                "Windows",
+                "Linux",
+                "Mac"
+            ],
+            "x_mitre_version": "2.1"
+        },
+        {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--0f040af8-7434-4fb8-be96-30a3123c8644",
+            "created_by_ref": "identity--f1a0f560-2d9e-4c5d-bf47-7e96e805de82",
+            "created": "2024-11-22T16:43:58.248558Z",
+            "modified": "2024-11-22T16:43:58.248558Z",
+            "name": "Website Asset",
+            "description": "A Website is a collection of related web pages hosted on a server and accessible via a web browser. Websites have an associated Domain and can host various types of content, such as text, images, videos, and interactive features. <br><br>When a Website is fleshed out, it Presents a Persona to site visitors. For example, the Domain \u201cbbc.co.uk/news\u201d hosts a Website which uses the News Outlet Persona.",
+            "kill_chain_phases": [
+                {
+                    "kill_chain_name": "mitre-attack",
+                    "phase_name": "select-channels-and-affordances"
+                }
+            ],
+            "external_references": [
+                {
+                    "source_name": "mitre-attack",
+                    "url": "https://github.com/DISARMFoundation/DISARMframeworks/blob/main/generated_pages/techniques/T0152.004.md",
+                    "external_id": "T0152.004"
+                }
+            ],
+            "object_marking_refs": [
+                "marking-definition--f79f25d2-8b96-4580-b169-eb7b613a7c31"
+            ],
+            "x_mitre_is_subtechnique": true,
+            "x_mitre_platforms": [
+                "Windows",
+                "Linux",
+                "Mac"
+            ],
+            "x_mitre_version": "2.1"
+        },
+        {
+            "type": "identity",
+            "spec_version": "2.1",
+            "id": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "name": "OSINT_YandexOutage study",
+            "description": "Independent open-source study of the October 2026 Yandex data-center strikes.",
+            "identity_class": "organization"
+        },
+        {
+            "type": "incident",
+            "spec_version": "2.1",
+            "id": "incident--02313d84-035b-5c1f-bad0-d79b3e0c7b31",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "name": "Strikes on Yandex data centers and Yandex Cloud outage, 7 to 11 October 2026",
+            "description": "Drone strikes on Yandex data centers in Sasovo, Kaluga and Vladimir; measured Yandex Cloud reachability fell by about a third after Sasovo and by 78% in total after Vladimir.",
+            "external_references": [
+                {
+                    "source_name": "OSINT_YandexOutage",
+                    "description": "Yandex Cloud Outages as a Natural Experiment on Russian Influence Operations (report and data)",
+                    "url": "https://github.com/stvsever/OSINT_YandexOutage"
+                }
+            ],
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "campaign",
+            "spec_version": "2.1",
+            "id": "campaign--00979a54-36a2-55a2-a0b7-cfd372394305",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "name": "Russian information operations on the war in Ukraine, observed 1 September to 13 October 2026",
+            "description": "Publication output of the actor sets below, measured in this study.",
+            "external_references": [
+                {
+                    "source_name": "OSINT_YandexOutage",
+                    "description": "Yandex Cloud Outages as a Natural Experiment on Russian Influence Operations (report and data)",
+                    "url": "https://github.com/stvsever/OSINT_YandexOutage"
+                }
+            ],
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "intrusion-set",
+            "spec_version": "2.1",
+            "id": "intrusion-set--afcbf621-544f-5c6b-80cf-adce9502cd50",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "name": "Pravda network",
+            "description": "Automated network of news portals in dozens of languages that republishes and machine-translates content from Russian state media and pro-Kremlin Telegram channels.",
+            "aliases": [
+                "Portal Kombat"
+            ],
+            "external_references": [
+                {
+                    "source_name": "VIGINUM",
+                    "description": "Portal Kombat: a structured and coordinated pro-Russian propaganda network (2024)",
+                    "url": "https://www.sgdsn.gouv.fr/files/files/20240212_NP_SGDSN_VIGINUM_PORTAL-KOMBAT-NETWORK_ENG_VF.pdf"
+                },
+                {
+                    "source_name": "EEAS",
+                    "description": "4th EEAS report on foreign information manipulation and interference threats (2026)",
+                    "url": "https://www.eeas.europa.eu/sites/default/files/2026/documents/EEAS%204th%20Threat%20Report_web%20version_1.pdf"
+                }
+            ],
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--f7077069-5941-59a1-99eb-0e52c4eb5218",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "attributed-to",
+            "source_ref": "campaign--00979a54-36a2-55a2-a0b7-cfd372394305",
+            "target_ref": "intrusion-set--afcbf621-544f-5c6b-80cf-adce9502cd50",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--29451b31-4cf9-5e47-94ba-cdb27274ad76",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Based on public attribution: VIGINUM, EEAS",
+            "source_ref": "intrusion-set--afcbf621-544f-5c6b-80cf-adce9502cd50",
+            "target_ref": "attack-pattern--9636ae57-0b93-41a0-8323-85109ee34877",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--b83ca09e-668d-5fed-a9a0-3efdbbe22959",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Based on public attribution: VIGINUM, EEAS",
+            "source_ref": "intrusion-set--afcbf621-544f-5c6b-80cf-adce9502cd50",
+            "target_ref": "attack-pattern--8676cd4b-39ec-4219-9b93-27f2b7fb5d27",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--0f9233f0-75e6-58c6-bc5f-57bf80a53e31",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Based on public attribution: VIGINUM, EEAS",
+            "source_ref": "intrusion-set--afcbf621-544f-5c6b-80cf-adce9502cd50",
+            "target_ref": "attack-pattern--e0f07568-5a2b-429d-94b9-b1ff3c17adea",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--f1b0d804-0102-5a4b-8b5c-2413996a3c11",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Based on public attribution: VIGINUM, EEAS",
+            "source_ref": "intrusion-set--afcbf621-544f-5c6b-80cf-adce9502cd50",
+            "target_ref": "attack-pattern--11352e9a-a52b-4ade-ad4f-ec64a15fa1d5",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--3b99379d-788d-5028-9f86-4b5489d341ce",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Based on public attribution: VIGINUM, EEAS",
+            "source_ref": "intrusion-set--afcbf621-544f-5c6b-80cf-adce9502cd50",
+            "target_ref": "attack-pattern--cec91e97-76c8-4a1f-8397-a06939a558ef",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--9f537039-72d1-5c87-a70d-d266bfc6f7f5",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Observed in this study's publication data.",
+            "source_ref": "intrusion-set--afcbf621-544f-5c6b-80cf-adce9502cd50",
+            "target_ref": "attack-pattern--836e9eef-b446-4f68-805f-0f10116d6e7f",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--42635479-fb37-50ef-b1e5-36b90b66c379",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Observed in this study's publication data.",
+            "source_ref": "intrusion-set--afcbf621-544f-5c6b-80cf-adce9502cd50",
+            "target_ref": "attack-pattern--0f040af8-7434-4fb8-be96-30a3123c8644",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "note",
+            "spec_version": "2.1",
+            "id": "note--eafc79ae-4f27-521e-bf30-b80f3edcf5fc",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "abstract": "Effect of the Yandex outages on Pravda network",
+            "content": "Output fell to 64% of expected for 11.2 h, starting 42 min after the Vladimir outage (onset-locked q = 0.026); no comparable dip after Sasovo. Interpreted as a stall of the republishing pipeline, not a loss of capability.",
+            "object_refs": [
+                "intrusion-set--afcbf621-544f-5c6b-80cf-adce9502cd50",
+                "incident--02313d84-035b-5c1f-bad0-d79b3e0c7b31"
+            ],
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--c5690bc3-8f3a-5f5b-b2a8-1a88790fdaf8",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "related-to",
+            "description": "Time-locked output stall after the Vladimir outage.",
+            "source_ref": "incident--02313d84-035b-5c1f-bad0-d79b3e0c7b31",
+            "target_ref": "intrusion-set--afcbf621-544f-5c6b-80cf-adce9502cd50",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "intrusion-set",
+            "spec_version": "2.1",
+            "id": "intrusion-set--e73fb747-6998-59dc-9354-cf45f79cd72e",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "name": "African Initiative",
+            "description": "Outlet and Telegram channels presenting as a news agency for African audiences; named in the EEAS 4th FIMI threat report.",
+            "external_references": [
+                {
+                    "source_name": "EEAS",
+                    "description": "4th EEAS report on foreign information manipulation and interference threats (2026)",
+                    "url": "https://www.eeas.europa.eu/sites/default/files/2026/documents/EEAS%204th%20Threat%20Report_web%20version_1.pdf"
+                }
+            ],
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--04538155-8265-549d-a39d-878caf431591",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "attributed-to",
+            "source_ref": "campaign--00979a54-36a2-55a2-a0b7-cfd372394305",
+            "target_ref": "intrusion-set--e73fb747-6998-59dc-9354-cf45f79cd72e",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--37e0953f-aff7-5d5c-94e5-7186b1660668",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Based on public attribution: EEAS",
+            "source_ref": "intrusion-set--e73fb747-6998-59dc-9354-cf45f79cd72e",
+            "target_ref": "attack-pattern--54d8019d-4687-46f5-a4c9-1b9414b80d35",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--47f5fde9-bdb0-53d0-8c4f-9d251b2f19a9",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Based on public attribution: EEAS",
+            "source_ref": "intrusion-set--e73fb747-6998-59dc-9354-cf45f79cd72e",
+            "target_ref": "attack-pattern--11352e9a-a52b-4ade-ad4f-ec64a15fa1d5",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--16969001-3f4b-5bc0-8249-35325b31931e",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Observed in this study's publication data.",
+            "source_ref": "intrusion-set--e73fb747-6998-59dc-9354-cf45f79cd72e",
+            "target_ref": "attack-pattern--0f040af8-7434-4fb8-be96-30a3123c8644",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--242af41c-e253-5cf4-981c-ea36870a8ad4",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Observed in this study's publication data.",
+            "source_ref": "intrusion-set--e73fb747-6998-59dc-9354-cf45f79cd72e",
+            "target_ref": "attack-pattern--292fa0bb-3762-41cf-ba2a-c547ef35268d",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "note",
+            "spec_version": "2.1",
+            "id": "note--1371b9ff-2ff6-5dd5-880e-a5b1b3a3787c",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "abstract": "Effect of the Yandex outages on African Initiative",
+            "content": "No credible drop and no time-locked dip after the strikes.",
+            "object_refs": [
+                "intrusion-set--e73fb747-6998-59dc-9354-cf45f79cd72e",
+                "incident--02313d84-035b-5c1f-bad0-d79b3e0c7b31"
+            ],
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "intrusion-set",
+            "spec_version": "2.1",
+            "id": "intrusion-set--08a90461-d1ac-5437-a69d-b628006e6e40",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "name": "RRN (Reliable Recent News)",
+            "description": "Inauthentic news outlet associated with the Doppelganger operation; named in the EEAS 4th FIMI threat report.",
+            "external_references": [
+                {
+                    "source_name": "EEAS",
+                    "description": "4th EEAS report on foreign information manipulation and interference threats (2026)",
+                    "url": "https://www.eeas.europa.eu/sites/default/files/2026/documents/EEAS%204th%20Threat%20Report_web%20version_1.pdf"
+                }
+            ],
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--0108883b-8efb-5754-8380-f5563cc2bbc9",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "attributed-to",
+            "source_ref": "campaign--00979a54-36a2-55a2-a0b7-cfd372394305",
+            "target_ref": "intrusion-set--08a90461-d1ac-5437-a69d-b628006e6e40",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--56375107-5b54-501e-8416-e5e7912249f1",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Based on public attribution: EEAS",
+            "source_ref": "intrusion-set--08a90461-d1ac-5437-a69d-b628006e6e40",
+            "target_ref": "attack-pattern--e0f07568-5a2b-429d-94b9-b1ff3c17adea",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--31417cdd-6fbb-5ed6-b646-3b3212ec532f",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Based on public attribution: EEAS",
+            "source_ref": "intrusion-set--08a90461-d1ac-5437-a69d-b628006e6e40",
+            "target_ref": "attack-pattern--54d8019d-4687-46f5-a4c9-1b9414b80d35",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--8e53787c-7c68-59c8-aad0-f25f7426b5ff",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Observed in this study's publication data.",
+            "source_ref": "intrusion-set--08a90461-d1ac-5437-a69d-b628006e6e40",
+            "target_ref": "attack-pattern--0f040af8-7434-4fb8-be96-30a3123c8644",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "note",
+            "spec_version": "2.1",
+            "id": "note--a0671301-722b-59b9-a5fd-8344be15d2aa",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "abstract": "Effect of the Yandex outages on RRN (Reliable Recent News)",
+            "content": "No credible drop and no time-locked dip after the strikes.",
+            "object_refs": [
+                "intrusion-set--08a90461-d1ac-5437-a69d-b628006e6e40",
+                "incident--02313d84-035b-5c1f-bad0-d79b3e0c7b31"
+            ],
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "intrusion-set",
+            "spec_version": "2.1",
+            "id": "intrusion-set--9af29287-5f26-5c2a-977c-867189999884",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "name": "R-FBI (Foundation to Battle Injustice)",
+            "description": "Organisation presenting as a human-rights foundation; named in the EEAS 4th FIMI threat report.",
+            "aliases": [
+                "Foundation to Battle Injustice"
+            ],
+            "external_references": [
+                {
+                    "source_name": "EEAS",
+                    "description": "4th EEAS report on foreign information manipulation and interference threats (2026)",
+                    "url": "https://www.eeas.europa.eu/sites/default/files/2026/documents/EEAS%204th%20Threat%20Report_web%20version_1.pdf"
+                }
+            ],
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--a51cc9f5-d6bc-573f-9762-c72eed0c0145",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "attributed-to",
+            "source_ref": "campaign--00979a54-36a2-55a2-a0b7-cfd372394305",
+            "target_ref": "intrusion-set--9af29287-5f26-5c2a-977c-867189999884",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--eee7649b-cabf-59e0-be01-3f6cc49e3de9",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Based on public attribution: EEAS",
+            "source_ref": "intrusion-set--9af29287-5f26-5c2a-977c-867189999884",
+            "target_ref": "attack-pattern--48a53a0e-fc2d-4f28-84d5-0eb615d168f4",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--fb533aa0-1e86-5eb4-9cd8-53608dc814a2",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Observed in this study's publication data.",
+            "source_ref": "intrusion-set--9af29287-5f26-5c2a-977c-867189999884",
+            "target_ref": "attack-pattern--0f040af8-7434-4fb8-be96-30a3123c8644",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "note",
+            "spec_version": "2.1",
+            "id": "note--788100f0-8cbb-5307-abcb-9178e9e67748",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "abstract": "Effect of the Yandex outages on R-FBI (Foundation to Battle Injustice)",
+            "content": "Too few publications in the study period for separate inference.",
+            "object_refs": [
+                "intrusion-set--9af29287-5f26-5c2a-977c-867189999884",
+                "incident--02313d84-035b-5c1f-bad0-d79b3e0c7b31"
+            ],
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "intrusion-set",
+            "spec_version": "2.1",
+            "id": "intrusion-set--e4005a51-c25f-53cc-8dd5-9575406afcc8",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "name": "Foreign-audience pro-Kremlin channels",
+            "description": "Telegram channels and outlets that relay Russian state narratives to foreign audiences in multiple languages.",
+            "aliases": [
+                "InfoDefense",
+                "Strategic Culture",
+                "Sputnik Africa",
+                "DD Geopolitics"
+            ],
+            "external_references": [
+                {
+                    "source_name": "OSINT_YandexOutage",
+                    "description": "Yandex Cloud Outages as a Natural Experiment on Russian Influence Operations (report and data)",
+                    "url": "https://github.com/stvsever/OSINT_YandexOutage"
+                }
+            ],
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--0550aa05-cd43-56d6-9282-9e214b381e3e",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "attributed-to",
+            "source_ref": "campaign--00979a54-36a2-55a2-a0b7-cfd372394305",
+            "target_ref": "intrusion-set--e4005a51-c25f-53cc-8dd5-9575406afcc8",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--9111abea-39d4-5e86-9cfd-ed6d0b689fc6",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Observed in this study's publication data.",
+            "source_ref": "intrusion-set--e4005a51-c25f-53cc-8dd5-9575406afcc8",
+            "target_ref": "attack-pattern--11352e9a-a52b-4ade-ad4f-ec64a15fa1d5",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--7308ae19-07cb-547e-86e5-b9caa78d3b4c",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Observed in this study's publication data.",
+            "source_ref": "intrusion-set--e4005a51-c25f-53cc-8dd5-9575406afcc8",
+            "target_ref": "attack-pattern--0d094dfb-61f9-42d3-a9cf-697fdcbee944",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--93f3d7ad-d940-5c7e-bfab-9c0503626c18",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Observed in this study's publication data.",
+            "source_ref": "intrusion-set--e4005a51-c25f-53cc-8dd5-9575406afcc8",
+            "target_ref": "attack-pattern--292fa0bb-3762-41cf-ba2a-c547ef35268d",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--c224f1f6-8c50-579d-8480-368db8099f6d",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Observed in this study's publication data.",
+            "source_ref": "intrusion-set--e4005a51-c25f-53cc-8dd5-9575406afcc8",
+            "target_ref": "attack-pattern--836e9eef-b446-4f68-805f-0f10116d6e7f",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "note",
+            "spec_version": "2.1",
+            "id": "note--9177778e-17bb-5564-8583-cc09fad148ca",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "abstract": "Effect of the Yandex outages on Foreign-audience pro-Kremlin channels",
+            "content": "No credible drop; output rose relative to controls with coverage of the strikes.",
+            "object_refs": [
+                "intrusion-set--e4005a51-c25f-53cc-8dd5-9575406afcc8",
+                "incident--02313d84-035b-5c1f-bad0-d79b3e0c7b31"
+            ],
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "intrusion-set",
+            "spec_version": "2.1",
+            "id": "intrusion-set--52163fd9-ed96-5e85-b422-2e827f55a43e",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "name": "Russian state media channels",
+            "description": "Overt state and state-aligned media channels on Telegram.",
+            "aliases": [
+                "TASS",
+                "Zvezda",
+                "Vesti",
+                "Izvestia",
+                "Channel One Kremlin pool",
+                "War on Fakes"
+            ],
+            "external_references": [
+                {
+                    "source_name": "OSINT_YandexOutage",
+                    "description": "Yandex Cloud Outages as a Natural Experiment on Russian Influence Operations (report and data)",
+                    "url": "https://github.com/stvsever/OSINT_YandexOutage"
+                }
+            ],
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--2ef2f308-e539-5f13-8438-4a95251ee5f0",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "attributed-to",
+            "source_ref": "campaign--00979a54-36a2-55a2-a0b7-cfd372394305",
+            "target_ref": "intrusion-set--52163fd9-ed96-5e85-b422-2e827f55a43e",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--25e03f5a-eca2-5d83-ad3e-1c19af03e999",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Observed in this study's publication data.",
+            "source_ref": "intrusion-set--52163fd9-ed96-5e85-b422-2e827f55a43e",
+            "target_ref": "attack-pattern--70717452-f7e3-4ce8-956f-39a4d34c5cfb",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--55115341-bb15-5a9d-bc71-02c31b46c662",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Observed in this study's publication data.",
+            "source_ref": "intrusion-set--52163fd9-ed96-5e85-b422-2e827f55a43e",
+            "target_ref": "attack-pattern--292fa0bb-3762-41cf-ba2a-c547ef35268d",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--81062109-51fd-5abf-9252-6fdb3583e999",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Observed in this study's publication data.",
+            "source_ref": "intrusion-set--52163fd9-ed96-5e85-b422-2e827f55a43e",
+            "target_ref": "attack-pattern--1997947a-7e08-4ea9-802c-85391d561266",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--d3ff5440-a5fa-5a83-866b-fe7461b90c81",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Observed in this study's publication data.",
+            "source_ref": "intrusion-set--52163fd9-ed96-5e85-b422-2e827f55a43e",
+            "target_ref": "attack-pattern--b2a7561a-28ad-426c-a249-f415b5f11cee",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "note",
+            "spec_version": "2.1",
+            "id": "note--7e08af75-2f69-57bc-9128-32e3f933fed8",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "abstract": "Effect of the Yandex outages on Russian state media channels",
+            "content": "No credible drop; non-war posts fell while war posts rose (topic substitution toward strike news).",
+            "object_refs": [
+                "intrusion-set--52163fd9-ed96-5e85-b422-2e827f55a43e",
+                "incident--02313d84-035b-5c1f-bad0-d79b3e0c7b31"
+            ],
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "intrusion-set",
+            "spec_version": "2.1",
+            "id": "intrusion-set--e3c99491-9adf-53ef-b1a2-4afffcd53890",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "name": "Pro-Kremlin military bloggers",
+            "description": "War-focused Telegram channels that amplify Russian military narratives.",
+            "aliases": [
+                "Rybar",
+                "WarGonzo",
+                "Readovka",
+                "Two Majors",
+                "Kotsnews"
+            ],
+            "external_references": [
+                {
+                    "source_name": "OSINT_YandexOutage",
+                    "description": "Yandex Cloud Outages as a Natural Experiment on Russian Influence Operations (report and data)",
+                    "url": "https://github.com/stvsever/OSINT_YandexOutage"
+                }
+            ],
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--638fff2d-bdc6-5e5d-865f-26f9d418fb12",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "attributed-to",
+            "source_ref": "campaign--00979a54-36a2-55a2-a0b7-cfd372394305",
+            "target_ref": "intrusion-set--e3c99491-9adf-53ef-b1a2-4afffcd53890",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--4cdbf174-3bef-5321-828b-11e024f8d2cb",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Observed in this study's publication data.",
+            "source_ref": "intrusion-set--e3c99491-9adf-53ef-b1a2-4afffcd53890",
+            "target_ref": "attack-pattern--292fa0bb-3762-41cf-ba2a-c547ef35268d",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--920e5408-4904-5716-b8ee-c9818aa56b70",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Observed in this study's publication data.",
+            "source_ref": "intrusion-set--e3c99491-9adf-53ef-b1a2-4afffcd53890",
+            "target_ref": "attack-pattern--1997947a-7e08-4ea9-802c-85391d561266",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--c5760d37-97fd-526f-8f57-01bbec917853",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Observed in this study's publication data.",
+            "source_ref": "intrusion-set--e3c99491-9adf-53ef-b1a2-4afffcd53890",
+            "target_ref": "attack-pattern--836e9eef-b446-4f68-805f-0f10116d6e7f",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--346ebdd7-12c8-5ecf-a653-8259ecd566ce",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Observed in this study's publication data.",
+            "source_ref": "intrusion-set--e3c99491-9adf-53ef-b1a2-4afffcd53890",
+            "target_ref": "attack-pattern--b2a7561a-28ad-426c-a249-f415b5f11cee",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "note",
+            "spec_version": "2.1",
+            "id": "note--5d6b2f84-f623-5302-b773-f71c5a754a92",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "abstract": "Effect of the Yandex outages on Pro-Kremlin military bloggers",
+            "content": "No credible drop after the strikes.",
+            "object_refs": [
+                "intrusion-set--e3c99491-9adf-53ef-b1a2-4afffcd53890",
+                "incident--02313d84-035b-5c1f-bad0-d79b3e0c7b31"
+            ],
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "type": "report",
+            "spec_version": "2.1",
+            "id": "report--7e3061b8-1371-58cc-ba9d-0b2dbea90c49",
+            "created_by_ref": "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+            "created": "2026-10-14T00:00:00.000Z",
+            "modified": "2026-10-14T00:00:00.000Z",
+            "name": "Yandex Cloud Outages as a Natural Experiment on Russian Influence Operations",
+            "description": "Actor sets measured in the study, mapped to DISARM Red framework techniques (v1.6.1), with the effect of the October 2026 Yandex outages on each.",
+            "report_types": [
+                "threat-actor",
+                "campaign",
+                "attack-pattern"
+            ],
+            "published": "2026-10-14T00:00:00Z",
+            "object_refs": [
+                "identity--d4866cac-3cff-590a-bfdd-24cb0cc629fc",
+                "incident--02313d84-035b-5c1f-bad0-d79b3e0c7b31",
+                "campaign--00979a54-36a2-55a2-a0b7-cfd372394305",
+                "intrusion-set--afcbf621-544f-5c6b-80cf-adce9502cd50",
+                "relationship--f7077069-5941-59a1-99eb-0e52c4eb5218",
+                "relationship--29451b31-4cf9-5e47-94ba-cdb27274ad76",
+                "relationship--b83ca09e-668d-5fed-a9a0-3efdbbe22959",
+                "relationship--0f9233f0-75e6-58c6-bc5f-57bf80a53e31",
+                "relationship--f1b0d804-0102-5a4b-8b5c-2413996a3c11",
+                "relationship--3b99379d-788d-5028-9f86-4b5489d341ce",
+                "relationship--9f537039-72d1-5c87-a70d-d266bfc6f7f5",
+                "relationship--42635479-fb37-50ef-b1e5-36b90b66c379",
+                "note--eafc79ae-4f27-521e-bf30-b80f3edcf5fc",
+                "relationship--c5690bc3-8f3a-5f5b-b2a8-1a88790fdaf8",
+                "intrusion-set--e73fb747-6998-59dc-9354-cf45f79cd72e",
+                "relationship--04538155-8265-549d-a39d-878caf431591",
+                "relationship--37e0953f-aff7-5d5c-94e5-7186b1660668",
+                "relationship--47f5fde9-bdb0-53d0-8c4f-9d251b2f19a9",
+                "relationship--16969001-3f4b-5bc0-8249-35325b31931e",
+                "relationship--242af41c-e253-5cf4-981c-ea36870a8ad4",
+                "note--1371b9ff-2ff6-5dd5-880e-a5b1b3a3787c",
+                "intrusion-set--08a90461-d1ac-5437-a69d-b628006e6e40",
+                "relationship--0108883b-8efb-5754-8380-f5563cc2bbc9",
+                "relationship--56375107-5b54-501e-8416-e5e7912249f1",
+                "relationship--31417cdd-6fbb-5ed6-b646-3b3212ec532f",
+                "relationship--8e53787c-7c68-59c8-aad0-f25f7426b5ff",
+                "note--a0671301-722b-59b9-a5fd-8344be15d2aa",
+                "intrusion-set--9af29287-5f26-5c2a-977c-867189999884",
+                "relationship--a51cc9f5-d6bc-573f-9762-c72eed0c0145",
+                "relationship--eee7649b-cabf-59e0-be01-3f6cc49e3de9",
+                "relationship--fb533aa0-1e86-5eb4-9cd8-53608dc814a2",
+                "note--788100f0-8cbb-5307-abcb-9178e9e67748",
+                "intrusion-set--e4005a51-c25f-53cc-8dd5-9575406afcc8",
+                "relationship--0550aa05-cd43-56d6-9282-9e214b381e3e",
+                "relationship--9111abea-39d4-5e86-9cfd-ed6d0b689fc6",
+                "relationship--7308ae19-07cb-547e-86e5-b9caa78d3b4c",
+                "relationship--93f3d7ad-d940-5c7e-bfab-9c0503626c18",
+                "relationship--c224f1f6-8c50-579d-8480-368db8099f6d",
+                "note--9177778e-17bb-5564-8583-cc09fad148ca",
+                "intrusion-set--52163fd9-ed96-5e85-b422-2e827f55a43e",
+                "relationship--2ef2f308-e539-5f13-8438-4a95251ee5f0",
+                "relationship--25e03f5a-eca2-5d83-ad3e-1c19af03e999",
+                "relationship--55115341-bb15-5a9d-bc71-02c31b46c662",
+                "relationship--81062109-51fd-5abf-9252-6fdb3583e999",
+                "relationship--d3ff5440-a5fa-5a83-866b-fe7461b90c81",
+                "note--7e08af75-2f69-57bc-9128-32e3f933fed8",
+                "intrusion-set--e3c99491-9adf-53ef-b1a2-4afffcd53890",
+                "relationship--638fff2d-bdc6-5e5d-865f-26f9d418fb12",
+                "relationship--4cdbf174-3bef-5321-828b-11e024f8d2cb",
+                "relationship--920e5408-4904-5716-b8ee-c9818aa56b70",
+                "relationship--c5760d37-97fd-526f-8f57-01bbec917853",
+                "relationship--346ebdd7-12c8-5ecf-a653-8259ecd566ce",
+                "note--5d6b2f84-f623-5302-b773-f71c5a754a92",
+                "attack-pattern--70717452-f7e3-4ce8-956f-39a4d34c5cfb",
+                "attack-pattern--cec91e97-76c8-4a1f-8397-a06939a558ef",
+                "attack-pattern--b2a7561a-28ad-426c-a249-f415b5f11cee",
+                "attack-pattern--9636ae57-0b93-41a0-8323-85109ee34877",
+                "attack-pattern--8676cd4b-39ec-4219-9b93-27f2b7fb5d27",
+                "attack-pattern--54d8019d-4687-46f5-a4c9-1b9414b80d35",
+                "attack-pattern--48a53a0e-fc2d-4f28-84d5-0eb615d168f4",
+                "attack-pattern--e0f07568-5a2b-429d-94b9-b1ff3c17adea",
+                "attack-pattern--11352e9a-a52b-4ade-ad4f-ec64a15fa1d5",
+                "attack-pattern--1997947a-7e08-4ea9-802c-85391d561266",
+                "attack-pattern--836e9eef-b446-4f68-805f-0f10116d6e7f",
+                "attack-pattern--0d094dfb-61f9-42d3-a9cf-697fdcbee944",
+                "attack-pattern--292fa0bb-3762-41cf-ba2a-c547ef35268d",
+                "attack-pattern--0f040af8-7434-4fb8-be96-30a3123c8644"
+            ],
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ],
+            "external_references": [
+                {
+                    "source_name": "OSINT_YandexOutage",
+                    "description": "Yandex Cloud Outages as a Natural Experiment on Russian Influence Operations (report and data)",
+                    "url": "https://github.com/stvsever/OSINT_YandexOutage"
+                },
+                {
+                    "source_name": "EEAS",
+                    "description": "4th EEAS report on foreign information manipulation and interference threats (2026)",
+                    "url": "https://www.eeas.europa.eu/sites/default/files/2026/documents/EEAS%204th%20Threat%20Report_web%20version_1.pdf"
+                },
+                {
+                    "source_name": "VIGINUM",
+                    "description": "Portal Kombat: a structured and coordinated pro-Russian propaganda network (2024)",
+                    "url": "https://www.sgdsn.gouv.fr/files/files/20240212_NP_SGDSN_VIGINUM_PORTAL-KOMBAT-NETWORK_ENG_VF.pdf"
+                }
+            ]
+        },
+        {
+            "type": "marking-definition",
+            "spec_version": "2.1",
+            "id": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
+            "created": "2017-01-20T00:00:00.000Z",
+            "definition_type": "tlp",
+            "name": "TLP:WHITE",
+            "definition": {
+                "tlp": "white"
+            }
+        }
+    ]
+}

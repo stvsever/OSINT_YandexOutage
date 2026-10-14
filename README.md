@@ -1,4 +1,4 @@
-# Yandex Cloud Outages as a Natural Experiment on Russian Influence Operations: Bayesian Outage Modelling with Change-Point Attribution
+# Yandex Ablation: Did the Data-Center Strikes Silence Russian Information Operations?
 
 This study systematically investigates whether the October 2026 Ukrainian drone strikes on Yandex data centers in Sasovo, Kaluga and Vladimir reduced the output of Russian information operations. The strikes are treated as a natural experiment: an expected-outage function reconstructed from graded public reports is validated against measured outages, and the output of publicly attributed influence operations, state media and military bloggers is compared with seasonal counterfactuals, control sources and placebo periods.
 
@@ -12,6 +12,7 @@ This study systematically investigates whether the October 2026 Ukrainian drone 
 | [`dashboard/`](dashboard) | Interactive dashboard (static HTML and D3); open `dashboard/index.html` |
 | [`pipeline/`](pipeline) | Data collection, outage model, statistical analysis, verification and dashboard export |
 | [`report/`](report) | Builder for `REPORT.pdf` |
+| [`stix/`](stix) | STIX 2.1 bundle mapping the actor sets to DISARM techniques |
 | [`config/study.json`](config/study.json) | Outage-model priors and OSINT constraints, and the VIGINUM Storm-1516 domain list used by `fetch_actor_infra.py` |
 | [`.github/workflows/pages.yml`](.github/workflows/pages.yml) | Publishes `dashboard/` to GitHub Pages when the repository is public |
 
@@ -32,7 +33,9 @@ This study systematically investigates whether the October 2026 Ukrainian drone 
 
 The analysis first reconstructs when and how severely Yandex went offline. An expected-outage function models each strike as a capacity-weighted damage curve whose timing, onset lag, failure ramp, severity and recovery are inferred from the published reports, with each report weighted by its NATO Admiralty reliability grade. The model is estimated with sequential Monte Carlo on a 10-minute grid in three nested stages: strike reports only, all published reports, and finally fused with IODA's direct measurement of Yandex Cloud reachability. Comparing the second stage with the measurement shows how precisely open reporting alone captured the outage.
 
-Each output series is then compared with what would have been expected without the strikes. A seasonal regression on hour of day, day of week and trend is fitted on the pre-strike period only, and deviations after each strike are measured against it out of sample. Whether a deviation is unusual is judged against placebo windows of the same length drawn from the pre-strike period and against the same weekdays in earlier weeks. A Bayesian hierarchical model pools the individual channels, language editions, communities and websites into platform groups, adds a term for outlets that depend on Yandex 360 mail, and accounts for news shocks that move all sources together; it is run for all posts, for war-related posts, for other posts and for their difference. In parallel, a 10-minute change-point analysis dates the start of any dip relative to the measured outage onset, and an onset-locked test asks whether a significant dip starts between 30 minutes before and 6 hours after it, because an outage can only explain a dip that begins after it; both are calibrated against 400 placebo start times and corrected for multiple testing across streams and events. Dose-response regressions, false-discovery control, equivalence bounds and an analysis of competing hypotheses complete the inference.
+Each output series is then compared with what would have been expected without the strikes: a seasonal regression fitted on the pre-strike period only, with placebo windows from that period and the same weekdays in earlier weeks as reference. A Bayesian hierarchical model pools channels, language editions, communities and websites into platform groups, separately for war-related and other posts, and a 10-minute change-point analysis tests whether any dip starts at the outage onset. False-discovery control, equivalence bounds and an analysis of competing hypotheses complete the inference.
+
+To place the findings within the wider picture of information-operation coverage, the actor sets and their observed behaviours were mapped to techniques of the DISARM Red framework (v1.6.1) and exported, together with the outage incident and the effect found for each actor, as a STIX 2.1 bundle ([`stix/yandex_outage_io_disarm.json`](stix/yandex_outage_io_disarm.json)) that can be loaded into threat-intelligence platforms such as OpenCTI or MISP.
 
 Finally, `pipeline/verify.py` downloads random samples of every stored source again from the original service and compares them value by value, so that the published series can be checked against their origin.
 
@@ -43,7 +46,7 @@ python -m venv .venv && .venv/bin/pip install -r requirements.txt
 cd pipeline
 for s in fetch_ioda fetch_misc fetch_pravda fetch_telegram fetch_web fetch_infra_map fetch_actor_infra; do ../.venv/bin/python $s.py; done
 ../.venv/bin/python fetch_reddit.py all
-for s in build_panel model_outage analysis bayes timing data_quality verify export_dashboard; do ../.venv/bin/python $s.py; done
+for s in build_panel model_outage analysis bayes timing data_quality verify export_dashboard export_stix; do ../.venv/bin/python $s.py; done
 cd .. && .venv/bin/python report/build_report.py
 python3 -m http.server 8765 --directory dashboard
 ```
