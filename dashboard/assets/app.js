@@ -18,7 +18,7 @@
   const GLOSS = {
     eof: ["Expected outage function (EOF)", "A time-varying estimate of the share of Yandex capacity that is offline, computed from published reports. Each strike contributes a capacity-weighted damage curve whose timing, severity, credibility and recovery come from graded reports. It has three stages: S0 uses strike reports only, S1 adds published statements, status pages, satellite fire detections and complaint alerts, and S2 also fuses direct network measurements."],
     stages: ["Estimation stages", "S0 attack prior: strike windows and damage wording only. S1 OSINT-conditioned: S0 plus everything published (status pages, statements, FIRMS, NetBlocks, Cloudflare, complaint alerts). S2 telemetry-fused: S1 plus the IODA active-probing measurement. Comparing S1 with the measurement validates the open-source method."],
-    ioda: ["IODA active probing", "Georgia Tech's Internet Outage Detection and Analysis pings address blocks (/24) in each network every 10 minutes. The share of blocks that stop answering is the measured outage."],
+    ioda: ["IODA active probing", "Georgia Tech's Internet Outage Detection and Analysis pings address blocks (/24) in each network every 10 minutes. The measured outage is the share of blocks that stopped answering relative to the pre-strike baseline."],
     admiralty: ["Admiralty grading", "NATO source grading. Reliability of the source from A (completely reliable) to F (cannot be judged); credibility of the item from 1 (confirmed) to 6 (cannot be judged). Grades are converted to probabilities and pooled into each strike's credibility."],
     counterfactual: ["Seasonal counterfactual", "For each series the expected value had nothing happened: a regression on hour-of-day, day-of-week, weekend-by-hour and trend, fitted on the pre-strike baseline only. Deviations are measured against it out of sample."],
     placebo: ["Placebo-in-time test", "The same statistic is computed for every comparable window before the strikes. If the post-strike value is more extreme than almost all placebo windows, the change is unusual; the share of placebo windows at least as extreme is the p-value."],
@@ -466,11 +466,11 @@
     row(css("--div-neg"), "Effect observed", `Pravda network ${pct(pr.dip_ratio - 1)} for ${pr.dip_hours.toFixed(0)} h`, () => { S.tStream = "pravda.total"; S.tEvent = "VLA"; go("timing"); });
     row("#7fd4a0", "No credible drop", "Telegram, Reddit, web, EEAS-named outlets", () => go("effects"));
     row("#7fd4a0", "IO output vs controls", `${pct(v24.io_minus_control.median)} in the 24 h after Vladimir`, () => go("effects"));
-    row("#9ec5ff", "Outage measured", `Yandex Cloud ${pctu(vlaOff)} unreachable`, () => go("timeline"));
+    row("#9ec5ff", "Outage measured", `Yandex Cloud ${pctu(vlaOff)} unreachable on 13 Oct`, () => go("timeline"));
     hero.append(main, side); M.append(hero);
     const kp = el("div", { class: "kpis" });
     const kpi = (l, key, v, d, on) => kp.append(el("div", { class: "kpi", onclick: on }, el("div", { class: "k-l" }, l, key ? " " : "", key ? info(key) : null), el("div", { class: "k-v", text: v }), el("div", { class: "k-d", text: d })));
-    kpi("Yandex Cloud offline now", "ioda", pctu(vlaOff), "Measured by IODA; no recovery since 11 Oct", () => go("timeline"));
+    kpi("Yandex Cloud offline at end of data", "ioda", pctu(vlaOff), "Measured by IODA on 13 Oct 12:00 UTC; no recovery since 11 Oct", () => go("timeline"));
     kpi("Open-source timing error", "stages", `${Math.abs(E.validation.S1.onset_error_min_vs_S2.SAS).toFixed(0)} and ${Math.abs(E.validation.S1.onset_error_min_vs_S2.VLA).toFixed(0)} min`, "Onset from published sources only vs measured (Sasovo, Vladimir)", () => inspect({ type: "eof" }));
     kpi("Pravda network after Vladimir", "pravda", pct(pr.dip_ratio - 1), `${pr.dip_hours.toFixed(1)} h dip starting ${pr.offset_min.toFixed(0)} min after the outage (p ${pv(pr.p_scan)})`, () => { S.tStream = "pravda.total"; S.tEvent = "VLA"; go("timing"); });
     const io = v24.io_minus_control;
