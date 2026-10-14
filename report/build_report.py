@@ -287,7 +287,6 @@ def build():
       <path d="M0 960 C 200 910, 350 1030, 540 960 S 720 890, 800 920 L800 1130 L0 1130Z" fill="url(#w2)"/>
       <path d="M0 1040 C 220 990, 420 1090, 620 1035 S 760 1000, 800 1015 L800 1130 L0 1130Z" fill="rgba(255,255,255,.07)"/>
       <path d="M0 850 C 180 790, 330 910, 520 850 S 720 760, 800 800" stroke="rgba(255,255,255,.32)" stroke-width="1.2" fill="none"/>
-      <path d="M0 175 C 220 140, 420 210, 620 170 S 760 140, 800 150" stroke="rgba(255,255,255,.12)" stroke-width="1" fill="none"/>
     </svg>"""
     abstract = (f"Between 7 and 11 October 2026, drones struck Yandex data centers in Sasovo, Kaluga and Vladimir. This study systematically "
                 f"investigates whether the resulting outages reduced the output of Russian information operations (IO). An expected-outage "
@@ -378,14 +377,15 @@ a {{ color: #143e86; text-decoration: none; }}
 a.cite, a.int {{ color: #143e86; }}
 .title {{ position: relative; width: 210mm; height: 297mm; overflow: hidden; page-break-after: always; color: #fff; }}
 .title svg.band {{ position: absolute; inset: 0; width: 100%; height: 100%; }}
-.title .in {{ position: relative; padding: 32mm 18mm 0; }}
-.title .abs {{ margin-top: 14mm; padding-top: 6mm; border-top: .6pt solid rgba(255,255,255,.35); }}
+.title .in {{ position: relative; height: 297mm; padding: 0 20mm 16mm; display: flex; flex-direction: column; }}
+.title .top {{ margin-top: 52mm; }}
+.title .abs {{ margin-top: 16mm; }}
 .title .abs h2 {{ font-size: 11pt; margin: 0 0 2.4mm; color: #fff; }}
 .title .abs p {{ font-size: 9.8pt; line-height: 1.5; color: rgba(255,255,255,.93); }}
 .title h1 {{ font-size: 21pt; line-height: 1.22; margin: 0 0 6mm; font-weight: 700; text-align: justify; text-align-last: justify; hyphens: none; }}
 .title h1 .l2 {{ letter-spacing: .028em; }}
 .title .sub {{ font-size: 11.5pt; line-height: 1.42; font-style: italic; text-align: justify; hyphens: none; opacity: .94; }}
-.title .date {{ margin-top: 7mm; font-family: "Helvetica Neue", Arial, sans-serif; font-size: 9.5pt; opacity: .85; }}
+.title .date {{ margin-top: auto; font-family: "Helvetica Neue", Arial, sans-serif; font-size: 10pt; opacity: .9; }}
 h2 {{ font-size: 12pt; margin: 5mm 0 2mm; font-weight: 700; break-after: avoid; }}
 h3 {{ font-size: 9.8pt; margin: 3.2mm 0 1mm; font-weight: 700; font-style: italic; break-after: avoid; }}
 p {{ margin: 0 0 2mm; text-align: justify; hyphens: auto; }}
@@ -419,10 +419,12 @@ li {{ margin-bottom: .9mm; text-align: justify; }}
 </style></head><body>
 
 <section class="title">{band}<div class="in">
+  <div class="top">
   <h1>Yandex Ablation: Did the Data-Center Strikes<br><span class="l2">Silence Russian Information Operations?</span></h1>
   <div class="sub">A time-resolved attribution of the October 2026 drone strikes on Yandex data centers to Russian influence-operation output on Telegram, Reddit, the Pravda network, Russian state media websites and the websites of influence operations named by the EEAS</div>
-  <div class="date">October 2026</div>
+  </div>
   <div class="abs"><h2>Abstract</h2><p>{abstract}</p></div>
+  <div class="date">October 2026</div>
 </div></section>
 
 <section class="page2">

@@ -17,21 +17,24 @@ This study systematically investigates whether the October 2026 Ukrainian drone 
 
 ## Data
 
-| Role in the study | Sources |
-|---|---|
-| Outage measurement | IODA active probing (Georgia Tech), RIPE Stat BGP, NASA FIRMS fire detections, Yandex Cloud status incidents |
-| Outage reports (graded) | Yandex and regional-governor Telegram posts, NetBlocks, Cloudflare Radar, complaint trackers, Reuters |
-| Information-operation output | Pravda network sitemaps; Telegram channels of state media, the Ministry of Defence broadcaster Zvezda, the Channel One Kremlin pool, military bloggers, foreign-audience outlets (InfoDefense, Strategic Culture, Sputnik Africa, DD Geopolitics) and EEAS-named sets (African Initiative); WordPress feeds of African Initiative, RRN and R-FBI; ukraina.ru sitemaps; Reddit communities (Arctic Shift) |
-| Controls | Independent Russian, Ukrainian, business and non-political Telegram channels; independent web outlets; non-political Reddit communities; other Russian hosting and access networks |
-| Positive control for user impact | Russian Wikipedia pageviews (Yandex Search refers a substantial share of visits, while Wikimedia's own infrastructure is unaffected) |
-| Yandex dependency | Public DNS (A, MX, NS) with RIPE network attribution for state and IO media and for 342 domains attributed by VIGINUM and the EEAS |
+- **Outage measurement:** IODA active probing (Georgia Tech), RIPE Stat BGP data, NASA FIRMS fire detections and Yandex Cloud status incidents.
+- **Outage reports, graded for reliability:** Yandex and regional-governor Telegram posts, NetBlocks, Cloudflare Radar, complaint trackers and Reuters.
+- **Information-operation output:**
+  - Pravda network sitemaps;
+  - Telegram channels of state media, the Ministry of Defence broadcaster Zvezda, the Channel One Kremlin pool, military bloggers, foreign-audience outlets (InfoDefense, Strategic Culture, Sputnik Africa, DD Geopolitics) and EEAS-named sets (African Initiative);
+  - WordPress feeds of African Initiative, RRN and R-FBI, and ukraina.ru sitemaps;
+  - Reddit communities (Arctic Shift).
+- **Controls:** independent Russian, Ukrainian, business and non-political Telegram channels; independent web outlets; non-political Reddit communities; other Russian hosting and access networks.
+- **Positive control for user impact:** Russian Wikipedia pageviews. Yandex Search refers a substantial share of visits while Wikimedia's own infrastructure is unaffected, so a dip shows that the outage reached ordinary users.
+- **Yandex dependency:** public DNS records (A, MX, NS) with RIPE network attribution for state and IO media and for 342 domains attributed to influence operations by VIGINUM and the EEAS.
 
 ## Method
 
-1. **Expected outage function.** A capacity-weighted damage model with Admiralty-graded source credibility, estimated in three Bayesian stages with sequential Monte Carlo (strike reports, all published reports, fusion with IODA telemetry) on a 10-minute grid.
-2. **Counterfactuals.** Out-of-sample seasonal regressions per series, fitted on the pre-strike baseline.
-3. **Inference.** Placebo-in-time windows and a same-weekday check; a Bayesian hierarchical cross-platform model with a Yandex-dependency term, run for all posts, war posts, non-war posts and their contrast; 10-minute change-point timing with backlog tests; dose-response with HAC errors; false-discovery control; equivalence bounds; analysis of competing hypotheses.
-4. **Verification.** `pipeline/verify.py` downloads random samples of every stored source again and compares them value by value.
+The analysis first reconstructs when and how severely Yandex went offline. An expected-outage function models each strike as a capacity-weighted damage curve whose timing, onset lag, failure ramp, severity and recovery are inferred from the published reports, with each report weighted by its NATO Admiralty reliability grade. The model is estimated with sequential Monte Carlo on a 10-minute grid in three nested stages: strike reports only, all published reports, and finally fused with IODA's direct measurement of Yandex Cloud reachability. Comparing the second stage with the measurement shows how precisely open reporting alone captured the outage.
+
+Each output series is then compared with what would have been expected without the strikes. A seasonal regression on hour of day, day of week and trend is fitted on the pre-strike period only, and deviations after each strike are measured against it out of sample. Whether a deviation is unusual is judged against placebo windows of the same length drawn from the pre-strike period and against the same weekdays in earlier weeks. A Bayesian hierarchical model pools the individual channels, language editions, communities and websites into platform groups, adds a term for outlets that depend on Yandex 360 mail, and accounts for news shocks that move all sources together; it is run for all posts, for war-related posts, for other posts and for their difference. In parallel, a 10-minute change-point analysis dates the start of any dip relative to the measured outage onset, because an outage can only explain a dip that begins after it. Dose-response regressions, false-discovery control, equivalence bounds and an analysis of competing hypotheses complete the inference.
+
+Finally, `pipeline/verify.py` downloads random samples of every stored source again from the original service and compares them value by value, so that the published series can be checked against their origin.
 
 ## Reproduce
 
