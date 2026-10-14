@@ -13,7 +13,7 @@ import pandas as pd
 
 from common import BASELINE_END, PROC, ROOT, STUDY_END, STUDY_START
 
-OUT = ROOT / "docs" / "data"
+OUT = ROOT / "dashboard" / "data"
 OUT.mkdir(parents=True, exist_ok=True)
 
 
@@ -116,6 +116,9 @@ SOURCES = [
     dict(id="SRC-VIGINUM", name="VIGINUM technical report on Storm-1516 (May 2025)", type="Official attribution report",
          url="https://www.sgdsn.gouv.fr/files/files/Publications/20250507_TLP-CLEAR_NP_SGDSN_VIGINUM_Technical%20report_Storm-1516.pdf",
          rel="A", cred=2, lang="en", note="Appendix 6.2 lists 338 domains linked to CopyCop / Storm-1516; all were resolved and tested for Yandex dependency."),
+    dict(id="SRC-VIGINUM-PK", name="VIGINUM report on Portal Kombat (February 2024)", type="Official attribution report",
+         url="https://www.sgdsn.gouv.fr/files/files/20240212_NP_SGDSN_VIGINUM_PORTAL-KOMBAT-NETWORK_ENG_VF.pdf",
+         rel="A", cred=2, lang="en", note="First attribution of the Pravda (Portal Kombat) network of automated pro-Russian news portals republishing Telegram content."),
     dict(id="SRC-WP", name="WordPress REST API of African Initiative, RRN and R-FBI sites", type="Measurement data",
          url="https://afrinz.ru/wp-json/wp/v2/posts", rel="A", cred=1, lang="multi",
          note="Exact publication times (date_gmt) of 3,264 articles, 1 Sep to 13 Oct 2026."),
@@ -165,6 +168,10 @@ EVENTS = [
 
 
 def main():
+    n_ch = pd.read_parquet(PROC / "telegram_posts.parquet").handle.nunique()
+    for src in SOURCES:
+        if src["id"] == "SRC-TG":
+            src["name"] = f"Telegram public channel previews ({n_ch} channels)"
     panel = pd.read_parquet(PROC / "panel.parquet")
     meta = json.loads((PROC / "series_meta.json").read_text())
     an = json.loads((PROC / "analysis_results.json").read_text())

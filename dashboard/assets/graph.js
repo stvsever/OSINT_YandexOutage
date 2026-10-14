@@ -4,7 +4,7 @@
 (function () {
   "use strict";
   const LAYERS = ["Sources", "Observations", "Outage estimate", "Exposure channel", "Actors and platforms", "Findings"];
-  const SRC_SHORT = { "SRC-YCS-2092": "Status page #2092", "SRC-YCS-2136": "Status page #2136", "SRC-YCS-LIST": "Status page incident API", "SRC-YTG-5900": "Yandex Telegram #5900", "SRC-YTG-5901": "Yandex Telegram #5901", "SRC-YTG-5903": "Yandex Telegram #5903 (Pay)", "SRC-YTG-5905": "Yandex Telegram #5905 (B2B)", "SRC-GOV-10997": "Vladimir governor #10997", "SRC-FIRMS": "NASA FIRMS fire detections", "SRC-CFR-BSKY": "Cloudflare Radar (Bluesky)", "SRC-NB-BSKY": "NetBlocks (Bluesky)", "SRC-IODA": "IODA active probing", "SRC-RIPE": "RIPE Stat BGP", "SRC-TRK": "Detector404, Sboy.rf alerts", "SRC-PRAVDA": "Pravda network sitemaps", "SRC-TG": "Telegram channel previews", "SRC-RD": "Arctic Shift Reddit archive", "SRC-WIKI": "Wikimedia pageviews", "SRC-DNS": "Public DNS (A, MX, NS)", "SRC-WEB": "Web sitemaps", "SRC-EEAS": "EEAS 4th FIMI threat report", "SRC-VIGINUM": "VIGINUM Storm-1516 report", "SRC-WP": "WordPress REST API", "SRC-REUTERS": "Reuters, 8 Oct" };
+  const SRC_SHORT = { "SRC-YCS-2092": "Status page #2092", "SRC-YCS-2136": "Status page #2136", "SRC-YCS-LIST": "Status page incident API", "SRC-YTG-5900": "Yandex Telegram #5900", "SRC-YTG-5901": "Yandex Telegram #5901", "SRC-YTG-5903": "Yandex Telegram #5903 (Pay)", "SRC-YTG-5905": "Yandex Telegram #5905 (B2B)", "SRC-GOV-10997": "Vladimir governor #10997", "SRC-FIRMS": "NASA FIRMS fire detections", "SRC-CFR-BSKY": "Cloudflare Radar (Bluesky)", "SRC-NB-BSKY": "NetBlocks (Bluesky)", "SRC-IODA": "IODA active probing", "SRC-RIPE": "RIPE Stat BGP", "SRC-TRK": "Detector404, Sboy.rf alerts", "SRC-PRAVDA": "Pravda network sitemaps", "SRC-TG": "Telegram channel previews", "SRC-RD": "Arctic Shift Reddit archive", "SRC-WIKI": "Wikimedia pageviews", "SRC-DNS": "Public DNS (A, MX, NS)", "SRC-WEB": "Web sitemaps", "SRC-EEAS": "EEAS 4th FIMI threat report", "SRC-VIGINUM": "VIGINUM Storm-1516 report", "SRC-VIGINUM-PK": "VIGINUM Portal Kombat report", "SRC-WP": "WordPress REST API", "SRC-REUTERS": "Reuters, 8 Oct" };
   const EV_SHORT = { "EV-SAS-STRIKE": "Sasovo strike", "EV-SAS-STATUS": "Power loss, zone b", "EV-SAS-FIRMS": "FIRMS fire at Sasovo", "EV-SAS-IODA": "IODA: reachability falls", "EV-SAS-NB": "NetBlocks confirms", "EV-SAS-CAUSE": "UAV fire, DC stopped", "EV-OCT8-WAVE": "Complaint burst (non-Yandex)", "EV-KAL-STMT": "Kaluga attacked", "EV-VLA-TRK": "Complaint alert", "EV-VLA-STATUS": "Zones unavailable", "EV-VLA-IODA": "IODA: second collapse", "EV-VLA-STOP": "Vladimir DC stopped", "EV-VLA-GOV": "Governor: drone attack", "EV-VLA-NB": "NetBlocks: second collapse", "EV-PAY": "Yandex Pay disrupted", "EV-B2B": "Fees waived, services limited", "EV-SEP27": "Unexplained dip" };
 
   function build(ctx) {
@@ -14,14 +14,14 @@
     const E = (a, b, w = 1, kind = "") => edges.push({ a, b, w, kind });
     const srcCluster = (t) => ({ "Official operator statement": "Operator statements", "Regional official": "Regional officials", "Satellite remote sensing": "Satellite", "Third-party telemetry report": "Telemetry reports", "Measurement data": "Measured data", "Crowdsourced outage tracker": "Complaint trackers", "Official attribution report": "Attribution reports", Media: "Media" }[t] || "Other");
     const used = new Set(EV.events.flatMap((e) => e.sources));
-    ["SRC-EEAS", "SRC-VIGINUM", "SRC-DNS", "SRC-WP", "SRC-PRAVDA", "SRC-TG", "SRC-RD", "SRC-WEB", "SRC-WIKI"].forEach((s) => used.add(s));
+    ["SRC-EEAS", "SRC-VIGINUM", "SRC-VIGINUM-PK", "SRC-DNS", "SRC-WP", "SRC-PRAVDA", "SRC-TG", "SRC-RD", "SRC-WEB", "SRC-WIKI"].forEach((s) => used.add(s));
     for (const s of EV.sources) if (used.has(s.id)) N({ id: s.id, layer: 0, cluster: srcCluster(s.type), label: SRC_SHORT[s.id] || s.name, full: s.name, kind: "source", rel: s.rel, ref: { type: "source", id: s.id } });
     const siteOf = (e) => (["Sasovo", "Kaluga", "Vladimir"].includes(e.site) ? e.site : "Other");
     for (const e of EV.events.slice().sort((a, b) => Date.parse(a.t) - Date.parse(b.t))) {
       N({ id: e.id, layer: 1, cluster: siteOf(e), label: `${e.t.slice(8, 10)}/${e.t.slice(5, 7)} ${e.t.slice(11, 16)} ${EV_SHORT[e.id] || e.title}`, full: `${e.t.slice(0, 16).replace("T", " ")} UTC, ${e.title}`, kind: e.kind, ref: { type: "event", id: e.id } });
       for (const s of e.sources) E(s, e.id, 1);
     }
-    for (const [k, l, cl] of [["SAS", "Sasovo outage", "Strikes"], ["KAL", "Kaluga strike", "Strikes"], ["VLA", "Vladimir outage", "Strikes"], ["SEP", "27 Sep dip, no strike", "Placebo"]]) N({ id: "site." + k, layer: 2, cluster: cl, label: l, kind: "site", ref: k === "SEP" ? { type: "event", id: "EV-SEP27" } : { type: "eof" } });
+    for (const [k, l, cl] of [["SAS", "Sasovo outage", "Strikes"], ["KAL", "Kaluga strike", "Strikes"], ["VLA", "Vladimir outage", "Strikes"], ["SEP", "27 Sep control (no strike)", "Control period"]]) N({ id: "site." + k, layer: 2, cluster: cl, label: l, kind: "site", ref: k === "SEP" ? { type: "event", id: "EV-SEP27" } : { type: "eof" } });
     for (const e of EV.events) { const k = { Sasovo: "SAS", Kaluga: "KAL", Vladimir: "VLA" }[e.site]; if (k) E(e.id, "site." + k, 1); if (e.id === "EV-SEP27") E(e.id, "site.SEP", 1); }
     const exps = [["exp.cloud", "Yandex Cloud capacity", "Compute"], ["exp.consumer", "Consumer services", "Services"], ["exp.mail", "Yandex 360 mail", "Organisational"], ["exp.none", "No Yandex dependency", "Organisational"]];
     for (const [id, l, cl] of exps) N({ id, layer: 3, cluster: cl, label: l, kind: "exposure" });
@@ -31,7 +31,7 @@
     const g = (BY.windows.VLA_24h || {}).groups || {};
     const pr = TM.results["pravda.total"]?.events?.VLA;
     const actors = [
-      ["act.pravda", "Pravda network", "EEAS-named IMS", pr ? pr.dip_ratio - 1 : null, ["exp.cloud"], ["SRC-PRAVDA", "SRC-EEAS"], "f.drop", { type: "timing", id: "pravda.total" }],
+      ["act.pravda", "Pravda network", "EEAS-named IMS", pr ? pr.dip_ratio - 1 : null, ["exp.cloud"], ["SRC-PRAVDA", "SRC-EEAS", "SRC-VIGINUM-PK"], "f.drop", { type: "timing", id: "pravda.total" }],
       ["act.afri", "African Initiative", "EEAS-named IMS", g["Web: EEAS-named IMS outlets"]?.median, ["exp.none"], ["SRC-WP", "SRC-TG", "SRC-EEAS"], "f.none", { type: "group", id: "Web: EEAS-named IMS outlets", win: "VLA_24h" }],
       ["act.rrn", "RRN, R-FBI", "EEAS-named IMS", g["Web: EEAS-named IMS outlets"]?.median, ["exp.none"], ["SRC-WP", "SRC-EEAS"], "f.none", { type: "group", id: "Web: EEAS-named IMS outlets", win: "VLA_24h" }],
       ["act.storm", "Storm-1516 sites", "EEAS-named IMS", null, ["exp.none"], ["SRC-VIGINUM", "SRC-DNS", "SRC-EEAS"], "f.nodep", null],

@@ -48,6 +48,21 @@ CHANNELS = [
     ("fondfbr", "io_eeas_ims", "ru"), ("rrnmedia", "io_eeas_ims", "multi"), ("gazetaru", "pro_kremlin_state", "ru"),
     ("yandex", "control_ru_nonpolitical", "ru"), ("kinopoisk", "control_ru_nonpolitical", "ru"),
     ("sportsru", "control_ru_nonpolitical", "ru"), ("bazabazon", "control_ru_tabloid", "ru"),
+    # Expansion: state broadcasters, Kremlin-linked channels and major military bloggers
+    ("margaritasimonyan", "pro_kremlin_state", "ru"),  # RT editor-in-chief
+    ("zvezdanews", "pro_kremlin_state", "ru"),  # Ministry of Defence TV Zvezda
+    ("RtrDonetsk", "pro_kremlin_state", "ru"),  # Andrey Rudenko, VGTRK war correspondent
+    ("pul_1", "pro_kremlin_state", "ru"),  # Channel One Kremlin press pool
+    ("warfakes", "pro_kremlin_state", "ru"),  # "War on Fakes", Kremlin-linked counter-messaging
+    ("anna_news", "pro_kremlin_milblog", "ru"), ("Sladkov_plus", "pro_kremlin_milblog", "ru"),
+    ("SergeyKolyasnikov", "pro_kremlin_milblog", "ru"), ("vysokygovorit", "pro_kremlin_milblog", "ru"),
+    ("russ_orientalist", "pro_kremlin_milblog", "ru"), ("swodki", "pro_kremlin_milblog", "ru"),
+    ("sashakots", "pro_kremlin_milblog", "ru"), ("epoddubny", "pro_kremlin_milblog", "ru"),
+    ("milinfolive", "pro_kremlin_milblog", "ru"), ("voenacher", "pro_kremlin_milblog", "ru"),
+    ("mig41", "pro_kremlin_milblog", "ru"),
+    ("romanov_92", "pro_kremlin_milblog", "ru"), ("aleksandr_skif", "pro_kremlin_milblog", "ru"),
+    ("lady_north", "pro_kremlin_milblog", "ru"), ("GeneralSVR", "pro_kremlin_tabloid", "ru"),
+    ("DDGeopolitics", "io_foreign_audience", "en"),
 ]
 
 HDRS = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "

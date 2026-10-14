@@ -7,7 +7,7 @@
   const EV = window.EVIDENCE, TM = window.TIMING, E = window.EOF, BY = window.BAYES;
   const HOUR = 3600e3, MIN10 = 600e3;
   const ONSETS = Object.fromEntries(Object.entries(EV.analysis.onsets).map(([k, v]) => [k, new Date(v)]));
-  const EVN = { SAS: "Sasovo", KAL: "Kaluga", VLA: "Vladimir", SEP27: "27 Sep placebo" };
+  const EVN = { SAS: "Sasovo", KAL: "Kaluga", VLA: "Vladimir", SEP27: "27 Sep control" };
   const HI_T0 = Date.parse(E.hi_t0), STUDY_END = Date.parse(EV.meta.study_end), BASE_END = Date.parse(EV.meta.baseline_end);
   const hourTimes = d3.range(NH).map((i) => new Date(H0 + i * HOUR));
   const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -32,6 +32,7 @@
     ach: ["Analysis of competing hypotheses (ACH)", "Each piece of evidence is rated consistent, inconsistent or not diagnostic with each hypothesis. The hypothesis with the least weighted inconsistency is preferred (Heuer)."],
     icd: ["Estimative language (ICD 203)", "Almost certain 95 to 99 %, very likely 80 to 95 %, likely 55 to 80 %, roughly even 45 to 55 %, unlikely 20 to 45 %, very unlikely 5 to 20 %."],
     yxdep: ["Yandex dependency (DNS)", "Public DNS records of each outlet show where its website is hosted, who runs its mail (MX) and its name servers (NS). No IO website is hosted on Yandex; seven outlets, including RT, Readovka, Rybar and Strategic Culture, run their mail on Yandex 360."],
+    wiki: ["Russian Wikipedia as a positive control", "Russian Wikipedia user pageviews are not an information operation. They test whether the outage reached ordinary users: Yandex Search, Russia's dominant search engine, refers a substantial share of visits, while Wikimedia's own servers were unaffected. A dip there, together with complaint alerts for Yandex services, confirms consumer-facing disruption."],
     pravda: ["Pravda network (Portal Kombat)", "An automated network of sites in dozens of languages that republishes and machine-translates pro-Kremlin Telegram content. Its public sitemaps give the exact publication time of every article."],
   };
   const pop = document.getElementById("pop");
@@ -297,7 +298,7 @@
     root.append(kv([["Source", link], ["Method", s.method], ["Baseline mean", st.baseline_mean != null ? num(st.baseline_mean, 1) + " per hour" : "n/a"], ["Completeness", pctu(st.completeness)], ["Min. detectable drop", st.mde80_vla24 != null ? Math.round(st.mde80_vla24 * 100) + "% (24 h)" : "n/a"], ["Verdict", verdictTag(st.verdict)], ["FDR q, Vladimir 24 h", pv(st.q_vla24)]]));
     if (st.windows) {
       const t = el("table", { class: "tbl" }); t.append(el("tr", {}, ...["Window", "Change", "90% interval", "p (drop)"].map((h) => el("th", { text: h }))));
-      for (const k of ["SAS_6h", "SAS_24h", "KAL_24h", "VLA_6h", "VLA_24h", "SEP27_24h"]) { const w = st.windows[k]; if (!w) continue; t.append(el("tr", {}, el("td", { text: k.replace("_", " ").replace("SEP27", "27 Sep").replace("SAS", "Sasovo").replace("VLA", "Vladimir").replace("KAL", "Kaluga") }), el("td", { class: "num", text: pct(w.effect) }), el("td", { class: "num", text: `${pct(w.ci90[0])} to ${pct(w.ci90[1])}` }), el("td", { class: "num", text: pv(w.p_drop) }))); }
+      for (const k of ["SAS_6h", "SAS_24h", "KAL_24h", "VLA_6h", "VLA_24h", "SEP27_24h"]) { const w = st.windows[k]; if (!w) continue; t.append(el("tr", {}, el("td", { text: k.replace("_", " ").replace("SEP27", "27 Sep control").replace("SAS", "Sasovo").replace("VLA", "Vladimir").replace("KAL", "Kaluga") }), el("td", { class: "num", text: pct(w.effect) }), el("td", { class: "num", text: `${pct(w.ci90[0])} to ${pct(w.ci90[1])}` }), el("td", { class: "num", text: pv(w.p_drop) }))); }
       root.append(el("div", { class: "lbl" }, "Event windows ", info("placebo")), t);
     }
     if (st.event_study) { const box = el("div"); root.append(el("hr"), el("div", { class: "lbl", text: "Event study, % vs expected (band: placebo 5 to 95%)" }), box); requestAnimationFrame(() => eventStudyChart(box, id, 170, true)); }
@@ -345,7 +346,7 @@
     root.append(el("div", { class: "lbl", text: "Members (raw window change)" }), t);
   }
   function inspNode(root, id, o) { const n = o.node; root.append(el("h3", { text: n.label }), el("div", { class: "note", text: n.colLabel })); if (n.html) root.append(n.html()); }
-  const winLabel = (k) => k.replace("_", " ").replace("SAS", "Sasovo").replace("VLA", "Vladimir").replace("KAL", "Kaluga").replace("SEP27", "27 Sep placebo");
+  const winLabel = (k) => k.replace("_", " ").replace("SAS", "Sasovo").replace("VLA", "Vladimir").replace("KAL", "Kaluga").replace("SEP27", "27 Sep control");
 
   // ------------------------------------------------------------------ left panel
   const ctl = (label, node) => el("div", { class: "ctl" }, label.nodeType ? el("label", {}, label) : el("label", { text: label }), node);
@@ -374,10 +375,10 @@
     const gb = (items, cur, on) => { const g = el("div", { class: "grid-btns" }); for (const [k, l] of items) g.append(el("button", { class: k === cur ? "on" : "", onclick: () => on(k), title: l }, l)); return g; };
     const upd = (msg, scope, rebuild = true) => { if (rebuild) buildLeft(); render(); renderInspector(); toast(msg, SC[scope]); };
     L.append(sec("Time window", true, null,
-      scoped("win", gb([["full", "Full study"], ["week", "Strike week"], ["sep", "27 Sep"], ["sas", "Sasovo ±24h"], ["kal", "Kaluga ±24h"], ["vla", "Vladimir ±24h"]], S.preset, setPreset)),
+      scoped("win", gb([["full", "Full study"], ["week", "Strike week"], ["sep", "Control day"], ["sas", "Sasovo ±24h"], ["kal", "Kaluga ±24h"], ["vla", "Vladimir ±24h"]], S.preset, setPreset)),
       scoped("res", ctl("Resolution", seg(["10m", "1h", "6h"], S.res, (v) => { S.res = v; upd(`Resolution ${v === "10m" ? "10 minutes" : v === "1h" ? "1 hour" : "6 hours"}`, "res"); }, { "10m": "10 min", "1h": "1 hour", "6h": "6 hours" }))),
       scoped("clock", ctl("Clock", seg(["UTC", "MSK"], S.tz, (v) => { S.tz = v; upd(`Times shown in ${v}`, "clock"); }))),
-      el("div", { class: "hint", text: "10 minute resolution applies to the outage function, IODA and timing streams. Shift-click a chart to zoom to ±12 h." })));
+      el("div", { class: "hint", text: "Control day (27 Sep): an unexplained Yandex Cloud dip with no strike, used as a placebo event. 10 minute resolution applies to the outage function, IODA and timing streams. Shift-click a chart to zoom to ±12 h." })));
     const eb = [
       ctl("Target", seg(["cloud", "core"], S.eof.target, (v) => { S.eof.target = v; if (v === "core" && S.eof.stage === "S2") S.eof.stage = "S1"; S.eof.custom = null; upd(`Outage target: ${v === "cloud" ? "Yandex Cloud" : "Yandex LLC"}`, "eof"); }, { cloud: "Yandex Cloud", core: "Yandex LLC" })),
       ctl(el("span", {}, "Stage ", info("stages")), seg(S.eof.target === "cloud" ? ["S0", "S1", "S2", "custom"] : ["S0", "S1", "custom"], S.eof.stage, (v) => { S.eof.stage = v; if (v === "custom" && !S.eof.custom) runCustom(); upd(`Outage stage: ${{ S0: "S0 attack prior", S1: "S1 OSINT-conditioned", S2: "S2 telemetry-fused", custom: "what-if" }[v]}`, "eof"); }, { S0: "Prior", S1: "OSINT", S2: "Fused", custom: "What-if" })),
@@ -519,7 +520,7 @@
     cc.append(fl);
   }
   function effectMap(box) {
-    const th = BT(); const cols = [["SAS_6h", "Sasovo 6 h"], ["SAS_24h", "Sasovo 24 h"], ["VLA_6h", "Vladimir 6 h"], ["VLA_24h", "Vladimir 24 h"], ["SEP27_24h", "Placebo"]];
+    const th = BT(); const cols = [["SAS_6h", "Sasovo 6 h"], ["SAS_24h", "Sasovo 24 h"], ["VLA_6h", "Vladimir 6 h"], ["VLA_24h", "Vladimir 24 h"], ["SEP27_24h", "27 Sep control"]];
     const col = d3.scaleLinear().domain([-0.4, 0, 0.4]).range([css("--div-neg"), css("--div-mid"), css("--div-pos")]).clamp(true);
     const t = el("table", { class: "emap" });
     t.append(el("tr", {}, el("th", { class: "rowh", text: "Platform group" }), ...cols.map(([, l]) => el("th", { text: l }))));
@@ -571,7 +572,7 @@
   function vTimeline(M) {
     header(M, "Timeline: expected outage against measured outage and output", "Synchronised panels share the time axis and crosshair. Output series are relative to their seasonal counterfactual (100 = expected) unless another normalisation is chosen in Controls. Shaded: post-strike period.", "counterfactual");
     if (S.layersOn.eof) { const c = card(M); const b = el("div", { class: "chart" }); c.append(b); requestAnimationFrame(() => eofChart(b)); }
-    for (const [k, t] of [["infrastructure", "Infrastructure telemetry"], ["services", "Dependent services"], ["io", "Information-operation output"], ["control", "Controls"]]) {
+    for (const [k, t] of [["infrastructure", "Infrastructure telemetry"], ["services", "Dependent services (positive control: Russian Wikipedia)"], ["io", "Information-operation output"], ["control", "Controls"]]) {
       if (!S.layersOn[k]) continue;
       const ids = S.sel[k].filter((id) => SER[id] && seriesPasses(themed(id)));
       const c = card(M); const b = el("div", { class: "chart" }); c.append(b);
@@ -645,7 +646,7 @@
     header(M, "Effects: cross-platform estimates", "Platform-group Bayesian estimates first, then every individual series with its placebo-calibrated interval. The red band marks drops larger than the 20% smallest effect of interest.", "bayes");
     const th = BT();
     const bc = card(M, "Bayesian hierarchical estimates by platform group", `${THEME_L[S.theme][0].toUpperCase() + THEME_L[S.theme].slice(1)}. Posterior median and 90% credible interval, including common news shocks. Credible drop: P(drop > 10%) > 90%, group placebo p < 0.05 and same-weekday check p < 0.10.`);
-    const ws = el("div", { class: "seg inline", style: "flex-wrap:wrap" }); for (const [k, l] of [["SAS_6h", "Sasovo 6 h"], ["SAS_24h", "Sasovo 24 h"], ["VLA_6h", "Vladimir 6 h"], ["VLA_24h", "Vladimir 24 h"], ["KAL_24h", "Kaluga 24 h"], ["SEP27_24h", "Placebo"]]) ws.append(el("button", { class: S.emapWin === k ? "on" : "", onclick: () => { S.emapWin = k; render(); } }, l));
+    const ws = el("div", { class: "seg inline", style: "flex-wrap:wrap" }); for (const [k, l] of [["SAS_6h", "Sasovo 6 h"], ["SAS_24h", "Sasovo 24 h"], ["VLA_6h", "Vladimir 6 h"], ["VLA_24h", "Vladimir 24 h"], ["KAL_24h", "Kaluga 24 h"], ["SEP27_24h", "27 Sep control"]]) ws.append(el("button", { class: S.emapWin === k ? "on" : "", onclick: () => { S.emapWin = k; render(); } }, l));
     bc.append(el("div", { style: "display:flex;gap:10px 16px;flex-wrap:wrap;align-items:center;margin-bottom:10px" }, el("span", { class: "lbl", text: "Window" }), ws, el("span", { class: "lbl", text: "Theme" }), themeSeg()));
     const bb = el("div", { class: "chart" }); bc.append(bb);
     const w = th.windows[S.emapWin];
@@ -655,7 +656,7 @@
     bc.append(el("p", { class: "note", style: "margin:10px 0 0" }, io ? `IO groups minus controls: ${pct(io.median)} (90% ${pct(io.ci90[0])} to ${pct(io.ci90[1])}). ` : "", beta ? `Extra effect for outlets on Yandex 360 mail: ${pct(beta.median)} (90% ${pct(beta.ci90[0])} to ${pct(beta.ci90[1])}, ${beta.n_treated} channels).` : "", S.theme !== "all" ? " Only Telegram groups have a theme split." : ""));
     const ctlc = card(M, "Individual series", S.theme === "all" ? "All posts. Choose War or Non-war in Theme to see theme-split series." : S.theme === "diff" ? "Theme contrasts are listed in the table below." : `${THEME_L[S.theme][0].toUpperCase() + THEME_L[S.theme].slice(1)}: Telegram channel groups and Reddit communities split by topic.`);
     const metSel = el("select", { class: "sel" });
-    for (const [k, l] of [["SAS_6h", "Sasovo, 6 h"], ["SAS_24h", "Sasovo, 24 h"], ["KAL_24h", "Kaluga, 24 h"], ["VLA_6h", "Vladimir, 6 h"], ["VLA_24h", "Vladimir, 24 h"], ["SEP27_24h", "27 Sep placebo, 24 h"], ["dose:S1", "Dose-response on EOF Stage 1"], ["dose:S2", "Dose-response on EOF Stage 2"], ["dose:IODA", "Dose-response on measured outage"], ["dose:custom", "Dose-response on what-if EOF"]]) { const o = el("option", { value: k, text: l }); if (k === S.attr.metric) o.selected = true; metSel.append(o); }
+    for (const [k, l] of [["SAS_6h", "Sasovo, 6 h"], ["SAS_24h", "Sasovo, 24 h"], ["KAL_24h", "Kaluga, 24 h"], ["VLA_6h", "Vladimir, 6 h"], ["VLA_24h", "Vladimir, 24 h"], ["SEP27_24h", "27 Sep control, 24 h"], ["dose:S1", "Dose-response on EOF Stage 1"], ["dose:S2", "Dose-response on EOF Stage 2"], ["dose:IODA", "Dose-response on measured outage"], ["dose:custom", "Dose-response on what-if EOF"]]) { const o = el("option", { value: k, text: l }); if (k === S.attr.metric) o.selected = true; metSel.append(o); }
     metSel.addEventListener("change", () => { S.attr.metric = metSel.value; if (metSel.value === "dose:custom" && !S.eof.custom) runCustom(); render(); });
     const lay = el("div", { class: "seg inline" }); for (const [k, l] of [["io", "IO output"], ["control", "Controls"], ["services", "Services"], ["all", "All"]]) lay.append(el("button", { class: S.attr.layer === k ? "on" : "", onclick: () => { S.attr.layer = k; render(); } }, l));
     ctlc.append(el("div", { style: "display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:10px" }, el("span", { class: "lbl", text: "Estimate" }), metSel, el("span", { class: "lbl", text: "Layer" }), lay, info("placebo"), info("fdr"), info("sesoi")));
@@ -818,7 +819,7 @@
     header(M, "Method", "The full methodology, results and sources are in the report (Report PDF in the top bar). This page summarises the pipeline and defines every term used in the dashboard.");
     const c = card(M, "Pipeline");
     const fl = el("div", { class: "flow" });
-    for (const [t, d] of [["Collect", "IODA, RIPE, FIRMS, Wikimedia, status API, DNS, Telegram, Pravda and web sitemaps, Reddit"], ["Grade", "Admiralty grades pooled into strike credibility"], ["Model outage", "Three-stage Bayesian EOF (SMC), 10 minute grid"], ["Counterfactual", "Seasonal regression, leave-one-day-out"], ["Test", "Placebo windows, change points, dose-response, Bayesian pooling"], ["Decide", "FDR, equivalence, ACH, ICD 203"]]) fl.append(el("div", { class: "node" }, el("div", { class: "t", text: t }), el("div", { class: "d", text: d })));
+    for (const [t, d] of [["Collect", "Outage: IODA, RIPE, FIRMS, status API. Exposure: DNS. IO output: Telegram, Pravda and web sitemaps, WordPress, Reddit. Positive control: Wikimedia"], ["Grade", "Admiralty grades pooled into strike credibility"], ["Model outage", "Three-stage Bayesian EOF (SMC), 10 minute grid"], ["Counterfactual", "Seasonal regression, leave-one-day-out"], ["Test", "Placebo windows, change points, dose-response, Bayesian pooling"], ["Decide", "FDR, equivalence, ACH, ICD 203"]]) fl.append(el("div", { class: "node" }, el("div", { class: "t", text: t }), el("div", { class: "d", text: d })));
     c.append(fl);
     const g = card(M, "Glossary"); const dl = el("dl", { class: "gloss" }); for (const [, [t, d]] of Object.entries(GLOSS)) dl.append(el("dt", { text: t }), el("dd", { text: d })); g.append(dl);
   }
