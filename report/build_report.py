@@ -296,8 +296,7 @@ def build():
                 f"communities, is compared with out-of-sample seasonal counterfactuals using placebo windows, a Bayesian hierarchical model and "
                 f"10-minute change-point timing. Only the Pravda network shows a reduction time-locked to an outage: its output fell to "
                 f"{pr['dip_ratio'] * 100:.0f}% of expected for {pr['dip_hours']:.0f} hours, starting {pr['offset_min']:.0f} minutes after the "
-                f"Vladimir outage. No other platform group shows a credible drop, and none of {nA} domains attributed to Russian influence "
-                f"operations by VIGINUM and the EEAS is hosted on Yandex. The strikes disrupted Yandex substantially but did not measurably "
+                f"Vladimir outage. No other platform group shows a credible drop. The strikes disrupted Yandex substantially but did not measurably "
                 f"silence Russian information operations; the one observed effect was narrow and transient.")
 
     def kj(i, head, lik, conf, body):
@@ -377,13 +376,12 @@ a {{ color: #143e86; text-decoration: none; }}
 a.cite, a.int {{ color: #143e86; }}
 .title {{ position: relative; width: 210mm; height: 297mm; overflow: hidden; page-break-after: always; color: #fff; }}
 .title svg.band {{ position: absolute; inset: 0; width: 100%; height: 100%; }}
-.title .in {{ position: relative; height: 297mm; padding: 0 20mm 16mm; display: flex; flex-direction: column; }}
+.title .in {{ position: relative; height: 297mm; padding: 0 15mm 16mm; display: flex; flex-direction: column; }}
 .title .top {{ margin-top: 40mm; }}
 .title .abs {{ margin-top: 13mm; }}
 .title .abs h2 {{ font-size: 13pt; margin: 0 0 2.8mm; color: #fff; }}
 .title .abs p {{ font-size: 10.6pt; line-height: 1.5; color: rgba(255,255,255,.94); }}
-.title h1 {{ font-size: 30pt; line-height: 1.16; margin: 0 0 7mm; font-weight: 700; text-align: left; hyphens: none; text-wrap: balance; }}
-.title h1 .rest {{ display: block; font-size: 17pt; font-weight: 400; line-height: 1.3; margin-top: 3.5mm; opacity: .95; }}
+.title h1 {{ font-size: 22.5pt; line-height: 1.22; margin: 0 0 7mm; font-weight: 700; text-align: justify; text-align-last: justify; hyphens: none; }}
 .title .sub {{ font-size: 12.5pt; line-height: 1.45; font-style: italic; text-align: left; hyphens: none; opacity: .92; }}
 .title .date {{ margin-top: auto; font-family: "Helvetica Neue", Arial, sans-serif; font-size: 11pt; opacity: .9; }}
 h2 {{ font-size: 12pt; margin: 5mm 0 2mm; font-weight: 700; break-after: avoid; }}
@@ -420,7 +418,7 @@ li {{ margin-bottom: .9mm; text-align: justify; }}
 
 <section class="title">{band}<div class="in">
   <div class="top">
-  <h1>Yandex Cloud Outages as a Natural Experiment on Russian Influence Operations:<span class="rest">Bayesian Outage Modelling with Change-Point Attribution</span></h1>
+  <h1>Yandex Cloud Outages as a Natural Experiment<br>on Russian Influence Operations: Bayesian<br>Outage Modelling with Change-Point Attribution</h1>
   <div class="sub">Evidence from the October 2026 drone strikes on Yandex data centers, measured across Telegram, Reddit, the Pravda network, Russian state media and influence operations named by the EEAS</div>
   </div>
   <div class="abs"><h2>Abstract</h2><p>{abstract}</p></div>
